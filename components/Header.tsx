@@ -1,5 +1,6 @@
 'use client';
 
+import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -15,6 +16,7 @@ const navItems = [
   { href: '/coaches', label: 'Coaches' },
   { href: '/pricing', label: 'Pricing' },
   { href: '/contact', label: 'Contact' },
+  { href: '/ondemand', label: 'Diaz on Demand' },
 ];
 
 export function Header() {
@@ -45,7 +47,18 @@ export function Header() {
           ))}
         </nav>
 
-        <div className="hidden md:block">
+        <div className="hidden items-center gap-2 md:flex">
+          <SignedOut>
+            <Button href="/sign-in?redirect_url=/account" variant="secondary">
+              Member Login
+            </Button>
+          </SignedOut>
+          <SignedIn>
+            <Button href="/account" variant="secondary">
+              My Account
+            </Button>
+            <UserButton afterSignOutUrl="/" />
+          </SignedIn>
           <Button href={site.ctas.primary.href}>{site.ctas.primary.label}</Button>
         </div>
 
@@ -80,6 +93,16 @@ export function Header() {
               {item.label}
             </Link>
           ))}
+          <SignedOut>
+            <Button href="/sign-in?redirect_url=/account" className="mt-2 w-full" variant="secondary" onClick={() => setOpen(false)}>
+              Member Login
+            </Button>
+          </SignedOut>
+          <SignedIn>
+            <Button href="/account" className="mt-2 w-full" variant="secondary" onClick={() => setOpen(false)}>
+              My Account
+            </Button>
+          </SignedIn>
           <Button href={site.ctas.primary.href} className="mt-2 w-full" onClick={() => setOpen(false)}>
             {site.ctas.primary.label}
           </Button>

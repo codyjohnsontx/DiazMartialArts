@@ -1,3 +1,4 @@
+import { ClerkProvider } from '@clerk/nextjs';
 import type { Metadata } from 'next';
 import { Bebas_Neue, Manrope } from 'next/font/google';
 
@@ -45,10 +46,12 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" className={`${headingFont.variable} ${bodyFont.variable}`}>
       <body className="font-[var(--font-body)] antialiased">
-        <AnnouncementBar />
-        <Header />
-        <main>{children}</main>
-        <Footer />
+        <ClerkProvider>
+          <AnnouncementBar />
+          <Header />
+          <main>{children}</main>
+          <Footer />
+        </ClerkProvider>
       </body>
     </html>
   );
