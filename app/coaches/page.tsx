@@ -31,7 +31,11 @@ export default function CoachesPage() {
             <div className="p-5">
               <h3 className="text-xl font-bold text-ink">{coach.name}</h3>
               <p className="mt-1 text-sm font-semibold uppercase tracking-[0.14em] text-bronze">{coach.rank}</p>
-              <p className="mt-3 text-sm leading-relaxed text-black/70">{coach.bio}</p>
+              <div className="mt-3 space-y-3">
+                {coach.bio.split('\n\n').map((paragraph, i) => (
+                  <p key={i} className="text-sm leading-relaxed text-black/70">{paragraph}</p>
+                ))}
+              </div>
             </div>
           </Card>
         ))}
