@@ -1,20 +1,14 @@
 export const coaches = [
   {
-    name: 'Coach Miguel Diaz',
+    name: 'Coach Eddie Diaz',
     rank: 'Black Belt, Head Instructor',
-    bio: '15+ years coaching BJJ and MMA athletes. Focused on technical precision and safe progression.',
-    image: '/images/coaches/miguel.svg',
+    bio: 'Placeholder bio for Coach Eddie Diaz.',
+    image: '/images/coaches/eddie.svg',
   },
   {
-    name: 'Coach Elena Ruiz',
-    rank: 'Brown Belt, Kids Program Lead',
-    bio: 'Builds structured youth classes that keep training challenging, fun, and confidence-focused.',
-    image: '/images/coaches/elena.svg',
-  },
-  {
-    name: 'Coach Marcus Lee',
-    rank: 'Brown Belt, Competition Team Coach',
-    bio: 'Specializes in no-gi systems, takedown integration, and competition prep for all experience levels.',
-    image: '/images/coaches/marcus.svg',
+    name: 'Coach Roy Eastwood',
+    rank: 'Black Belt',
+    bio: 'Placeholder bio for Coach Roy Eastwood.',
+    image: '/images/coaches/roy.svg',
   },
 ];
