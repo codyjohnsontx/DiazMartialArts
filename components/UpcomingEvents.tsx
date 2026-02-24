@@ -10,9 +10,11 @@ export async function UpcomingEvents() {
     <Card>
       <div className="mb-4 flex items-center justify-between gap-3">
         <h3 className="text-xl font-bold text-ink">Upcoming (Next 60 Days)</h3>
-        <span className="rounded-full bg-sand px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-black/60">
-          Source: {source === 'ics' ? 'Google Calendar' : 'Local fallback'}
-        </span>
+        {source === 'ics' && (
+          <span className="rounded-full bg-sand px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-black/60">
+            Google Calendar
+          </span>
+        )}
       </div>
 
       {events.length === 0 ? (

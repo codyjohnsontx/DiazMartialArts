@@ -28,7 +28,7 @@ export function Footer() {
             {site.address.city}, {site.address.state} {site.address.zip}
           </p>
           <p className="mt-3 text-sm text-white/75">
-            Phone: <a href={`tel:${site.phone}`}>{site.phone}</a>
+            Phone: <a href={site.phoneHref}>{site.phone}</a>
             <br />
             Email: <a href={`mailto:${site.email}`}>{site.email}</a>
           </p>

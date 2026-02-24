@@ -5,6 +5,7 @@ export const site = {
     'Diaz Martial Arts offers Brazilian Jiu Jitsu, Muay Thai, Karate, self-defense, and youth programs focused on confidence, skill, and community.',
   url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
   phone: '(512) 392-4763',
+  phoneHref: 'tel:+15123924763',
   email: 'diazmartialarts@gmail.com',
   address: {
     street: '2061 Clovis Barker Rd Suite 13a',

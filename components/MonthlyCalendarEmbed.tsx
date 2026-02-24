@@ -6,9 +6,7 @@ export function MonthlyCalendarEmbed() {
   if (!embedUrl) {
     return (
       <Card>
-        <p className="text-sm text-black/70">
-          Add <code>NEXT_PUBLIC_GOOGLE_CALENDAR_EMBED_URL</code> in your environment to show the monthly calendar embed.
-        </p>
+        <p className="text-sm text-black/70">Monthly calendar coming soon.</p>
       </Card>
     );
   }

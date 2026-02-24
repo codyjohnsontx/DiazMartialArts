@@ -65,17 +65,18 @@ export default async function AccountPage() {
           <Card id="membership">
             <h3 className="text-lg font-bold text-ink">Membership</h3>
             <div className="mt-3 space-y-3 text-sm text-black/75">
-              <p>Gym Membership: {entitlements.gymMember ? 'Active' : 'Inactive'}</p>
               <p>Diaz on Demand: {entitlements.vod ? 'Active' : 'Inactive'}</p>
-              <p className="text-xs text-black/55">
-                TODO: Connect gym membership status to your live membership system.
-              </p>
             </div>
           </Card>
 
           <Card id="settings">
             <h3 className="text-lg font-bold text-ink">Settings</h3>
-            <p className="mt-2 text-sm text-black/70">Settings will be expanded in a future release.</p>
+            <Link
+              href="/sign-out"
+              className="mt-2 inline-block text-sm text-black/70 hover:text-ink"
+            >
+              Sign out
+            </Link>
           </Card>
         </div>
 
