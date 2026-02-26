@@ -8,7 +8,10 @@ export const NAV_LINKS = [
   { href: '/coaches', label: 'Coaches' },
   { href: '/pricing', label: 'Pricing' },
   { href: '/contact', label: 'Contact' },
+  { href: '/ondemand', label: 'Diaz on Demand' },
 ];
+
+export const MARKETING_NAV_LINKS = NAV_LINKS.filter((link) => link.href !== '/ondemand');
 
 export const PUBLIC_PAGES: Array<{ path: string; heading: string }> = [
   { path: '/', heading: 'Martial Arts for Real' },
@@ -20,4 +23,5 @@ export const PUBLIC_PAGES: Array<{ path: string; heading: string }> = [
   { path: '/faq', heading: 'FAQ' },
   { path: '/privacy', heading: 'Privacy' },
   { path: '/terms', heading: 'Terms' },
+  { path: '/sign-in', heading: 'Member Login' },
 ];

@@ -12,6 +12,7 @@ export const metadata = pageMetadata({
   title: 'My Account',
   description: 'Manage your Diaz Martial Arts member account and Diaz on Demand access.',
   path: '/account',
+  noIndex: true,
 });
 
 const accountNav = [
@@ -28,7 +29,8 @@ export default async function AccountPage() {
   }
 
   const [user, entitlements] = await Promise.all([currentUser(), getEntitlements(userId)]);
-  const ondemandUrl = process.env.NEXT_PUBLIC_ONDEMAND_URL || 'https://ondemand.diazmartialarts.com';
+  const ondemandUrl =
+    process.env.NEXT_PUBLIC_ONDEMAND_URL || 'https://ondemand.diazmartialarts.com';
 
   const memberName = user?.fullName || user?.firstName || 'Member';
   const memberEmail = user?.primaryEmailAddress?.emailAddress || 'No email on file';
@@ -36,13 +38,14 @@ export default async function AccountPage() {
   return (
     <Section
       title="My Account"
+      titleAs="h1"
       eyebrow="Member Hub"
       description="Manage your profile and memberships. Diaz on Demand access is managed as a separate entitlement."
     >
       <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
         <div className="space-y-6">
           <Card>
-            <h3 className="text-lg font-bold text-ink">Account Navigation</h3>
+            <h2 className="text-lg font-bold text-ink">Account Navigation</h2>
             <nav className="mt-3 flex flex-wrap gap-2" aria-label="Account">
               {accountNav.map((item) => (
                 <Link
@@ -57,20 +60,24 @@ export default async function AccountPage() {
           </Card>
 
           <Card>
-            <h3 className="text-lg font-bold text-ink">Profile</h3>
+            <h2 className="text-lg font-bold text-ink">Profile</h2>
             <p className="mt-2 text-sm text-black/75">Name: {memberName}</p>
             <p className="mt-1 text-sm text-black/75">Email: {memberEmail}</p>
           </Card>
 
           <Card id="membership">
-            <h3 className="text-lg font-bold text-ink">Membership</h3>
+            <h2 className="text-lg font-bold text-ink">Membership</h2>
             <div className="mt-3 space-y-3 text-sm text-black/75">
+              <p>Gym Membership: {entitlements.gymMember ? 'Active' : 'Inactive'}</p>
               <p>Diaz on Demand: {entitlements.vod ? 'Active' : 'Inactive'}</p>
+              <p className="text-xs text-black/60">
+                TODO: Connect gym membership status to live membership records.
+              </p>
             </div>
           </Card>
 
           <Card id="settings">
-            <h3 className="text-lg font-bold text-ink">Settings</h3>
+            <h2 className="text-lg font-bold text-ink">Settings</h2>
             <Link
               href="/sign-out"
               className="mt-2 inline-block text-sm text-black/70 hover:text-ink"

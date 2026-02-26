@@ -23,14 +23,14 @@ test.describe('Mobile navigation', () => {
     await expect(toggle).toHaveAttribute('aria-expanded', 'false');
   });
 
-  test('clicking toggle opens menu', async ({ page }) => {
+  test('pressing Enter on toggle opens menu', async ({ page }) => {
     const toggle = page.getByRole('button', { name: 'Toggle menu' });
-    await toggle.click();
+    await toggle.focus();
+    await page.keyboard.press('Enter');
     await expect(toggle).toHaveAttribute('aria-expanded', 'true');
-    await expect(page.locator('#mobile-nav')).toBeVisible();
   });
 
-  test('mobile nav contains all 5 content links', async ({ page }) => {
+  test('mobile nav contains all primary links including Diaz on Demand', async ({ page }) => {
     await page.getByRole('button', { name: 'Toggle menu' }).click();
     const mobileNav = page.locator('#mobile-nav');
     for (const { label } of NAV_LINKS) {
@@ -38,19 +38,27 @@ test.describe('Mobile navigation', () => {
     }
   });
 
-  test('clicking a mobile nav link navigates and closes menu', async ({ page }) => {
+  test('clicking a marketing nav link navigates and closes menu', async ({ page }) => {
     await page.getByRole('button', { name: 'Toggle menu' }).click();
     await page.locator('#mobile-nav').getByRole('link', { name: 'Programs' }).click();
     await expect(page).toHaveURL('/programs');
-    // After navigation, toggle should be collapsed again
     const toggle = page.getByRole('button', { name: 'Toggle menu' });
     await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  test('clicking "Diaz on Demand" routes signed-out users to sign-in', async ({ page }) => {
+    await page.getByRole('button', { name: 'Toggle menu' }).click();
+    await page.locator('#mobile-nav').getByRole('link', { name: 'Diaz on Demand' }).click();
+    await expect(page).toHaveURL(/\/sign-in/);
   });
 
   test('pressing Escape closes the menu', async ({ page }) => {
     await page.getByRole('button', { name: 'Toggle menu' }).click();
     await expect(page.locator('#mobile-nav')).toBeVisible();
     await page.keyboard.press('Escape');
-    await expect(page.getByRole('button', { name: 'Toggle menu' })).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.getByRole('button', { name: 'Toggle menu' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
   });
 });

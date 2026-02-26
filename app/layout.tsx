@@ -5,6 +5,7 @@ import { Bebas_Neue, Manrope } from 'next/font/google';
 import { AnnouncementBar } from '@/components/AnnouncementBar';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
+import { WebSiteSchema } from '@/components/WebSiteSchema';
 import { site } from '@/content/site';
 
 import './globals.css';
@@ -27,6 +28,9 @@ export const metadata: Metadata = {
     template: `%s | ${site.name}`,
   },
   description: site.description,
+  alternates: {
+    canonical: site.url,
+  },
   openGraph: {
     title: site.name,
     description: site.description,
@@ -47,6 +51,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" className={`${headingFont.variable} ${bodyFont.variable}`}>
       <body className="font-[var(--font-body)] antialiased">
         <ClerkProvider>
+          <WebSiteSchema />
           <a
             href="#main-content"
             className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:rounded-md focus:bg-ember focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"

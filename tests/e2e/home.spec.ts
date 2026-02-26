@@ -14,33 +14,28 @@ test.describe('Home page', () => {
   });
 
   test('discipline pills visible', async ({ page }) => {
-    // Use first() since "Brazilian Jiu Jitsu" also appears in programs headings
     await expect(page.getByText('Brazilian Jiu Jitsu', { exact: true }).first()).toBeVisible();
     await expect(page.getByText('Muay Thai', { exact: true }).first()).toBeVisible();
     await expect(page.getByText('Karate', { exact: true }).first()).toBeVisible();
   });
 
-  test('"Why Train Here" and "Structured beginner pathways" visible', async ({ page }) => {
-    await expect(page.getByText('Why Train Here')).toBeVisible();
-    await expect(page.getByText(/Structured beginner pathways/)).toBeVisible();
+  test('hero shows core ctas', async ({ page }) => {
+    await expect(page.getByRole('link', { name: /Book a Free Trial/i }).first()).toBeVisible();
+    await expect(page.getByRole('link', { name: /View Schedule/i }).first()).toBeVisible();
   });
 
-  test('stats strip shows "San Marcos, TX"', async ({ page }) => {
-    // "San Marcos, TX" appears in both stats strip and footer; first() is enough
-    await expect(page.getByText('San Marcos, TX').first()).toBeVisible();
+  test('right-side cta card visible with trial action', async ({ page }) => {
+    await expect(page.getByText('Start Today')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Book a Free Trial' }).first()).toBeVisible();
   });
 
-  test('Programs section visible', async ({ page }) => {
+  test('programs section visible', async ({ page }) => {
     await expect(page.getByText('Classes for every stage')).toBeVisible();
   });
 
-  test('Testimonials section visible', async ({ page }) => {
-    await expect(page.getByText('What members say')).toBeVisible();
-  });
-
-  test('at least one "Book a Free Trial" link exists', async ({ page }) => {
-    const ctaLinks = page.getByRole('link', { name: /Book a Free Trial/i });
-    await expect(ctaLinks.first()).toBeVisible();
+  test('cta banner visible', async ({ page }) => {
+    await expect(page.getByText('Start This Week')).toBeVisible();
+    await expect(page.getByText(/Train with purpose at Diaz Martial Arts/)).toBeVisible();
   });
 
   test('announcement bar visible with GI promo text', async ({ page }) => {

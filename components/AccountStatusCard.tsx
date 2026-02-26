@@ -9,8 +9,8 @@ export function AccountStatusCard({ vodActive, ondemandUrl }: AccountStatusCardP
   const href = vodActive ? `${ondemandUrl}/library` : `${ondemandUrl}/subscribe`;
 
   return (
-    <Card>
-      <h3 className="text-lg font-bold text-ink">Diaz on Demand</h3>
+    <Card interactive={false}>
+      <h2 className="text-lg font-bold text-ink">Diaz on Demand</h2>
       <p className="mt-2 text-sm text-black/70">Status: {vodActive ? 'Active' : 'Not Active'}</p>
       <a
         href={href}

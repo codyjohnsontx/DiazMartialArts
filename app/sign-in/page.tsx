@@ -7,11 +7,17 @@ export const metadata = pageMetadata({
   title: 'Member Login',
   description: 'Sign in to your Diaz Martial Arts member account.',
   path: '/sign-in',
+  noIndex: true,
 });
 
 export default function SignInPage() {
   return (
-    <Section title="Member Login" eyebrow="Account Access" description="Sign in to manage your memberships and access Diaz on Demand.">
+    <Section
+      title="Member Login"
+      titleAs="h1"
+      eyebrow="Account Access"
+      description="Sign in to manage your memberships and access Diaz on Demand."
+    >
       <div className="mx-auto max-w-md rounded-2xl border border-black/10 bg-white p-4 shadow-sm sm:p-6">
         <SignIn path="/sign-in" routing="path" signUpUrl="/sign-up" forceRedirectUrl="/account" />
       </div>

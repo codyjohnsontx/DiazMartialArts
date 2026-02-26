@@ -1,13 +1,14 @@
 # Diaz Martial Arts Website
 
-Production-ready Next.js marketing site for a BJJ gym, deployable to Vercel.
+Production-ready Next.js marketing and member-entry website for Diaz Martial Arts, deployable to Vercel.
 
 ## Stack
 
 - Next.js (App Router) + TypeScript
 - Tailwind CSS
-- ESLint + Prettier
-- SEO metadata, robots, sitemap
+- Clerk auth for member login/account
+- ESLint + Prettier + Playwright
+- SEO metadata, structured data, robots, sitemap
 
 ## Local Development
 
@@ -33,20 +34,20 @@ Site runs at `http://localhost:3000`.
 
 ## Editable Content Files
 
-All primary content is in `/content`:
+All primary content is in `content/`:
 
-- `/Users/codypjohnson/Desktop/Coding/diazOnDemand/DiazMartialArts/content/site.ts`
-- `/Users/codypjohnson/Desktop/Coding/diazOnDemand/DiazMartialArts/content/programs.ts`
-- `/Users/codypjohnson/Desktop/Coding/diazOnDemand/DiazMartialArts/content/coaches.ts`
-- `/Users/codypjohnson/Desktop/Coding/diazOnDemand/DiazMartialArts/content/faq.ts`
-- `/Users/codypjohnson/Desktop/Coding/diazOnDemand/DiazMartialArts/content/schedule.ts`
-- `/Users/codypjohnson/Desktop/Coding/diazOnDemand/DiazMartialArts/content/upcoming.ts` (fallback list)
+- `content/site.ts`
+- `content/programs.ts`
+- `content/coaches.ts`
+- `content/faq.ts`
+- `content/schedule.ts`
+- `content/upcoming.ts` (fallback list)
 
 ## Schedule Setup
 
 `/schedule` ships with three sections:
 
-1. Weekly schedule table from `/content/schedule.ts`
+1. Weekly schedule table from `content/schedule.ts`
 2. Monthly Google Calendar embed
 3. Upcoming events list limited to the next 60 days
 
@@ -56,7 +57,7 @@ Environment variables:
   - Google Calendar embed URL for the monthly iframe section.
 - `NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL` (optional)
   - Public ICS URL used to fetch upcoming events.
-  - If missing or unavailable, the site falls back to `/content/upcoming.ts`.
+  - If missing or unavailable, the site falls back to `content/upcoming.ts`.
 
 ## Contact Form (Formspree)
 
@@ -69,7 +70,7 @@ Set `NEXT_PUBLIC_FORMSPREE_ENDPOINT` in `.env.local`.
 
 This site uses Clerk for member authentication and acts as the account home base for Diaz on Demand.
 
-New routes:
+Routes:
 
 - `/sign-in`
 - `/sign-up`
@@ -92,7 +93,7 @@ Optional Diaz on Demand + entitlements env vars:
 
 Entitlement behavior:
 
-- Server helper: `/Users/codypjohnson/Desktop/Coding/diazOnDemand/DiazMartialArts/lib/entitlements.ts`
+- Server helper: `lib/entitlements.ts`
 - If `DIAZ_ENTITLEMENTS_API_URL` and `DIAZ_ENTITLEMENTS_API_KEY` are set, the server calls:
   - `GET {DIAZ_ENTITLEMENTS_API_URL}/me/entitlements`
   - Sends headers: `x-api-key` and `x-clerk-user-id`
@@ -100,20 +101,32 @@ Entitlement behavior:
   - In development, `DEV_FORCE_VOD_ENTITLEMENT=true` enables VOD entitlement.
   - Otherwise VOD defaults to inactive.
 
-## Diaz On Demand Entry Flow
+## SEO and Structured Data
 
-Use `/ondemand` as the website entry point into the separate on-demand app:
+- Shared metadata helper: `lib/seo.ts`
+- JSON-LD components:
+  - LocalBusiness (`components/LocalBusinessSchema.tsx`) on Home/Contact
+  - WebSite (`components/WebSiteSchema.tsx`) in root layout
+  - FAQPage (`components/FaqSchema.tsx`) on FAQ page
+- Dynamic routes:
+  - `app/robots.ts`
+  - `app/sitemap.ts`
 
-- Signed out: redirects to `/sign-in?redirect_url=/account`
-- Signed in with VOD entitlement: redirects to `{NEXT_PUBLIC_ONDEMAND_URL}/library`
-- Signed in without VOD entitlement: redirects to `{NEXT_PUBLIC_ONDEMAND_URL}/subscribe`
+## Accessibility Notes
 
-## Clerk SSO Notes (Website + Subdomain App)
+- Skip-to-content link in root layout
+- Keyboard-accessible mobile navigation and schedule disclosures
+- Contact form has field-level validation messages and ARIA associations
+- Focus-visible styles and reduced-motion support via global CSS
 
-- Configure both domains in Clerk dashboard (main website domain and the `ondemand` subdomain).
-- Use the same Clerk instance/keys in both projects.
-- Set allowed redirect URLs for both apps in Clerk.
-- This repo intentionally avoids custom cross-domain cookie logic; SSO behavior is controlled by Clerk configuration.
+## Visual Review Workflow
+
+Use two review passes for design updates:
+
+1. Run app locally and review desktop + mobile for core pages:
+   - `/`, `/programs`, `/schedule`, `/coaches`, `/pricing`, `/contact`, `/faq`
+2. Capture screenshots and compare before/after each pass.
+3. Confirm no regressions in spacing, hierarchy, contrast, and nav/account entry points.
 
 ## Vercel Deploy
 
@@ -126,5 +139,7 @@ Use `/ondemand` as the website entry point into the separate on-demand app:
 
 ```bash
 npm run lint
+npm run build
+npm run test
 npm run format:check
 ```

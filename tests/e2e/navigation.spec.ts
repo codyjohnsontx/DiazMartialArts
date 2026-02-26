@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-import { NAV_LINKS, PUBLIC_PAGES } from '../fixtures/site';
+import { MARKETING_NAV_LINKS, PUBLIC_PAGES } from '../fixtures/site';
 
 const publicPaths = PUBLIC_PAGES.map((p) => p.path);
 
@@ -18,15 +18,21 @@ test.describe('Navigation', () => {
     await expect(page).toHaveURL('/');
   });
 
-  for (const { href, label } of NAV_LINKS) {
+  for (const { href, label } of MARKETING_NAV_LINKS) {
     test(`desktop nav "${label}" navigates to ${href}`, async ({ page }) => {
       await page.goto('/');
-      // Use the primary nav (desktop)
       const nav = page.getByRole('navigation', { name: 'Primary' });
       await nav.getByRole('link', { name: label }).click();
       await expect(page).toHaveURL(href);
     });
   }
+
+  test('desktop nav "Diaz on Demand" redirects signed-out users to sign-in', async ({ page }) => {
+    await page.goto('/');
+    const nav = page.getByRole('navigation', { name: 'Primary' });
+    await nav.getByRole('link', { name: 'Diaz on Demand' }).click();
+    await expect(page).toHaveURL(/\/sign-in/);
+  });
 
   test('footer Privacy link → /privacy', async ({ page }) => {
     await page.goto('/');

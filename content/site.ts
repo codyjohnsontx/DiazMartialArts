@@ -14,16 +14,17 @@ export const site = {
     zip: '78666',
     country: 'US',
   },
+  geo: {
+    latitude: '29.8833',
+    longitude: '-97.9414',
+  },
+  serviceArea: ['San Marcos', 'Kyle', 'Buda', 'New Braunfels'],
   socials: {
     instagram: 'https://www.instagram.com/diazmartialarts_/',
     facebook: 'https://www.facebook.com/diazmasm',
     youtube: '',
   },
-  hours: [
-    'Mon-Fri: 7:00 AM - 9:00 PM',
-    'Sat: 8:00 AM - 1:00 PM',
-    'Sun: Closed',
-  ],
+  hours: ['Mon-Fri: 7:00 AM - 9:00 PM', 'Sat: 8:00 AM - 1:00 PM', 'Sun: Closed'],
   ctas: {
     primary: {
       label: 'Book a Free Trial',
