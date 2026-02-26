@@ -9,6 +9,7 @@ const config: Config = {
         ember: '#B42318',
         sand: '#F7F3ED',
         bronze: '#8A4B10',
+        gold: '#D4A017',
       },
       boxShadow: {
         ring: '0 10px 30px -12px rgba(16, 18, 20, 0.35)',

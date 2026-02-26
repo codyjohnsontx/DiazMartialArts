@@ -34,6 +34,40 @@ h4 {
   animation: rise 650ms ease-out both;
 }
 
+@layer components {
+  .nav-link {
+    position: relative;
+  }
+
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    height: 2px;
+    width: 100%;
+    background-color: #b42318;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 200ms ease;
+  }
+
+  .nav-link:hover::after {
+    transform: scaleX(1);
+  }
+
+  .card-hover {
+    transition:
+      transform 200ms ease,
+      box-shadow 200ms ease;
+  }
+
+  .card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px -8px rgba(16, 18, 20, 0.18);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
