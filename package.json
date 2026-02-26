@@ -8,7 +8,11 @@
     "start": "next start",
     "lint": "next lint",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed",
+    "test:report": "playwright show-report"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.14.4",
@@ -17,6 +21,7 @@
     "react-dom": "18.3.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@types/node": "20.17.24",
     "@types/react": "18.3.20",
     "@types/react-dom": "18.3.6",

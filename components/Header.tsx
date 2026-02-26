@@ -3,6 +3,7 @@
 import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { site } from '@/content/site';
@@ -20,6 +21,7 @@ const navItems = [
 ];
 
 export function Header() {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -31,17 +33,43 @@ export function Header() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
 
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  const isActive = (href: string) => {
+    if (href === '/') return pathname === '/';
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
+
   return (
-    <header className="sticky top-0 z-40 border-b border-black/10 bg-sand/95 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-black/10 bg-sand/95 shadow-soft backdrop-blur">
       <div className="mx-auto flex h-20 w-full max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="flex items-center gap-3 text-ink" aria-label="Diaz Martial Arts home">
-          <Image src="/diaz_logo.avif" alt="Diaz Martial Arts" width={36} height={36} priority />
+        <Link
+          href="/"
+          className="flex items-center gap-3 text-ink"
+          aria-label="Diaz Martial Arts home"
+        >
+          <Image
+            src="/diaz_logo.avif"
+            alt="Diaz Martial Arts"
+            width={40}
+            height={40}
+            priority
+            className="rounded-full"
+          />
           <span className="text-base font-bold tracking-wide">Diaz Martial Arts</span>
         </Link>
 
-        <nav className="hidden items-center gap-8 md:flex" aria-label="Primary">
+        <nav className="hidden items-center gap-7 md:flex" aria-label="Primary">
           {navItems.map((item) => (
-            <Link key={item.href} href={item.href} className="nav-link text-sm font-medium text-black/80 hover:text-ink">
+            <Link
+              key={item.href}
+              href={item.href}
+              data-active={isActive(item.href)}
+              aria-current={isActive(item.href) ? 'page' : undefined}
+              className="nav-link text-sm font-semibold text-black/80 hover:text-ink"
+            >
               {item.label}
             </Link>
           ))}
@@ -79,34 +107,54 @@ export function Header() {
         id="mobile-nav"
         className={cn(
           'md:hidden',
-          open ? 'pointer-events-auto max-h-[420px] border-t border-black/10 opacity-100' : 'pointer-events-none max-h-0 opacity-0',
+          open
+            ? 'pointer-events-auto max-h-[560px] border-t border-black/10 opacity-100'
+            : 'pointer-events-none max-h-0 opacity-0',
         )}
       >
-        <div className="space-y-2 bg-sand px-4 py-5 sm:px-6">
+        <nav aria-label="Mobile" className="space-y-2 bg-sand px-4 py-5 sm:px-6">
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="block rounded-lg px-3 py-2 text-base font-medium text-ink hover:bg-black/5"
+              className={cn(
+                'block rounded-lg px-3 py-2 text-base font-semibold text-ink hover:bg-black/5',
+                isActive(item.href) && 'bg-black/5',
+              )}
+              aria-current={isActive(item.href) ? 'page' : undefined}
               onClick={() => setOpen(false)}
             >
               {item.label}
             </Link>
           ))}
           <SignedOut>
-            <Button href="/sign-in?redirect_url=/account" className="mt-2 w-full" variant="secondary" onClick={() => setOpen(false)}>
+            <Button
+              href="/sign-in?redirect_url=/account"
+              className="mt-2 w-full"
+              variant="secondary"
+              onClick={() => setOpen(false)}
+            >
               Member Login
             </Button>
           </SignedOut>
           <SignedIn>
-            <Button href="/account" className="mt-2 w-full" variant="secondary" onClick={() => setOpen(false)}>
+            <Button
+              href="/account"
+              className="mt-2 w-full"
+              variant="secondary"
+              onClick={() => setOpen(false)}
+            >
               My Account
             </Button>
           </SignedIn>
-          <Button href={site.ctas.primary.href} className="mt-2 w-full" onClick={() => setOpen(false)}>
+          <Button
+            href={site.ctas.primary.href}
+            className="mt-2 w-full"
+            onClick={() => setOpen(false)}
+          >
             {site.ctas.primary.label}
           </Button>
-        </div>
+        </nav>
       </div>
     </header>
   );
