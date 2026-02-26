@@ -32,6 +32,19 @@ export function ContactForm() {
       return;
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setStatus('error');
+      setError('Please enter a valid email address.');
+      return;
+    }
+
+    if (message.length < 10) {
+      setStatus('error');
+      setError('Please include a message with at least 10 characters.');
+      return;
+    }
+
     setStatus('submitting');
 
     try {

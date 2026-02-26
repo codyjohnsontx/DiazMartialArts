@@ -47,9 +47,15 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" className={`${headingFont.variable} ${bodyFont.variable}`}>
       <body className="font-[var(--font-body)] antialiased">
         <ClerkProvider>
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:rounded-md focus:bg-ember focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+          >
+            Skip to main content
+          </a>
           <AnnouncementBar />
           <Header />
-          <main>{children}</main>
+          <main id="main-content">{children}</main>
           <Footer />
         </ClerkProvider>
       </body>

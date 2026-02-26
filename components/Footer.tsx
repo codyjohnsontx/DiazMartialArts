@@ -62,7 +62,7 @@ export function Footer() {
             <ul className="mt-3 space-y-2 text-sm text-white/75">
               {socialLinks.map((social) => (
                 <li key={social.label}>
-                  <a href={social.href} target="_blank" rel="noreferrer" className="transition hover:text-ember">
+                  <a href={social.href} target="_blank" rel="noopener noreferrer" className="transition hover:text-ember">
                     {social.label}
                   </a>
                 </li>

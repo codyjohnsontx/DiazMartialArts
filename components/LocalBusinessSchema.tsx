@@ -21,6 +21,9 @@ export function LocalBusinessSchema() {
     openingHours: site.hours,
   };
 
+  // Safety: dangerouslySetInnerHTML is required for JSON-LD injection. The schema
+  // is built entirely from static content/site.ts — no user input is involved,
+  // so XSS is not a concern here.
   return (
     <script
       type="application/ld+json"
