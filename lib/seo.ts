@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 
+import { getPublicEnv } from '@/lib/env';
 import { site } from '@/content/site';
 
 type PageMetadataInput = {
@@ -13,6 +14,7 @@ type PageMetadataInput = {
 };
 
 const defaultImage = '/og-default.svg';
+const { siteUrl } = getPublicEnv();
 
 export function pageMetadata({
   title,
@@ -25,8 +27,8 @@ export function pageMetadata({
 }: PageMetadataInput): Metadata {
   const fullTitle = `${title} | ${site.name}`;
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-  const canonicalUrl = new URL(normalizedPath, site.url).toString();
-  const imageUrl = new URL(image, site.url).toString();
+  const canonicalUrl = new URL(normalizedPath, siteUrl).toString();
+  const imageUrl = new URL(image, siteUrl).toString();
 
   return {
     title: fullTitle,

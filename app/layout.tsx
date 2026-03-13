@@ -7,6 +7,7 @@ import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { WebSiteSchema } from '@/components/WebSiteSchema';
 import { site } from '@/content/site';
+import { getPublicEnv, getRequiredClerkEnv } from '@/lib/env';
 
 import './globals.css';
 
@@ -21,21 +22,27 @@ const bodyFont = Manrope({
   variable: '--font-body',
 });
 
+const { siteUrl } = getPublicEnv();
+const { publishableKey } = getRequiredClerkEnv();
+
 export const metadata: Metadata = {
-  metadataBase: new URL(site.url),
+  metadataBase: new URL(siteUrl),
   title: {
     default: site.name,
     template: `%s | ${site.name}`,
   },
   description: site.description,
+  icons: {
+    icon: '/diaz_logo.avif',
+  },
   alternates: {
-    canonical: site.url,
+    canonical: siteUrl,
   },
   openGraph: {
     title: site.name,
     description: site.description,
     type: 'website',
-    url: site.url,
+    url: siteUrl,
     images: [{ url: '/og-default.svg', alt: `${site.name} OpenGraph image` }],
   },
   twitter: {
@@ -50,7 +57,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" className={`${headingFont.variable} ${bodyFont.variable}`}>
       <body className="font-[var(--font-body)] antialiased">
-        <ClerkProvider>
+        <ClerkProvider publishableKey={publishableKey}>
           <WebSiteSchema />
           <a
             href="#main-content"

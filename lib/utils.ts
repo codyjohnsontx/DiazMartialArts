@@ -1,10 +1,11 @@
+import { getPublicEnv } from '@/lib/env';
+
 export function cn(...classes: Array<string | false | null | undefined>): string {
   return classes.filter(Boolean).join(' ');
 }
 
 export function toAbsoluteUrl(path: string): string {
-  const base = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-  return new URL(path, base).toString();
+  return new URL(path, getPublicEnv().siteUrl).toString();
 }
 
 export function formatDateTimeRange(start: Date, end?: Date): string {

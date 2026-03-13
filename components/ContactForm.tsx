@@ -2,12 +2,15 @@
 
 import { FormEvent, useState } from 'react';
 
+import { getPublicEnv } from '@/lib/env';
+
 type Status = 'idle' | 'submitting' | 'success' | 'error';
 type FieldName = 'name' | 'email' | 'phone' | 'message';
 type FieldErrors = Partial<Record<FieldName, string>>;
 
+const { formspreeEndpoint: endpoint } = getPublicEnv();
+
 export function ContactForm() {
-  const endpoint = process.env.NEXT_PUBLIC_FORMSPREE_ENDPOINT;
   const [status, setStatus] = useState<Status>('idle');
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState('');
