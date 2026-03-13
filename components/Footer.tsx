@@ -5,7 +5,7 @@ import { site } from '@/content/site';
 const quickLinks = [
   { href: '/programs', label: 'Programs' },
   { href: '/schedule', label: 'Schedule' },
-  { href: '/pricing', label: 'Pricing' },
+  { href: '/announcements', label: 'Announcements' },
   { href: '/faq', label: 'FAQ' },
   { href: '/contact', label: 'Contact' },
   { href: '/account', label: 'My Account' },

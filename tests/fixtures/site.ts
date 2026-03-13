@@ -6,7 +6,7 @@ export const NAV_LINKS = [
   { href: '/programs', label: 'Programs' },
   { href: '/schedule', label: 'Schedule' },
   { href: '/coaches', label: 'Coaches' },
-  { href: '/pricing', label: 'Pricing' },
+  { href: '/announcements', label: 'Announcements' },
   { href: '/contact', label: 'Contact' },
   { href: '/ondemand', label: 'Diaz on Demand' },
 ];
@@ -18,7 +18,7 @@ export const PUBLIC_PAGES: Array<{ path: string; heading: string }> = [
   { path: '/programs', heading: 'Programs' },
   { path: '/schedule', heading: 'Schedule' },
   { path: '/coaches', heading: 'Coaches' },
-  { path: '/pricing', heading: 'Pricing' },
+  { path: '/announcements', heading: 'Announcements' },
   { path: '/contact', heading: 'Contact' },
   { path: '/faq', heading: 'FAQ' },
   { path: '/privacy', heading: 'Privacy' },

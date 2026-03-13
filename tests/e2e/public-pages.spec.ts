@@ -21,13 +21,10 @@ test.describe('Coaches page details', () => {
   });
 });
 
-test.describe('Pricing page details', () => {
-  test('shows all three plan names', async ({ page }) => {
-    await page.goto('/pricing');
-    await expect(page.getByRole('heading', { name: 'Essentials' })).toBeVisible();
-    // Use heading role to avoid matching "• Unlimited classes" list item
-    await expect(page.getByRole('heading', { name: 'Unlimited' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Kids Program' })).toBeVisible();
+test.describe('Announcements page details', () => {
+  test('shows Announcements heading', async ({ page }) => {
+    await page.goto('/announcements');
+    await expect(page.getByRole('heading', { name: 'Announcements', level: 1 })).toBeVisible();
   });
 });
 

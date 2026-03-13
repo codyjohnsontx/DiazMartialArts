@@ -1,0 +1,73 @@
+import { Card } from '@/components/Card';
+import { Section } from '@/components/Section';
+import { cn } from '@/lib/utils';
+import { pageMetadata } from '@/lib/seo';
+import { getAnnouncements } from '@/lib/sanity';
+
+export const dynamic = 'force-dynamic';
+
+export const metadata = pageMetadata({
+  title: 'Announcements',
+  description:
+    'Upcoming events, tournaments, and seminars at Diaz Martial Arts in San Marcos, Texas.',
+  path: '/announcements',
+  keywords: [
+    'martial arts events san marcos',
+    'bjj tournament',
+    'martial arts seminar texas',
+  ],
+});
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+
+const buttonClasses =
+  'inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-ink text-white hover:bg-black focus-visible:outline-ink shadow-soft';
+
+export default async function AnnouncementsPage() {
+  const announcements = await getAnnouncements();
+
+  return (
+    <Section
+      title="Announcements"
+      titleAs="h1"
+      eyebrow="Events & Flyers"
+      description="Upcoming tournaments, seminars, and promotions at Diaz Martial Arts."
+    >
+      {announcements.length === 0 ? (
+        <Card>
+          <p className="text-sm text-black/70">Check back soon for upcoming event flyers.</p>
+        </Card>
+      ) : (
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          {announcements.map((item) => (
+            <Card key={item._id} className="flex flex-col gap-3">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-bronze">
+                {formatDate(item.eventDate)}
+              </p>
+              <h2 className="text-xl font-bold text-ink">{item.title}</h2>
+              {item.description && (
+                <p className="text-sm text-black/75">{item.description}</p>
+              )}
+              {item.pdfUrl && (
+                <a
+                  href={item.pdfUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={cn(buttonClasses, 'mt-auto self-start')}
+                >
+                  View Flyer
+                </a>
+              )}
+            </Card>
+          ))}
+        </div>
+      )}
+    </Section>
+  );
+}
