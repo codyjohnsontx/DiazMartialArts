@@ -29,8 +29,8 @@ export async function getEntitlements(clerkUserId: string): Promise<Entitlements
           vod: Boolean(data.vod),
         };
       }
-    } catch {
-      // Fall through to local fallback.
+    } catch (err) {
+      console.warn('[entitlements] Failed to fetch entitlements from API; using local fallback.', err);
     }
   }
 

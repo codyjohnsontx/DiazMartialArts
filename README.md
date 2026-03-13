@@ -89,10 +89,9 @@ Required auth env vars:
 - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
 - `CLERK_SECRET_KEY`
 
-Required Vercel examples:
+Vercel environment examples:
 
 - `NEXT_PUBLIC_SITE_URL=https://diazmartialarts.vercel.app`
-- `NEXT_PUBLIC_ONDEMAND_URL=https://ondemand.diazmartialarts.com`
 - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_...`
 - `CLERK_SECRET_KEY=sk_live_...`
 

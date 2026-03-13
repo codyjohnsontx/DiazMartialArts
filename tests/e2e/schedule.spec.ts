@@ -12,11 +12,12 @@ test.describe('Schedule page', () => {
   test('renders monthly calendar section', async ({ page }) => {
     await expect(page.getByRole('heading', { name: 'Monthly Calendar' })).toBeVisible();
 
-    if (process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_EMBED_URL) {
-      await expect(page.locator('iframe[title="Diaz Martial Arts monthly schedule"]')).toBeVisible();
-    } else {
-      await expect(page.getByText('Monthly calendar coming soon.')).toBeVisible();
-    }
+    // One of these is rendered depending on whether the embed URL is configured at build time.
+    await expect(
+      page
+        .locator('iframe[title="Diaz Martial Arts monthly schedule"]')
+        .or(page.getByText('Monthly calendar coming soon.')),
+    ).toBeVisible();
   });
 
   test('renders upcoming events section', async ({ page }) => {

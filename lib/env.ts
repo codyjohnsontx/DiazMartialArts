@@ -38,18 +38,26 @@ function parseAbsoluteUrl(name: string, value: string): string {
 
 function readSiteUrl(): string {
   const value = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (value) return parseAbsoluteUrl('NEXT_PUBLIC_SITE_URL', value);
 
-  if (!value) {
-    if (process.env.NODE_ENV !== 'production') {
-      return DEFAULT_LOCAL_SITE_URL;
-    }
-
-    throw new Error(
-      '[env] Missing NEXT_PUBLIC_SITE_URL. Set it to the public site URL, for example https://diazmartialarts.vercel.app',
-    );
+  if (process.env.NODE_ENV !== 'production') {
+    return DEFAULT_LOCAL_SITE_URL;
   }
 
-  return parseAbsoluteUrl('NEXT_PUBLIC_SITE_URL', value);
+  // Server-side: Vercel sets VERCEL_URL automatically on all deployments (without protocol).
+  if (typeof window === 'undefined') {
+    const vercelUrl = process.env.VERCEL_URL?.trim();
+    if (vercelUrl) return `https://${vercelUrl}`;
+  }
+
+  // Client-side browser: derive origin from the current page.
+  if (typeof window !== 'undefined') {
+    return window.location.origin;
+  }
+
+  throw new Error(
+    '[env] Missing NEXT_PUBLIC_SITE_URL. Set it to the public site URL, for example https://diazmartialarts.vercel.app',
+  );
 }
 
 function readOptionalUrl(name: string, value: string | undefined): string | undefined {
