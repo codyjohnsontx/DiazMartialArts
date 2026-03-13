@@ -90,7 +90,7 @@ function readPublicEnv(): PublicEnv {
   return cachedPublicEnv;
 }
 
-function readRequiredString(name: string, example: string): string {
+export function readRequiredString(name: string, example: string): string {
   const value = process.env[name]?.trim();
 
   if (!value) {

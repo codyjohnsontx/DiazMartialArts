@@ -19,7 +19,9 @@ export const metadata = pageMetadata({
 });
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('en-US', {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -30,7 +32,12 @@ const buttonClasses =
   'inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-ink text-white hover:bg-black focus-visible:outline-ink shadow-soft';
 
 export default async function AnnouncementsPage() {
-  const announcements = await getAnnouncements();
+  let announcements: Awaited<ReturnType<typeof getAnnouncements>> = [];
+  try {
+    announcements = await getAnnouncements();
+  } catch (err) {
+    console.error('[AnnouncementsPage] Failed to fetch announcements:', err);
+  }
 
   return (
     <Section
