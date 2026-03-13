@@ -26,10 +26,16 @@ test.describe('Contact page', () => {
     await expect(page.getByLabel('Message')).toHaveValue('This is a test message.');
   });
 
-  test('submitting empty form shows error', async ({ page }) => {
+  test('submitting empty form shows a helpful error state', async ({ page }) => {
     await page.getByRole('button', { name: 'Send Message' }).click();
-    // Either missing endpoint message or validation message should appear
-    await expect(page.locator('p[aria-live="polite"]')).not.toBeEmpty();
+
+    if (process.env.NEXT_PUBLIC_FORMSPREE_ENDPOINT) {
+      await expect(page.getByText(/Please correct the highlighted fields/i)).toBeVisible();
+    } else {
+      await expect(
+        page.getByText(/Add NEXT_PUBLIC_FORMSPREE_ENDPOINT to enable form submissions/i),
+      ).toBeVisible();
+    }
   });
 
   test('"Visit the academy" and "San Marcos" visible', async ({ page }) => {

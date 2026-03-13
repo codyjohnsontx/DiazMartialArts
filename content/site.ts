@@ -1,9 +1,13 @@
+import { getPublicEnv } from '@/lib/env';
+
+const publicEnv = getPublicEnv();
+
 export const site = {
   name: 'Diaz Martial Arts',
   tagline: 'Martial arts training for kids, teens, and adults in a disciplined, welcoming gym.',
   description:
     'Diaz Martial Arts offers Brazilian Jiu Jitsu, Muay Thai, Karate, self-defense, and youth programs focused on confidence, skill, and community.',
-  url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+  url: publicEnv.siteUrl,
   phone: '(512) 392-4763',
   phoneHref: 'tel:+15123924763',
   email: 'diazmartialarts@gmail.com',

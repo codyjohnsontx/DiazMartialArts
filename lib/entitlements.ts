@@ -1,17 +1,15 @@
 import 'server-only';
 
+import { getAppEnv } from '@/lib/env';
+
 export type Entitlements = {
   gymMember: boolean;
   vod: boolean;
 };
 
-function toBoolean(value: string | undefined): boolean {
-  return value?.toLowerCase() === 'true';
-}
-
 export async function getEntitlements(clerkUserId: string): Promise<Entitlements> {
-  const apiUrl = process.env.DIAZ_ENTITLEMENTS_API_URL;
-  const apiKey = process.env.DIAZ_ENTITLEMENTS_API_KEY;
+  const { entitlementsApiUrl: apiUrl, entitlementsApiKey: apiKey, devForceVodEntitlement } =
+    getAppEnv();
 
   if (apiUrl && apiKey) {
     try {
@@ -36,11 +34,10 @@ export async function getEntitlements(clerkUserId: string): Promise<Entitlements
     }
   }
 
-  const forceVod = process.env.NODE_ENV === 'development' ? toBoolean(process.env.DEV_FORCE_VOD_ENTITLEMENT) : false;
+  const forceVod = process.env.NODE_ENV === 'development' ? devForceVodEntitlement : false;
 
   return {
-    // TODO: Replace with real gym membership lookup from your business system.
-    gymMember: true,
+    gymMember: false,
     vod: forceVod,
   };
 }

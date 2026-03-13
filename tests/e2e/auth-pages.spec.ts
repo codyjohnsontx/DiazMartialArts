@@ -13,14 +13,4 @@ test.describe('Auth pages', () => {
     await expect(page.getByRole('heading', { name: /Create Account/i })).toBeVisible();
     await expect(page.locator('[class*="cl-"]').first()).toBeVisible();
   });
-
-  test('/account (unauthenticated) redirects to sign-in', async ({ page }) => {
-    await page.goto('/account');
-    await expect(page).toHaveURL(/sign-in/);
-  });
-
-  test('/ondemand (unauthenticated) redirects to sign-in', async ({ page }) => {
-    await page.goto('/ondemand');
-    await expect(page).toHaveURL(/sign-in/);
-  });
 });

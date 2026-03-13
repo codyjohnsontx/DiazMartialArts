@@ -1,4 +1,5 @@
 import { upcomingItems } from '@/content/upcoming';
+import { getPublicEnv } from '@/lib/env';
 
 export type UpcomingEvent = {
   id: string;
@@ -123,7 +124,7 @@ function fallbackUpcoming(): UpcomingEvent[] {
 }
 
 export async function getUpcomingEvents(): Promise<{ source: 'ics' | 'fallback'; events: UpcomingEvent[] }> {
-  const icsUrl = process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL;
+  const { googleCalendarIcsUrl: icsUrl } = getPublicEnv();
 
   if (!icsUrl) {
     return { source: 'fallback', events: fallbackUpcoming() };

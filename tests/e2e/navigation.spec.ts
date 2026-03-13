@@ -19,7 +19,8 @@ test.describe('Navigation', () => {
   });
 
   for (const { href, label } of MARKETING_NAV_LINKS) {
-    test(`desktop nav "${label}" navigates to ${href}`, async ({ page }) => {
+    test(`desktop nav "${label}" navigates to ${href}`, async ({ page }, testInfo) => {
+      test.skip(testInfo.project.name === 'Mobile', 'Desktop nav is hidden on mobile viewports.');
       await page.goto('/');
       const nav = page.getByRole('navigation', { name: 'Primary' });
       await nav.getByRole('link', { name: label }).click();
@@ -27,7 +28,11 @@ test.describe('Navigation', () => {
     });
   }
 
-  test('desktop nav "Diaz on Demand" redirects signed-out users to sign-in', async ({ page }) => {
+  test('desktop nav "Diaz on Demand" redirects signed-out users to sign-in', async (
+    { page },
+    testInfo,
+  ) => {
+    test.skip(testInfo.project.name === 'Mobile', 'Desktop nav is hidden on mobile viewports.');
     await page.goto('/');
     const nav = page.getByRole('navigation', { name: 'Primary' });
     await nav.getByRole('link', { name: 'Diaz on Demand' }).click();

@@ -32,6 +32,12 @@ npm run dev
 
 Site runs at `http://localhost:3000`.
 
+Environment validation notes:
+
+- `NEXT_PUBLIC_SITE_URL` must be a full absolute URL in Preview/Production.
+- `NEXT_PUBLIC_ONDEMAND_URL`, if set, must also be a full absolute URL.
+- Missing or invalid Clerk/site URL env vars fail early with explicit messages.
+
 ## Editable Content Files
 
 All primary content is in `content/`:
@@ -82,6 +88,13 @@ Required auth env vars:
 
 - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
 - `CLERK_SECRET_KEY`
+
+Required Vercel examples:
+
+- `NEXT_PUBLIC_SITE_URL=https://diazmartialarts.vercel.app`
+- `NEXT_PUBLIC_ONDEMAND_URL=https://ondemand.diazmartialarts.com`
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_...`
+- `CLERK_SECRET_KEY=sk_live_...`
 
 Optional Diaz on Demand + entitlements env vars:
 
@@ -135,11 +148,29 @@ Use two review passes for design updates:
 3. Add environment variables from `.env.example` in Vercel project settings.
 4. Deploy.
 
+## Preview-to-Production Release Checklist
+
+1. `npm install`
+2. `npm run lint`
+3. `npm run build`
+4. `npm run test:smoke`
+5. Push branch and confirm Vercel preview is green.
+6. Manually verify:
+   - `/`
+   - `/pricing`
+   - `/schedule`
+   - `/contact`
+   - `/sign-in`
+   - `/account` while signed out
+   - `/ondemand` while signed out
+7. Promote only after preview validation passes.
+
 ## Quality Scripts
 
 ```bash
 npm run lint
 npm run build
 npm run test
+npm run test:smoke
 npm run format:check
 ```

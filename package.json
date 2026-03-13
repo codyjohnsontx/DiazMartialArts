@@ -10,13 +10,14 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "playwright test",
+    "test:smoke": "npm run build && PLAYWRIGHT_USE_START=1 playwright test tests/e2e/home.spec.ts tests/e2e/navigation.spec.ts tests/e2e/mobile-nav.spec.ts tests/e2e/contact.spec.ts tests/e2e/auth-pages.spec.ts tests/e2e/account-gate.spec.ts tests/e2e/ondemand-route.spec.ts tests/e2e/schedule.spec.ts",
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
     "test:report": "playwright show-report"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.14.4",
-    "next": "14.2.25",
+    "next": "14.2.35",
     "react": "18.3.1",
     "react-dom": "18.3.1"
   },
@@ -27,7 +28,7 @@
     "@types/react-dom": "18.3.6",
     "autoprefixer": "10.4.20",
     "eslint": "8.57.1",
-    "eslint-config-next": "14.2.25",
+    "eslint-config-next": "14.2.35",
     "postcss": "8.5.3",
     "prettier": "3.5.3",
     "tailwindcss": "3.4.17",

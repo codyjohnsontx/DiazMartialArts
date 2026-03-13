@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { AccountStatusCard } from '@/components/AccountStatusCard';
 import { Card } from '@/components/Card';
 import { Section } from '@/components/Section';
+import { getPublicEnv } from '@/lib/env';
 import { getEntitlements } from '@/lib/entitlements';
 import { pageMetadata } from '@/lib/seo';
 
@@ -29,8 +30,7 @@ export default async function AccountPage() {
   }
 
   const [user, entitlements] = await Promise.all([currentUser(), getEntitlements(userId)]);
-  const ondemandUrl =
-    process.env.NEXT_PUBLIC_ONDEMAND_URL || 'https://ondemand.diazmartialarts.com';
+  const { ondemandUrl } = getPublicEnv();
 
   const memberName = user?.fullName || user?.firstName || 'Member';
   const memberEmail = user?.primaryEmailAddress?.emailAddress || 'No email on file';
@@ -70,9 +70,6 @@ export default async function AccountPage() {
             <div className="mt-3 space-y-3 text-sm text-black/75">
               <p>Gym Membership: {entitlements.gymMember ? 'Active' : 'Inactive'}</p>
               <p>Diaz on Demand: {entitlements.vod ? 'Active' : 'Inactive'}</p>
-              <p className="text-xs text-black/60">
-                TODO: Connect gym membership status to live membership records.
-              </p>
             </div>
           </Card>
 

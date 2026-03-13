@@ -1,7 +1,9 @@
+import { getPublicEnv } from '@/lib/env';
+
 import { Card } from './Card';
 
 export function MonthlyCalendarEmbed() {
-  const embedUrl = process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_EMBED_URL;
+  const { googleCalendarEmbedUrl: embedUrl } = getPublicEnv();
 
   if (!embedUrl) {
     return (
