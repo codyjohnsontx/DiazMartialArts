@@ -19,7 +19,12 @@ export const metadata = pageMetadata({
 });
 
 function formatDate(iso: string) {
-  const d = new Date(iso);
+  // Date-only strings (YYYY-MM-DD) parse as UTC midnight, which shifts the
+  // displayed day in US timezones. Construct using local components instead.
+  const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(iso);
+  const d = dateOnly
+    ? (() => { const [y, m, day] = iso.split('-').map(Number); return new Date(y, m - 1, day); })()
+    : new Date(iso);
   if (isNaN(d.getTime())) return '';
   return d.toLocaleDateString('en-US', {
     year: 'numeric',
@@ -33,10 +38,12 @@ const buttonClasses =
 
 export default async function AnnouncementsPage() {
   let announcements: Awaited<ReturnType<typeof getAnnouncements>> = [];
+  let fetchError = false;
   try {
     announcements = await getAnnouncements();
   } catch (err) {
     console.error('[AnnouncementsPage] Failed to fetch announcements:', err);
+    fetchError = true;
   }
 
   return (
@@ -46,7 +53,13 @@ export default async function AnnouncementsPage() {
       eyebrow="Events & Flyers"
       description="Upcoming tournaments, seminars, and promotions at Diaz Martial Arts."
     >
-      {announcements.length === 0 ? (
+      {fetchError ? (
+        <Card>
+          <p className="text-sm text-black/70">
+            Unable to load announcements right now. Please check back soon.
+          </p>
+        </Card>
+      ) : announcements.length === 0 ? (
         <Card>
           <p className="text-sm text-black/70">Check back soon for upcoming event flyers.</p>
         </Card>
