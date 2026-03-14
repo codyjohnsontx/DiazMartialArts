@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { Card } from '@/components/Card';
 import { Section } from '@/components/Section';
 import { cn } from '@/lib/utils';
@@ -64,9 +65,9 @@ export default async function AnnouncementsPage() {
           <p className="text-sm text-black/70">Check back soon for upcoming event flyers.</p>
         </Card>
       ) : (
-        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <div className="mx-auto flex max-w-2xl flex-col gap-8">
           {announcements.map((item) => (
-            <Card key={item._id} className="flex flex-col gap-3">
+            <Card key={item._id} className="flex flex-col gap-4">
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-bronze">
                 {formatDate(item.eventDate)}
               </p>
@@ -74,14 +75,33 @@ export default async function AnnouncementsPage() {
               {item.description && (
                 <p className="text-sm text-black/75">{item.description}</p>
               )}
+              {item.previewImageUrl ? (
+                <Image
+                  src={item.previewImageUrl}
+                  alt={item.title}
+                  width={800}
+                  height={600}
+                  className="w-full rounded-lg"
+                  style={{ height: 'auto' }}
+                />
+              ) : item.pdfUrl ? (
+                <div className="aspect-[17/22] w-full overflow-hidden rounded-lg">
+                  <iframe
+                    src={`${item.pdfUrl}#toolbar=0&navpanes=0`}
+                    title={item.title}
+                    className="h-full w-full border-0"
+                    loading="lazy"
+                  />
+                </div>
+              ) : null}
               {item.pdfUrl && (
                 <a
                   href={item.pdfUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={cn(buttonClasses, 'mt-auto self-start')}
+                  className={cn(buttonClasses, 'self-start')}
                 >
-                  View Flyer
+                  View / Download Flyer
                 </a>
               )}
             </Card>

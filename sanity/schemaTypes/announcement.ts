@@ -31,6 +31,13 @@ export const announcement = defineType({
       options: { accept: '.pdf' },
       validation: (Rule) => Rule.required(),
     }),
+    defineField({
+      name: 'previewImage',
+      title: 'Preview Image',
+      type: 'image',
+      description: 'Optional JPG/PNG preview of the flyer. When provided, shown inline instead of the PDF embed.',
+      options: { hotspot: true },
+    }),
   ],
   preview: {
     select: {

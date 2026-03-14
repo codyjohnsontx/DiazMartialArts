@@ -9,6 +9,7 @@ export type Announcement = {
   eventDate: string; // ISO 8601
   description?: string;
   pdfUrl: string;
+  previewImageUrl?: string;
 };
 
 export const sanityClient = createClient({
@@ -29,7 +30,8 @@ export async function getAnnouncements(): Promise<Announcement[]> {
       title,
       eventDate,
       description,
-      "pdfUrl": pdfFile.asset->url
+      "pdfUrl": pdfFile.asset->url,
+      "previewImageUrl": previewImage.asset->url
     }`,
     {},
     { cache: 'no-store' },

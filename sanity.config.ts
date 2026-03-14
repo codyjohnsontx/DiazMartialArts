@@ -8,6 +8,7 @@ export default defineConfig({
   title: 'Diaz Martial Arts',
   projectId: 'v0x4reaj',
   dataset: 'production',
+  basePath: '/studio',
   plugins: [structureTool()],
   schema: {
     types: schemaTypes,
