@@ -42,8 +42,8 @@ export const site = {
   announcement: {
     enabled: true,
     message: 'Two months free with purchase of GI.',
-    link: '/pricing',
-    linkLabel: 'See pricing',
+    link: '/announcements',
+    linkLabel: 'See announcements',
   },
 };
 

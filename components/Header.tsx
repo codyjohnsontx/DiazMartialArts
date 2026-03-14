@@ -15,7 +15,7 @@ const navItems = [
   { href: '/programs', label: 'Programs' },
   { href: '/schedule', label: 'Schedule' },
   { href: '/coaches', label: 'Coaches' },
-  { href: '/pricing', label: 'Pricing' },
+  { href: '/announcements', label: 'Announcements' },
   { href: '/contact', label: 'Contact' },
   { href: '/ondemand', label: 'Diaz on Demand' },
 ];

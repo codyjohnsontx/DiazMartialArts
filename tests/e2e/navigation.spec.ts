@@ -51,9 +51,9 @@ test.describe('Navigation', () => {
     await expect(page).toHaveURL('/terms');
   });
 
-  test('announcement bar "See pricing" link → /pricing', async ({ page }) => {
+  test('announcement bar "See announcements" link → /announcements', async ({ page }) => {
     await page.goto('/');
-    await page.getByRole('link', { name: 'See pricing' }).click();
-    await expect(page).toHaveURL('/pricing');
+    await page.getByRole('link', { name: 'See announcements' }).click();
+    await expect(page).toHaveURL('/announcements');
   });
 });
