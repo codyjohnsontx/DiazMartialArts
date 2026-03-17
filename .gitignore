@@ -4,6 +4,7 @@
 # next
 /.next/
 /out/
+/dist/
 
 # production
 /build
@@ -31,6 +32,9 @@ pnpm-debug.log*
 # playwright
 /playwright-report/
 /test-results/
+
+# sanity
+/.sanity/
 
 # typescript
 *.tsbuildinfo
