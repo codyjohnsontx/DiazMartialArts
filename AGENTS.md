@@ -35,21 +35,25 @@ If larger work is required:
 - wait for approval
 
 Project Structure
-Example structure:
+This repository uses a Next.js App Router layout:
 
-src/
+app/
+app/api/
 components/
 lib/
-hooks/
-api/
 tests/
+public/
+content/
+sanity/
 
 Guidelines:
 - UI -> components
 - business logic -> lib
-- hooks -> hooks
-- API handlers -> api
+- API handlers -> app/api
 - tests -> tests
+- static assets -> public
+- editable site content -> content
+- Sanity CMS config and schema -> sanity
 
 Do not create new top-level folders unless required.
 
