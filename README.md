@@ -1,6 +1,8 @@
 # Diaz Martial Arts Website
 
-Production-ready Next.js marketing and member-entry website for Diaz Martial Arts, deployable to Vercel.
+Standalone Next.js marketing and member-entry website for Diaz Martial Arts.
+
+This repository is separate from the Diaz on Demand VOD product. The website links into the VOD app by URL; it does not share workspace code, packages, or repo tooling with the VOD system.
 
 ## Stack
 
@@ -74,7 +76,7 @@ Set `NEXT_PUBLIC_FORMSPREE_ENDPOINT` in `.env.local`.
 
 ## Member Login + Account Hub (Clerk)
 
-This site uses Clerk for member authentication and acts as the account home base for Diaz on Demand.
+This site uses Clerk for member authentication and acts as the member-facing website entry point for Diaz Martial Arts. It can also route members into the separate Diaz on Demand app.
 
 Routes:
 
@@ -142,7 +144,7 @@ Use two review passes for design updates:
 
 ## Vercel Deploy
 
-1. Push repo to GitHub.
+1. Push this repo to GitHub.
 2. Import project into Vercel.
 3. Add environment variables from `.env.example` in Vercel project settings.
 4. Deploy.
@@ -173,3 +175,9 @@ npm run test
 npm run test:smoke
 npm run format:check
 ```
+
+## Repo Boundary
+
+- Website repo: `git@github.com:codyjohnsontx/DiazMartialArts.git`
+- VOD repo: `git@github.com:codyjohnsontx/DiazOnDemand.git`
+- Integration between the two is URL-based only

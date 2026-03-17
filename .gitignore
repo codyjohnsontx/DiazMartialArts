@@ -4,6 +4,7 @@
 # next
 /.next/
 /out/
+/dist/
 
 # production
 /build
@@ -21,6 +22,7 @@ pnpm-debug.log*
 # env
 .env*
 !.env.example
+.env.local
 
 # vercel
 .vercel
@@ -31,6 +33,9 @@ pnpm-debug.log*
 # playwright
 /playwright-report/
 /test-results/
+
+# sanity
+/.sanity/
 
 # typescript
 *.tsbuildinfo
