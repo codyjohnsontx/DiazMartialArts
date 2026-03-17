@@ -71,7 +71,9 @@ npx tsc --noEmit
 Before finishing work run:
 - npm run build
 - npm run lint
+- npm run test
 
+If tests are skipped, state why and get user approval.
 Do not claim tests passed unless executed.
 
 Editing Rules
@@ -155,7 +157,7 @@ Agents must not automatically:
 - amend commits
 - delete branches
 
-Do not run git commands if the working tree is dirty.
+Do not run mutating git commands if the working tree is dirty. Read-only checks such as `git status` and `git log --oneline main..HEAD` are allowed.
 
 Pull Request Workflow
 When preparing a PR:
@@ -210,6 +212,7 @@ A task is complete when:
 - requested change is implemented
 - build succeeds
 - lint passes
+- tests pass, or the user explicitly approves skipping them with a stated reason
 - project conventions are followed
 - no unrelated files were modified
 
