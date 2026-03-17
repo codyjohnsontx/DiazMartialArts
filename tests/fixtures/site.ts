@@ -15,6 +15,7 @@ export const MARKETING_NAV_LINKS = NAV_LINKS.filter((link) => link.href !== '/on
 
 export const PUBLIC_PAGES: Array<{ path: string; heading: string }> = [
   { path: '/', heading: 'Martial Arts for Real' },
+  { path: '/pricing', heading: 'Pricing' },
   { path: '/programs', heading: 'Programs' },
   { path: '/schedule', heading: 'Schedule' },
   { path: '/coaches', heading: 'Coaches' },

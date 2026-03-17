@@ -7,7 +7,7 @@ test.describe('Public pages — HTTP 200 + heading + footer', () => {
     test(`${path} returns 200 and shows heading`, async ({ page }) => {
       const response = await page.goto(path);
       expect(response?.status()).toBe(200);
-      await expect(page.getByText(heading, { exact: false }).first()).toBeVisible();
+      await expect(page.getByRole('heading', { name: new RegExp(heading, 'i') }).first()).toBeVisible();
       await expect(page.getByRole('contentinfo')).toBeVisible();
     });
   }
@@ -36,8 +36,8 @@ test.describe('Schedule page details', () => {
 });
 
 test.describe('FAQ page details', () => {
-  test('renders at least one h3', async ({ page }) => {
+  test('renders at least one FAQ summary', async ({ page }) => {
     await page.goto('/faq');
-    await expect(page.locator('h3').first()).toBeVisible();
+    await expect(page.locator('details summary').first()).toBeVisible();
   });
 });
