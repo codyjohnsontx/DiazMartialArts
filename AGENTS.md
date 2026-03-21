@@ -1,8 +1,8 @@
-# AGENTS.md
-
 ## Purpose
 
-This file defines operational rules for AI coding agents working in this repository, including Claude Code, Cursor, Copilot, and Aider.
+This file is read automatically by **OpenAI Codex** and other agents (Cursor, Copilot, Aider). Rules here apply to all agent sessions in this repository.
+
+For Claude Code: this repo also has a [`CLAUDE.md`](./CLAUDE.md) which Claude Code reads automatically and contains the same rules.
 
 Agents must follow these instructions to produce safe, predictable, maintainable, minimal changes.
 
