@@ -19,7 +19,7 @@ export function CTABanner() {
             {site.address.city}, {site.address.state} {site.address.zip}
           </p>
           <p className="mt-1 text-xs text-white/55">
-            {site.hours[0]} · {site.hours[1]}
+            {site.hours.slice(0, 2).join(' · ')}
           </p>
         </div>
         <p className="mt-4 max-w-2xl text-base text-white/75">
@@ -27,8 +27,8 @@ export function CTABanner() {
         </p>
         <div className="mt-6 flex gap-3">
           <Button href={site.ctas.secondary.href}>{site.ctas.secondary.label}</Button>
-          <Button href="/coaches" variant="ghost">
-            Meet the Coaches
+          <Button href={site.ctas.coaches.href} variant="ghost">
+            {site.ctas.coaches.label}
           </Button>
         </div>
       </div>

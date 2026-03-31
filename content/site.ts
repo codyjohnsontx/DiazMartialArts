@@ -38,6 +38,10 @@ export const site = {
       label: 'View Schedule',
       href: '/schedule',
     },
+    coaches: {
+      label: 'Meet the Coaches',
+      href: '/coaches',
+    },
   },
   announcement: {
     enabled: true,
