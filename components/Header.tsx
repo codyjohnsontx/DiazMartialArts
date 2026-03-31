@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { site } from '@/content/site';
 import { cn } from '@/lib/utils';
 
 import { Button } from './Button';
@@ -47,7 +46,7 @@ export function Header() {
       <div className="mx-auto flex h-20 w-full max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link
           href="/"
-          className="flex items-center gap-3 text-ink"
+          className="flex shrink-0 items-center gap-3 text-ink"
           aria-label="Diaz Martial Arts home"
         >
           <Image
@@ -61,14 +60,14 @@ export function Header() {
           <span className="text-base font-bold tracking-wide">Diaz Martial Arts</span>
         </Link>
 
-        <nav className="hidden items-center gap-7 md:flex" aria-label="Primary">
+        <nav className="hidden items-center gap-5 lg:gap-6 md:flex" aria-label="Primary">
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
               data-active={isActive(item.href)}
               aria-current={isActive(item.href) ? 'page' : undefined}
-              className="nav-link text-sm font-semibold text-black/80 hover:text-ink"
+              className="nav-link whitespace-nowrap text-sm font-semibold text-black/80 hover:text-ink"
             >
               {item.label}
             </Link>
@@ -87,7 +86,6 @@ export function Header() {
             </Button>
             <UserButton afterSignOutUrl="/" />
           </SignedIn>
-          <Button href={site.ctas.primary.href}>{site.ctas.primary.label}</Button>
         </div>
 
         <button
@@ -147,13 +145,6 @@ export function Header() {
               My Account
             </Button>
           </SignedIn>
-          <Button
-            href={site.ctas.primary.href}
-            className="mt-2 w-full"
-            onClick={() => setOpen(false)}
-          >
-            {site.ctas.primary.label}
-          </Button>
         </nav>
       </div>
     </header>

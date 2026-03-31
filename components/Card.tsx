@@ -7,7 +7,7 @@ type CardProps = {
   interactive?: boolean;
 };
 
-export function Card({ children, className, id, interactive = true }: CardProps) {
+export function Card({ children, className, id, interactive = false }: CardProps) {
   return (
     <div
       id={id}

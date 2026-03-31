@@ -23,7 +23,7 @@ export default function CoachesPage() {
     >
       <div className="grid gap-5 md:grid-cols-3">
         {coaches.map((coach) => (
-          <Card key={coach.name} className="overflow-hidden p-0">
+          <Card key={coach.name} className="overflow-hidden p-0" interactive>
             <Image
               src={coach.image}
               alt={coach.name}
