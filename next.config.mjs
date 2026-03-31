@@ -9,11 +9,6 @@ const nextConfig = {
       },
     ],
   },
-  async redirects() {
-    return [
-      { source: '/pricing', destination: '/announcements', permanent: true },
-    ];
-  },
 };
 
 export default nextConfig;
