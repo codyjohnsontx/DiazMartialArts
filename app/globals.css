@@ -28,6 +28,10 @@ main {
   isolation: isolate;
 }
 
+main:has(.announcement-lightbox:target) {
+  isolation: auto;
+}
+
 h1,
 h2,
 h3,
