@@ -1,5 +1,4 @@
-import Image from 'next/image';
-
+import { AnnouncementFlyerGallery } from '@/components/AnnouncementFlyerGallery';
 import { Section } from '@/components/Section';
 import { pageMetadata } from '@/lib/seo';
 
@@ -55,45 +54,7 @@ export default function AnnouncementsPage() {
       eyebrow="Events Calendar"
       className="text-center [&>header]:mx-auto [&>header]:text-center [&>header>p]:justify-center"
     >
-      <div className="mx-auto flex max-w-5xl flex-col gap-8">
-        {flyers.map((flyer) => (
-          <div key={flyer.id}>
-            <a
-              href={`#${flyer.id}`}
-              aria-label={`Enlarge ${flyer.alt}`}
-              className="block cursor-zoom-in overflow-hidden rounded-lg border border-black/10 bg-white shadow-[0_20px_70px_-45px_rgba(16,18,20,0.45)] transition hover:-translate-y-0.5 hover:shadow-[0_28px_90px_-48px_rgba(16,18,20,0.55)]"
-            >
-              <Image
-                src={flyer.src}
-                alt={flyer.alt}
-                width={1650}
-                height={1275}
-                loading="eager"
-                className="h-auto w-full"
-              />
-            </a>
-
-            <a
-              id={flyer.id}
-              href="#"
-              aria-label={`Close enlarged ${flyer.alt}`}
-              className="announcement-lightbox fixed inset-0 z-[100] flex cursor-zoom-out items-center justify-center bg-black/85 p-4 opacity-0 pointer-events-none transition target:opacity-100 target:pointer-events-auto sm:p-8"
-            >
-              <span className="absolute right-4 top-4 rounded-full bg-white px-4 py-2 text-sm font-semibold text-ink shadow-soft sm:right-6 sm:top-6">
-                Close
-              </span>
-              <Image
-                src={flyer.src}
-                alt={flyer.alt}
-                width={1650}
-                height={1275}
-                loading="eager"
-                className="max-h-full w-auto max-w-full rounded-lg bg-white object-contain shadow-[0_30px_90px_rgba(0,0,0,0.45)]"
-              />
-            </a>
-          </div>
-        ))}
-      </div>
+      <AnnouncementFlyerGallery flyers={flyers} />
     </Section>
   );
 }

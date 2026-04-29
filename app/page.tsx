@@ -69,7 +69,7 @@ export default function HomePage() {
       >
         <div className="mx-auto max-w-3xl space-y-5 text-center">
           <div className="border-b border-black/10 pb-5">
-            <h2 className="text-xl font-bold text-ink">Clear coaching, not chaos</h2>
+            <h3 className="text-xl font-bold text-ink">Clear coaching, not chaos</h3>
             <p className="mx-auto mt-2 max-w-2xl text-sm leading-relaxed text-black/72">
               New students do better when the room feels structured. The class lineup here is built
               around defined tracks, age groups, and coach-guided progression instead of expecting
@@ -77,14 +77,14 @@ export default function HomePage() {
             </p>
           </div>
           <div className="border-b border-black/10 pb-5">
-            <h2 className="text-xl font-bold text-ink">One gym, multiple training paths</h2>
+            <h3 className="text-xl font-bold text-ink">One gym, multiple training paths</h3>
             <p className="mx-auto mt-2 max-w-2xl text-sm leading-relaxed text-black/72">
               Train across {programs.length} program tracks including BJJ, Muay Thai, karate,
               self-defense, tactical work, and youth classes without bouncing between separate gyms.
             </p>
           </div>
           <div className="pb-1">
-            <h2 className="text-xl font-bold text-ink">Built for families and busy adults</h2>
+            <h3 className="text-xl font-bold text-ink">Built for families and busy adults</h3>
             <p className="mx-auto mt-2 max-w-2xl text-sm leading-relaxed text-black/72">
               Morning, lunch, evening, and weekend options make it easier to stay consistent for
               students from {site.serviceArea.join(', ')} and the surrounding area.
