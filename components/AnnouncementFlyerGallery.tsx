@@ -76,13 +76,13 @@ export function AnnouncementFlyerGallery({ flyers }: AnnouncementFlyerGalleryPro
     }
   }
 
-  function renderFlyerButton(flyer: AnnouncementFlyer, isFeatured = false) {
+  function renderFlyerButton(flyer: AnnouncementFlyer, isFeatured = false, className = '') {
     return (
       <button
         key={flyer.id}
         type="button"
         aria-label={`Enlarge ${flyer.alt}`}
-        className="block h-full cursor-zoom-in overflow-hidden rounded-lg border border-black/10 bg-white p-0 text-left shadow-[0_20px_70px_-45px_rgba(16,18,20,0.45)] transition hover:-translate-y-0.5 hover:shadow-[0_28px_90px_-48px_rgba(16,18,20,0.55)]"
+        className={`block h-full w-full cursor-zoom-in overflow-hidden rounded-lg border border-black/10 bg-white p-0 text-left shadow-[0_20px_70px_-45px_rgba(16,18,20,0.45)] transition hover:-translate-y-0.5 hover:shadow-[0_28px_90px_-48px_rgba(16,18,20,0.55)] ${className}`}
         onClick={() => openFlyer(flyer.id)}
       >
         {isFeatured ? (
@@ -112,8 +112,8 @@ export function AnnouncementFlyerGallery({ flyers }: AnnouncementFlyerGalleryPro
 
   return (
     <>
-      <div className="mx-auto max-w-5xl space-y-8">
-        {featuredFlyer && renderFlyerButton(featuredFlyer, true)}
+      <div className="mx-auto max-w-6xl space-y-8">
+        {featuredFlyer && renderFlyerButton(featuredFlyer, true, 'mx-auto max-w-5xl')}
 
         {gridFlyers.length > 0 && (
           <div className="grid gap-8 md:grid-cols-2">
