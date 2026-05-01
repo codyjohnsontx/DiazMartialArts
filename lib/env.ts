@@ -8,7 +8,9 @@ export type AppEnv = {
   formspreeEndpoint?: string;
   entitlementsApiUrl?: string;
   entitlementsApiKey?: string;
+  entitlementsTimeoutMs: number;
   devForceVodEntitlement: boolean;
+  ondemandComingSoon: boolean;
 };
 
 type PublicEnv = Pick<
@@ -22,6 +24,7 @@ type PublicEnv = Pick<
 
 const DEFAULT_LOCAL_SITE_URL = 'http://localhost:3000';
 const DEFAULT_ONDEMAND_URL = 'https://ondemand.diazmartialarts.com';
+const DEFAULT_ENTITLEMENTS_TIMEOUT_MS = 5000;
 
 let cachedPublicEnv: PublicEnv | undefined;
 let cachedAppEnv: AppEnv | undefined;
@@ -64,6 +67,16 @@ function readOptionalUrl(name: string, value: string | undefined): string | unde
   const trimmed = value?.trim();
   if (!trimmed) return undefined;
   return parseAbsoluteUrl(name, trimmed);
+}
+
+function readPositiveInteger(name: string, value: string | undefined, fallback: number): number {
+  const trimmed = value?.trim();
+  if (!trimmed) return fallback;
+
+  const parsed = Number(trimmed);
+  if (Number.isInteger(parsed) && parsed > 0) return parsed;
+
+  throw new Error(`[env] ${name} must be a positive integer. Example: ${fallback}`);
 }
 
 function readPublicEnv(): PublicEnv {
@@ -122,7 +135,13 @@ export function getAppEnv(): AppEnv {
     clerkSecretKeyPresent: Boolean(clerkSecretKey),
     entitlementsApiUrl,
     entitlementsApiKey,
+    entitlementsTimeoutMs: readPositiveInteger(
+      'DIAZ_ENTITLEMENTS_TIMEOUT_MS',
+      process.env.DIAZ_ENTITLEMENTS_TIMEOUT_MS,
+      DEFAULT_ENTITLEMENTS_TIMEOUT_MS,
+    ),
     devForceVodEntitlement: process.env.DEV_FORCE_VOD_ENTITLEMENT?.toLowerCase() === 'true',
+    ondemandComingSoon: process.env.ONDEMAND_COMING_SOON?.trim().toLowerCase() === 'true',
   };
 
   return cachedAppEnv;

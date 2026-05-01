@@ -7,20 +7,32 @@ export type Entitlements = {
   vod: boolean;
 };
 
+const isDebugLoggingEnabled = process.env.NODE_ENV !== 'production';
+
 export async function getEntitlements(clerkUserId: string): Promise<Entitlements> {
-  const { entitlementsApiUrl: apiUrl, entitlementsApiKey: apiKey, devForceVodEntitlement } =
-    getAppEnv();
+  const {
+    entitlementsApiUrl: apiUrl,
+    entitlementsApiKey: apiKey,
+    entitlementsTimeoutMs,
+    devForceVodEntitlement,
+  } = getAppEnv();
 
   if (apiUrl && apiKey) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), entitlementsTimeoutMs);
+
     try {
-      const response = await fetch(`${apiUrl.replace(/\/$/, '')}/me/entitlements`, {
-        method: 'GET',
-        headers: {
-          'x-api-key': apiKey,
-          'x-clerk-user-id': clerkUserId,
+      const response = await fetch(
+        `${apiUrl.replace(/\/$/, '')}/users/${encodeURIComponent(clerkUserId)}/entitlements`,
+        {
+          method: 'GET',
+          headers: {
+            'x-diaz-api-key': apiKey,
+          },
+          cache: 'no-store',
+          signal: controller.signal,
         },
-        cache: 'no-store',
-      });
+      );
 
       if (response.ok) {
         const data = (await response.json()) as Partial<Entitlements>;
@@ -29,8 +41,40 @@ export async function getEntitlements(clerkUserId: string): Promise<Entitlements
           vod: Boolean(data.vod),
         };
       }
+
+      const body = await response.text();
+      const logDetails: Record<string, unknown> = {
+        status: response.status,
+        statusText: response.statusText,
+        bodyLength: body.length,
+        bodyTruncated: body.length > 500,
+      };
+
+      if (isDebugLoggingEnabled) {
+        const bodyPreview = body.length > 500 ? `${body.slice(0, 500)}...` : body;
+        logDetails.bodyPreview = bodyPreview;
+      }
+
+      console.warn('[entitlements] API returned a non-OK response; using local fallback.', logDetails);
     } catch (err) {
-      console.warn('[entitlements] Failed to fetch entitlements from API; using local fallback.', err);
+      if (err instanceof Error && err.name === 'AbortError') {
+        console.warn(
+          `[entitlements] API request timed out after ${entitlementsTimeoutMs}ms; using local fallback.`,
+        );
+      } else {
+        const logDetails: Record<string, unknown> = {
+          errorName: err instanceof Error ? err.name : 'UnknownError',
+        };
+
+        if (isDebugLoggingEnabled) {
+          logDetails.errorMessage = err instanceof Error ? err.message : 'Unknown entitlement fetch error';
+          logDetails.error = err;
+        }
+
+        console.warn('[entitlements] Failed to fetch entitlements from API; using local fallback.', logDetails);
+      }
+    } finally {
+      clearTimeout(timeout);
     }
   }
 
