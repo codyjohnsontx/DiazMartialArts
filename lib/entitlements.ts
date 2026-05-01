@@ -8,10 +8,17 @@ export type Entitlements = {
 };
 
 export async function getEntitlements(clerkUserId: string): Promise<Entitlements> {
-  const { entitlementsApiUrl: apiUrl, entitlementsApiKey: apiKey, devForceVodEntitlement } =
-    getAppEnv();
+  const {
+    entitlementsApiUrl: apiUrl,
+    entitlementsApiKey: apiKey,
+    entitlementsTimeoutMs,
+    devForceVodEntitlement,
+  } = getAppEnv();
 
   if (apiUrl && apiKey) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), entitlementsTimeoutMs);
+
     try {
       const response = await fetch(
         `${apiUrl.replace(/\/$/, '')}/users/${encodeURIComponent(clerkUserId)}/entitlements`,
@@ -21,6 +28,7 @@ export async function getEntitlements(clerkUserId: string): Promise<Entitlements
             'x-diaz-api-key': apiKey,
           },
           cache: 'no-store',
+          signal: controller.signal,
         },
       );
 
@@ -32,7 +40,15 @@ export async function getEntitlements(clerkUserId: string): Promise<Entitlements
         };
       }
     } catch (err) {
-      console.warn('[entitlements] Failed to fetch entitlements from API; using local fallback.', err);
+      if (err instanceof Error && err.name === 'AbortError') {
+        console.warn(
+          `[entitlements] API request timed out after ${entitlementsTimeoutMs}ms; using local fallback.`,
+        );
+      } else {
+        console.warn('[entitlements] Failed to fetch entitlements from API; using local fallback.', err);
+      }
+    } finally {
+      clearTimeout(timeout);
     }
   }
 

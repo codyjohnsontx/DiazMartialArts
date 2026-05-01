@@ -106,6 +106,7 @@ Optional Diaz on Demand + entitlements env vars:
   - Leave unset or `false` in local/preview environments to keep the redirect flow available while building the VOD app.
 - `DIAZ_ENTITLEMENTS_API_URL` (server-side only, optional)
 - `DIAZ_ENTITLEMENTS_API_KEY` (server-side only, optional)
+- `DIAZ_ENTITLEMENTS_TIMEOUT_MS` (server-side only, optional, defaults to `5000`)
 - `DEV_FORCE_VOD_ENTITLEMENT` (`true`/`false`, dev fallback only)
 
 Entitlement behavior:
