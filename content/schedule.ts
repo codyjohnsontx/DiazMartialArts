@@ -18,6 +18,8 @@ export const classDescriptions: Record<string, string> = {
     "Women-only BJJ class with a supportive training environment focused on fundamentals and confidence building.",
   "Kids Brazilian Jiu Jitsu (BJJ Gi) Ages 5-13":
     'Youth BJJ gi class that builds discipline, coordination, and safe grappling habits through structured drills.',
+  'Kids Brazilian Jiu Jitsu (Gi/Gi-less) Ages 5-13':
+    'Youth BJJ class for ages 5-13 covering gi and gi-less grappling fundamentals through structured drills.',
   'Muay Thai/Muay Lao/Boxing/Kick-Boxing':
     'Striking class featuring fundamentals, pad/bag work, movement, and conditioning.',
   'Filipino Martial Arts & JKD (Equipment)':
@@ -67,6 +69,7 @@ export const weeklySchedule: WeeklySchedule[] = [
       { time: '6:00-6:45 PM', program: 'Advanced Juniors Weapons (Ages 7-13)', coach: 'Kids Class' },
       { time: '6:00-6:50 PM', program: 'Teen/Adult TKD Korean Karate - Weapons', coach: 'Adult Class' },
       { time: '6:00-6:55 PM', program: 'Junior Black Belts Weapons (Ages 10-13)', coach: 'Kids Class' },
+      { time: '7:00-7:50 PM', program: 'Kids Brazilian Jiu Jitsu (Gi/Gi-less) Ages 5-13', coach: 'Kids Class' },
       { time: '7:00-8:00 PM', program: 'Teen/Adult Haganah (Israeli Self Defense)', coach: 'Adult Class' },
       { time: '8:10-9:10 PM', program: 'Muay Thai/Muay Lao/Boxing/Kick-Boxing', coach: 'Adult Class' },
     ],
@@ -76,6 +79,7 @@ export const weeklySchedule: WeeklySchedule[] = [
     classes: [
       { time: '7:00-8:00 AM', program: 'Brazilian Jiu Jitsu (Gi/Gi-less)', coach: 'Adult Class' },
       { time: '11:00-11:50 AM', program: 'Muay Thai/Muay Lao/Boxing/Kick-Boxing', coach: 'Adult Class' },
+      { time: '12:00-1:00 PM', program: 'Teen/Adult Haganah (Israeli Self Defense)', coach: 'Adult Class' },
       { time: "5:00-5:45 PM", program: 'Advanced Juniors Weapons (Ages 7-13)', coach: 'Kids Class' },
       { time: '5:00-5:50 PM', program: 'Teen/Adult TKD Korean Karate - Weapons', coach: 'Adult Class' },
       { time: '5:00-5:55 PM', program: 'Junior Black Belts Weapons (Ages 10-13)', coach: 'Kids Class' },
@@ -101,6 +105,7 @@ export const weeklySchedule: WeeklySchedule[] = [
       { time: '6:00-6:45 PM', program: 'Advanced Juniors Sparring (Ages 7-13)', coach: 'Kids Class' },
       { time: '6:00-6:50 PM', program: 'Teen/Adult TKD Korean Karate - Sparring', coach: 'Adult Class' },
       { time: '6:00-6:55 PM', program: 'Junior Black Belts Sparring (Ages 10-13)', coach: 'Kids Class' },
+      { time: '7:00-7:50 PM', program: 'Kids Brazilian Jiu Jitsu (Gi/Gi-less) Ages 5-13', coach: 'Kids Class' },
       { time: '7:00-8:00 PM', program: 'Teen/Adult Haganah (Israeli Self Defense)', coach: 'Adult Class' },
       { time: '8:10-9:10 PM', program: 'Muay Thai/Muay Lao/Boxing/Kick-Boxing', coach: 'Adult Class' },
     ],
@@ -110,6 +115,7 @@ export const weeklySchedule: WeeklySchedule[] = [
     classes: [
       { time: '7:00-8:00 AM', program: 'Brazilian Jiu Jitsu (Gi/Gi-less)', coach: 'Adult Class' },
       { time: '11:00-11:50 AM', program: 'Muay Thai/Muay Lao/Boxing/Kick-Boxing', coach: 'Adult Class' },
+      { time: '12:00-1:00 PM', program: 'Teen/Adult Haganah (Israeli Self Defense)', coach: 'Adult Class' },
       { time: "5:00-5:45 PM", program: 'Advanced Juniors Sparring (Ages 7-13)', coach: 'Kids Class' },
       { time: '5:00-5:50 PM', program: 'Teen/Adult TKD Korean Karate - Weapons', coach: 'Adult Class' },
       { time: '5:00-5:55 PM', program: 'Junior Black Belts Sparring (Ages 10-13)', coach: 'Kids Class' },
