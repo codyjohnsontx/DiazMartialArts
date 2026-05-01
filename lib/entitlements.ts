@@ -7,6 +7,8 @@ export type Entitlements = {
   vod: boolean;
 };
 
+const isDebugLoggingEnabled = process.env.NODE_ENV !== 'production';
+
 export async function getEntitlements(clerkUserId: string): Promise<Entitlements> {
   const {
     entitlementsApiUrl: apiUrl,
@@ -41,19 +43,35 @@ export async function getEntitlements(clerkUserId: string): Promise<Entitlements
       }
 
       const body = await response.text();
-      const bodyPreview = body.length > 500 ? `${body.slice(0, 500)}...` : body;
-      console.warn('[entitlements] API returned a non-OK response; using local fallback.', {
+      const logDetails: Record<string, unknown> = {
         status: response.status,
         statusText: response.statusText,
-        body: bodyPreview,
-      });
+        bodyLength: body.length,
+        bodyTruncated: body.length > 500,
+      };
+
+      if (isDebugLoggingEnabled) {
+        const bodyPreview = body.length > 500 ? `${body.slice(0, 500)}...` : body;
+        logDetails.bodyPreview = bodyPreview;
+      }
+
+      console.warn('[entitlements] API returned a non-OK response; using local fallback.', logDetails);
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') {
         console.warn(
           `[entitlements] API request timed out after ${entitlementsTimeoutMs}ms; using local fallback.`,
         );
       } else {
-        console.warn('[entitlements] Failed to fetch entitlements from API; using local fallback.', err);
+        const logDetails: Record<string, unknown> = {
+          errorName: err instanceof Error ? err.name : 'UnknownError',
+        };
+
+        if (isDebugLoggingEnabled) {
+          logDetails.errorMessage = err instanceof Error ? err.message : 'Unknown entitlement fetch error';
+          logDetails.error = err;
+        }
+
+        console.warn('[entitlements] Failed to fetch entitlements from API; using local fallback.', logDetails);
       }
     } finally {
       clearTimeout(timeout);
