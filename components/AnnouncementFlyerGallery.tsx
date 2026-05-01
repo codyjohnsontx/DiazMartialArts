@@ -19,6 +19,7 @@ export function AnnouncementFlyerGallery({ flyers }: AnnouncementFlyerGalleryPro
   const dialogRef = useRef<HTMLDivElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
 
+  const [featuredFlyer, ...gridFlyers] = flyers;
   const activeFlyer = flyers.find((flyer) => flyer.id === activeId);
 
   function openFlyer(id: string) {
@@ -75,27 +76,50 @@ export function AnnouncementFlyerGallery({ flyers }: AnnouncementFlyerGalleryPro
     }
   }
 
-  return (
-    <>
-      <div className="mx-auto flex max-w-5xl flex-col gap-8">
-        {flyers.map((flyer) => (
-          <button
-            key={flyer.id}
-            type="button"
-            aria-label={`Enlarge ${flyer.alt}`}
-            className="block cursor-zoom-in overflow-hidden rounded-lg border border-black/10 bg-white p-0 text-left shadow-[0_20px_70px_-45px_rgba(16,18,20,0.45)] transition hover:-translate-y-0.5 hover:shadow-[0_28px_90px_-48px_rgba(16,18,20,0.55)]"
-            onClick={() => openFlyer(flyer.id)}
-          >
+  function renderFlyerButton(flyer: AnnouncementFlyer, isFeatured = false) {
+    return (
+      <button
+        key={flyer.id}
+        type="button"
+        aria-label={`Enlarge ${flyer.alt}`}
+        className="block h-full cursor-zoom-in overflow-hidden rounded-lg border border-black/10 bg-white p-0 text-left shadow-[0_20px_70px_-45px_rgba(16,18,20,0.45)] transition hover:-translate-y-0.5 hover:shadow-[0_28px_90px_-48px_rgba(16,18,20,0.55)]"
+        onClick={() => openFlyer(flyer.id)}
+      >
+        {isFeatured ? (
+          <Image
+            src={flyer.src}
+            alt={flyer.alt}
+            width={1650}
+            height={1275}
+            loading="eager"
+            className="h-auto w-full"
+          />
+        ) : (
+          <span className="flex aspect-[22/17] items-center justify-center bg-white">
             <Image
               src={flyer.src}
               alt={flyer.alt}
               width={1650}
               height={1275}
-              loading="eager"
-              className="h-auto w-full"
+              loading="lazy"
+              className="h-full w-full object-contain"
             />
-          </button>
-        ))}
+          </span>
+        )}
+      </button>
+    );
+  }
+
+  return (
+    <>
+      <div className="mx-auto max-w-5xl space-y-8">
+        {featuredFlyer && renderFlyerButton(featuredFlyer, true)}
+
+        {gridFlyers.length > 0 && (
+          <div className="grid gap-8 md:grid-cols-2">
+            {gridFlyers.map((flyer) => renderFlyerButton(flyer))}
+          </div>
+        )}
       </div>
 
       {activeFlyer && (
