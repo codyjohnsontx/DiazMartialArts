@@ -39,6 +39,14 @@ export async function getEntitlements(clerkUserId: string): Promise<Entitlements
           vod: Boolean(data.vod),
         };
       }
+
+      const body = await response.text();
+      const bodyPreview = body.length > 500 ? `${body.slice(0, 500)}...` : body;
+      console.warn('[entitlements] API returned a non-OK response; using local fallback.', {
+        status: response.status,
+        statusText: response.statusText,
+        body: bodyPreview,
+      });
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') {
         console.warn(
