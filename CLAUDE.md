@@ -67,7 +67,6 @@ This repository uses a Next.js App Router layout:
 - `tests/`
 - `public/`
 - `content/`
-- `sanity/`
 
 Guidelines:
 
@@ -77,7 +76,6 @@ Guidelines:
 - tests belong in `tests`
 - static assets belong in `public`
 - editable site content belongs in `content`
-- Sanity CMS config and schema belong in `sanity`
 
 Do not create new top-level folders unless required.
 
