@@ -13,14 +13,16 @@ export async function getEntitlements(clerkUserId: string): Promise<Entitlements
 
   if (apiUrl && apiKey) {
     try {
-      const response = await fetch(`${apiUrl.replace(/\/$/, '')}/me/entitlements`, {
-        method: 'GET',
-        headers: {
-          'x-api-key': apiKey,
-          'x-clerk-user-id': clerkUserId,
+      const response = await fetch(
+        `${apiUrl.replace(/\/$/, '')}/users/${encodeURIComponent(clerkUserId)}/entitlements`,
+        {
+          method: 'GET',
+          headers: {
+            'x-diaz-api-key': apiKey,
+          },
+          cache: 'no-store',
         },
-        cache: 'no-store',
-      });
+      );
 
       if (response.ok) {
         const data = (await response.json()) as Partial<Entitlements>;

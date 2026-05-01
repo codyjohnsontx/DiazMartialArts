@@ -101,6 +101,9 @@ Optional Diaz on Demand + entitlements env vars:
 
 - `NEXT_PUBLIC_ONDEMAND_URL`
   - Base URL for the separate Diaz on Demand app (for example `https://ondemand.diazmartialarts.com`).
+- `ONDEMAND_COMING_SOON`
+  - Set `true` in production to show a public Diaz on Demand coming-soon page with a waitlist form.
+  - Leave unset or `false` in local/preview environments to keep the redirect flow available while building the VOD app.
 - `DIAZ_ENTITLEMENTS_API_URL` (server-side only, optional)
 - `DIAZ_ENTITLEMENTS_API_KEY` (server-side only, optional)
 - `DEV_FORCE_VOD_ENTITLEMENT` (`true`/`false`, dev fallback only)
@@ -109,8 +112,8 @@ Entitlement behavior:
 
 - Server helper: `lib/entitlements.ts`
 - If `DIAZ_ENTITLEMENTS_API_URL` and `DIAZ_ENTITLEMENTS_API_KEY` are set, the server calls:
-  - `GET {DIAZ_ENTITLEMENTS_API_URL}/me/entitlements`
-  - Sends headers: `x-api-key` and `x-clerk-user-id`
+  - `GET {DIAZ_ENTITLEMENTS_API_URL}/users/{clerkUserId}/entitlements`
+  - Sends header: `x-diaz-api-key`
 - If API is not configured:
   - In development, `DEV_FORCE_VOD_ENTITLEMENT=true` enables VOD entitlement.
   - Otherwise VOD defaults to inactive.

@@ -9,6 +9,7 @@ export type AppEnv = {
   entitlementsApiUrl?: string;
   entitlementsApiKey?: string;
   devForceVodEntitlement: boolean;
+  ondemandComingSoon: boolean;
 };
 
 type PublicEnv = Pick<
@@ -123,6 +124,7 @@ export function getAppEnv(): AppEnv {
     entitlementsApiUrl,
     entitlementsApiKey,
     devForceVodEntitlement: process.env.DEV_FORCE_VOD_ENTITLEMENT?.toLowerCase() === 'true',
+    ondemandComingSoon: process.env.ONDEMAND_COMING_SOON?.toLowerCase() === 'true',
   };
 
   return cachedAppEnv;

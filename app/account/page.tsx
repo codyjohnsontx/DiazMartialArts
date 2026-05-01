@@ -5,7 +5,6 @@ import { redirect } from 'next/navigation';
 import { AccountStatusCard } from '@/components/AccountStatusCard';
 import { Card } from '@/components/Card';
 import { Section } from '@/components/Section';
-import { getPublicEnv } from '@/lib/env';
 import { getEntitlements } from '@/lib/entitlements';
 import { pageMetadata } from '@/lib/seo';
 
@@ -30,7 +29,6 @@ export default async function AccountPage() {
   }
 
   const [user, entitlements] = await Promise.all([currentUser(), getEntitlements(userId)]);
-  const { ondemandUrl } = getPublicEnv();
 
   const memberName = user?.fullName || user?.firstName || 'Member';
   const memberEmail = user?.primaryEmailAddress?.emailAddress || 'No email on file';
@@ -85,7 +83,7 @@ export default async function AccountPage() {
         </div>
 
         <div>
-          <AccountStatusCard vodActive={entitlements.vod} ondemandUrl={ondemandUrl} />
+          <AccountStatusCard vodActive={entitlements.vod} />
         </div>
       </div>
     </Section>
