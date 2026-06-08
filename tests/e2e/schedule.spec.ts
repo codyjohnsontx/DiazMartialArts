@@ -9,7 +9,7 @@ test.describe('Schedule page', () => {
     await expect(
       page.getByRole('heading', { name: /Weekly class schedule/i }),
     ).toBeVisible();
-    await expect(page.getByRole('button', { name: /Mon/ })).toBeVisible();
+    await expect(page.getByRole('tab', { name: 'Monday schedule' })).toBeVisible();
   });
 
   test('renders the upcoming events section', async ({ page }) => {

@@ -9,12 +9,8 @@ import {
   getUpcomingClassBlocks,
 } from '@/lib/classSchedule';
 
-type Props = {
-  initialNow: string;
-};
-
-export function HomeUpcomingClasses({ initialNow }: Props) {
-  const [now, setNow] = useState(() => new Date(initialNow));
+export function HomeUpcomingClasses() {
+  const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
     const update = () => setNow(new Date());

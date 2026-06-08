@@ -26,6 +26,23 @@ describe('Button', () => {
 
     expect(onClick).not.toHaveBeenCalled();
   });
+
+  it('renders disabled links as non-focusable and suppresses clicks', async () => {
+    const user = userEvent.setup();
+    const onClick = vi.fn();
+    render(
+      <Button href="/contact" onClick={onClick} disabled>
+        Book Free Trial
+      </Button>,
+    );
+
+    const link = screen.getByRole('link', { name: 'Book Free Trial' });
+    await user.click(link);
+
+    expect(link).toHaveAttribute('aria-disabled', 'true');
+    expect(link).toHaveAttribute('tabindex', '-1');
+    expect(onClick).not.toHaveBeenCalled();
+  });
 });
 
 describe('AccountStatusCard', () => {
@@ -49,4 +66,3 @@ describe('AccountStatusCard', () => {
     );
   });
 });
-

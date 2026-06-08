@@ -11,6 +11,7 @@ import {
   type WeeklySchedule,
   weeklySchedule,
 } from '@/content/schedule';
+import { parseClassTimeRange } from '@/lib/classSchedule';
 import { type UpcomingEvent } from '@/lib/upcoming';
 import { cn } from '@/lib/utils';
 
@@ -50,17 +51,10 @@ function classCategory(coach: string, program: string): string {
 }
 
 function durationFromTime(time: string): string {
-  const match = time.match(/(\d+):(\d+)\s*(AM|PM)\s*-\s*(\d+):(\d+)\s*(AM|PM)/i);
-  if (!match) return '';
-  const [, h1, m1, p1, h2, m2, p2] = match;
-  const to24 = (h: string, p: string) => {
-    let n = Number(h) % 12;
-    if (/pm/i.test(p)) n += 12;
-    return n;
-  };
-  const start = to24(h1, p1) * 60 + Number(m1);
-  const end = to24(h2, p2) * 60 + Number(m2);
-  const diff = end - start;
+  const parsed = parseClassTimeRange(time);
+  if (!parsed) return '';
+
+  const diff = parsed.endMinutes - parsed.startMinutes;
   if (diff <= 0) return '';
   return `${diff}m`;
 }
@@ -143,7 +137,11 @@ export function ScheduleContent({ upcoming }: Props) {
         </div>
 
         {/* DAY TABS */}
-        <div className="grid grid-cols-7 border border-black/10 bg-white">
+        <div
+          role="tablist"
+          aria-label="Weekly schedule days"
+          className="grid grid-cols-7 border border-black/10 bg-white"
+        >
           {weeklySchedule.map((d) => {
             const active = d.day === activeDay;
             const closed = d.classes.length === 0;
@@ -151,6 +149,9 @@ export function ScheduleContent({ upcoming }: Props) {
               <button
                 key={d.day}
                 type="button"
+                role="tab"
+                aria-label={`${d.day} schedule`}
+                aria-selected={active}
                 onClick={() => !closed && setActiveDay(d.day)}
                 disabled={closed}
                 className={cn(

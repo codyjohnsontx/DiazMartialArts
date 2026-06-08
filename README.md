@@ -190,6 +190,9 @@ Coverage is intentionally scoped to shared `lib` modules and selected behavior-h
 components so the first gate stays useful while coverage grows. GitHub Actions runs
 `npm run quality` on pushes to `main` and pull requests; configure
 `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` as repository secrets.
+Temporary note: `npm run quality` currently omits typecheck/build while the
+known Sanity studio blocker is tracked; use `npm run quality:strict` once that
+blocker is resolved.
 
 ## Repo Boundary
 

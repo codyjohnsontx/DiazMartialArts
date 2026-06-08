@@ -51,8 +51,6 @@ const why = [
 ];
 
 export default function HomePage() {
-  const initialNow = new Date().toISOString();
-
   return (
     <>
       <LocalBusinessSchema />
@@ -83,7 +81,7 @@ export default function HomePage() {
             </div>
           </div>
           <div className="relative flex min-h-[520px] items-center justify-center">
-            <HomeUpcomingClasses initialNow={initialNow} />
+            <HomeUpcomingClasses />
           </div>
         </div>
       </section>

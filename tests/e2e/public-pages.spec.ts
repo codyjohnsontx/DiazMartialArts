@@ -34,6 +34,10 @@ test.describe('Schedule page details', () => {
     await expect(
       page.getByRole('heading', { name: /Weekly class schedule/i }),
     ).toBeVisible();
+
+    for (const day of ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']) {
+      await expect(page.getByRole('tab', { name: `${day} schedule` })).toBeVisible();
+    }
   });
 });
 

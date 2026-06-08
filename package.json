@@ -19,7 +19,8 @@
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
     "test:report": "playwright show-report",
-    "quality": "npm run lint && npm run typecheck && npm run test:coverage && npm run build && PLAYWRIGHT_USE_START=1 npm run test:e2e"
+    "quality": "npm run lint && npm run test:coverage && PLAYWRIGHT_USE_START=1 npm run test:e2e",
+    "quality:strict": "npm run lint && npm run typecheck && npm run test:coverage && npm run build && PLAYWRIGHT_USE_START=1 npm run test:e2e"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.14.4",

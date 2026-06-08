@@ -1,3 +1,5 @@
-export { metadata, viewport } from 'next-sanity/studio';
+import { notFound } from 'next/navigation';
 
-export { default } from './Studio';
+export default function StudioPage() {
+  notFound();
+}

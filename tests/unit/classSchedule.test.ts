@@ -24,6 +24,10 @@ describe('parseClassTimeRange', () => {
       startMinutes: 660,
       endMinutes: 720,
     });
+    expect(parseClassTimeRange('11:00-1:00 PM')).toEqual({
+      startMinutes: 660,
+      endMinutes: 780,
+    });
     expect(parseClassTimeRange('12:00-1:00 PM')).toEqual({
       startMinutes: 720,
       endMinutes: 780,
@@ -90,4 +94,3 @@ describe('schedule labels and countdowns', () => {
     expect(formatCountdown(now, now)).toBe('Starting now');
   });
 });
-

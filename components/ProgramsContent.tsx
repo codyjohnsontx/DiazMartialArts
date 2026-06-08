@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
 import { Eyebrow } from '@/components/Eyebrow';
@@ -49,6 +49,8 @@ const onboardingSteps = [
 ];
 
 export function ProgramsContent() {
+  const pathname = usePathname();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const initial = parseTag(searchParams.get('tag'));
   const [filter, setFilter] = useState<'All' | ProgramTag>(initial);
@@ -61,6 +63,19 @@ export function ProgramsContent() {
     () => (filter === 'All' ? programs : programs.filter((p) => p.tag === filter)),
     [filter],
   );
+
+  function updateFilter(next: 'All' | ProgramTag) {
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (next === 'All') {
+      params.delete('tag');
+    } else {
+      params.set('tag', next);
+    }
+
+    const query = params.toString();
+    router.push(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  }
 
   return (
     <>
@@ -88,7 +103,8 @@ export function ProgramsContent() {
                 <button
                   key={t}
                   type="button"
-                  onClick={() => setFilter(t)}
+                  aria-pressed={active}
+                  onClick={() => updateFilter(t)}
                   className={cn(
                     'rounded-full px-3.5 py-2 text-xs font-bold uppercase tracking-[0.06em] transition',
                     active

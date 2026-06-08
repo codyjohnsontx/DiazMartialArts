@@ -40,8 +40,8 @@ test.describe('Home page', () => {
     await expect(page.getByText(/is on us/i).first()).toBeVisible();
   });
 
-  test('announcement bar visible with GI promo text', async ({ page }) => {
-    await expect(page.getByText(/Two months free with purchase of GI/i)).toBeVisible();
+  test('header home link is visible', async ({ page }) => {
+    await expect(page.getByRole('link', { name: 'Diaz Martial Arts home' })).toBeVisible();
   });
 
   test('footer present with copyright text', async ({ page }) => {

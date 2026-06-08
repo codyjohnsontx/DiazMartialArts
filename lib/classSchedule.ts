@@ -68,7 +68,11 @@ function inferStartPeriod(startRaw: string, endRaw: string, endPeriod?: string):
   const startHour = Number(startRaw.match(/^(\d{1,2})/)?.[1]);
   const endHour = Number(endRaw.match(/^(\d{1,2})/)?.[1]);
 
-  if (endPeriod.toUpperCase() === 'PM' && endHour === 12 && startHour < 12) {
+  if (
+    endPeriod.toUpperCase() === 'PM' &&
+    startHour !== 12 &&
+    ((endHour === 12 && startHour < 12) || (endHour !== 12 && startHour > endHour))
+  ) {
     return 'AM';
   }
 
@@ -176,4 +180,3 @@ export function getUpcomingClassBlocks(
 
   return blocks.slice(0, limit);
 }
-

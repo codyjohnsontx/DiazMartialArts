@@ -22,6 +22,8 @@ const tints: Record<Tint, { a: string; b: string; text: string }> = {
   clay: { a: '#D4C4B3', b: '#C2B09D', text: 'rgba(16,18,20,0.55)' },
 };
 
+const DEFAULT_PLACEHOLDER_HEIGHT = 320;
+
 export function Placeholder({
   label,
   tint = 'sand',
@@ -42,7 +44,7 @@ export function Placeholder({
           className,
         )}
         style={{
-          height: ratio ? undefined : height,
+          height: ratio ? undefined : height ?? DEFAULT_PLACEHOLDER_HEIGHT,
           aspectRatio: ratio,
         }}
       >

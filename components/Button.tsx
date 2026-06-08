@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 
 import { cn } from '@/lib/utils';
@@ -46,7 +48,21 @@ export function Button({
 
   if (href) {
     return (
-      <Link href={href} onClick={onClick} className={classes} aria-disabled={disabled}>
+      <Link
+        href={href}
+        onClick={(event) => {
+          if (disabled) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+          }
+
+          onClick?.();
+        }}
+        className={classes}
+        aria-disabled={disabled}
+        tabIndex={disabled ? -1 : undefined}
+      >
         {children}
       </Link>
     );

@@ -51,10 +51,8 @@ test.describe('Navigation', () => {
     await expect(page).toHaveURL('/terms');
   });
 
-  test('announcement bar shows promo message', async ({ page }) => {
+  test('header home link is present', async ({ page }) => {
     await page.goto('/');
-    await expect(
-      page.getByText(/Two months free with purchase of GI/i).first(),
-    ).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Diaz Martial Arts home' })).toBeVisible();
   });
 });

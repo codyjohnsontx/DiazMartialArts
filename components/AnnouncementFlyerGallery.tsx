@@ -109,6 +109,7 @@ export function AnnouncementFlyerGallery({ flyers }: AnnouncementFlyerGalleryPro
             <button
               key={t}
               type="button"
+              aria-pressed={active}
               onClick={() => setFilter(t)}
               className={cn(
                 'rounded-full px-3.5 py-2 text-xs font-bold uppercase tracking-[0.06em] transition',

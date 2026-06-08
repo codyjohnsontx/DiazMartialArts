@@ -28,7 +28,7 @@ describe('ScheduleContent', () => {
     const user = userEvent.setup();
     render(<ScheduleContent upcoming={upcoming} />);
 
-    await user.click(screen.getByRole('button', { name: /Fri\s+7\s+Classes/i }));
+    await user.click(screen.getByRole('tab', { name: 'Friday schedule' }));
 
     expect(screen.getByText('Brazilian Jiu Jitsu No-Gi')).toBeVisible();
   });
@@ -37,7 +37,7 @@ describe('ScheduleContent', () => {
     const user = userEvent.setup();
     render(<ScheduleContent upcoming={upcoming} />);
 
-    const sunday = screen.getByRole('button', { name: /Sun\s+0\s+Closed/i });
+    const sunday = screen.getByRole('tab', { name: 'Sunday schedule' });
     expect(sunday).toBeDisabled();
     await user.click(sunday);
 
@@ -48,4 +48,3 @@ describe('ScheduleContent', () => {
     ).toBeGreaterThan(0);
   });
 });
-

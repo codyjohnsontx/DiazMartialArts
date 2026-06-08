@@ -16,7 +16,7 @@ describe('HomeUpcomingClasses', () => {
     const now = new Date(2026, 4, 26, 15, 32);
     vi.setSystemTime(now);
 
-    render(<HomeUpcomingClasses initialNow={now.toISOString()} />);
+    render(<HomeUpcomingClasses />);
 
     expect(screen.getByText('Coming up')).toBeVisible();
     expect(screen.getByText('Starts in 1h 28m')).toBeVisible();
@@ -39,11 +39,10 @@ describe('HomeUpcomingClasses', () => {
     const now = new Date(2026, 4, 26, 21, 30);
     vi.setSystemTime(now);
 
-    render(<HomeUpcomingClasses initialNow={now.toISOString()} />);
+    render(<HomeUpcomingClasses />);
 
     expect(screen.getByText('Tomorrow')).toBeVisible();
     expect(screen.getByText('7:00 AM')).toBeVisible();
     expect(screen.getByText('Starts in 9h 30m')).toBeVisible();
   });
 });
-

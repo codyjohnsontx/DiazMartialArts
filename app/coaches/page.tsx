@@ -19,6 +19,20 @@ export const metadata = pageMetadata({
 export default function CoachesPage() {
   const head = coaches[0];
 
+  if (!head) {
+    return (
+      <section className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-6 lg:px-8">
+        <Eyebrow>Instruction</Eyebrow>
+        <h1 className="display mt-5 text-5xl sm:text-7xl lg:text-[88px]">
+          Coaches
+        </h1>
+        <p className="mt-6 max-w-xl text-base leading-relaxed text-black/75 sm:text-lg">
+          Coach profiles are being updated. Please check back soon.
+        </p>
+      </section>
+    );
+  }
+
   return (
     <>
       {/* HERO */}
