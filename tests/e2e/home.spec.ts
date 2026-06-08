@@ -9,11 +9,12 @@ test.describe('Home page', () => {
     await expect(page).toHaveTitle(/Diaz Martial Arts/);
   });
 
-  test('h1 contains "Martial Arts for Real"', async ({ page }) => {
-    await expect(page.locator('h1')).toContainText('Martial Arts for Real');
+  test('h1 contains "Martial arts for real progress"', async ({ page }) => {
+    await expect(page.locator('h1')).toContainText(/Martial arts/i);
+    await expect(page.locator('h1')).toContainText(/progress/i);
   });
 
-  test('discipline pills visible', async ({ page }) => {
+  test('discipline ribbon visible', async ({ page }) => {
     await expect(page.getByText('Brazilian Jiu Jitsu', { exact: true }).first()).toBeVisible();
     await expect(page.getByText('Muay Thai', { exact: true }).first()).toBeVisible();
     await expect(page.getByText('Karate', { exact: true }).first()).toBeVisible();
@@ -24,9 +25,10 @@ test.describe('Home page', () => {
     await expect(page.getByRole('link', { name: /View Schedule/i }).first()).toBeVisible();
   });
 
-  test('right-side cta card visible with trial action', async ({ page }) => {
-    await expect(page.getByText('Start Today')).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Book a Free Trial' }).first()).toBeVisible();
+  test('coming-up classes widget visible with schedule link', async ({ page }) => {
+    await expect(page.getByText(/Coming up/i).first()).toBeVisible();
+    await expect(page.getByText(/Starts in|Starting now/i).first()).toBeVisible();
+    await expect(page.getByRole('link', { name: /Full schedule/i })).toBeVisible();
   });
 
   test('programs section visible', async ({ page }) => {
@@ -34,17 +36,17 @@ test.describe('Home page', () => {
   });
 
   test('cta banner visible', async ({ page }) => {
-    await expect(page.getByText('Start This Week')).toBeVisible();
-    await expect(page.getByText(/Train with purpose at Diaz Martial Arts/)).toBeVisible();
+    await expect(page.getByText(/Your first class/i).first()).toBeVisible();
+    await expect(page.getByText(/is on us/i).first()).toBeVisible();
   });
 
   test('announcement bar visible with GI promo text', async ({ page }) => {
-    await expect(page.getByText(/Two months free with purchase of GI/)).toBeVisible();
+    await expect(page.getByText(/Two months free with purchase of GI/i)).toBeVisible();
   });
 
   test('footer present with copyright text', async ({ page }) => {
     const footer = page.getByRole('contentinfo');
     await expect(footer).toBeVisible();
-    await expect(footer.getByText(/All rights reserved/)).toBeVisible();
+    await expect(footer.getByText(/All rights reserved/i)).toBeVisible();
   });
 });

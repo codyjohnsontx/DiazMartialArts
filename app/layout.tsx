@@ -1,8 +1,7 @@
 import { ClerkProvider } from '@clerk/nextjs';
 import type { Metadata } from 'next';
-import { Bebas_Neue, Manrope } from 'next/font/google';
+import { Manrope } from 'next/font/google';
 
-import { AnnouncementBar } from '@/components/AnnouncementBar';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { WebSiteSchema } from '@/components/WebSiteSchema';
@@ -11,14 +10,9 @@ import { getPublicEnv, getRequiredClerkEnv } from '@/lib/env';
 
 import './globals.css';
 
-const headingFont = Bebas_Neue({
-  weight: '400',
-  subsets: ['latin'],
-  variable: '--font-heading',
-});
-
 const bodyFont = Manrope({
   subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
   variable: '--font-body',
 });
 
@@ -33,7 +27,7 @@ export const metadata: Metadata = {
   },
   description: site.description,
   icons: {
-    icon: '/diaz_logo.avif',
+    icon: '/diaz_logo.png',
   },
   alternates: {
     canonical: siteUrl,
@@ -55,7 +49,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${headingFont.variable} ${bodyFont.variable}`}>
+    <html lang="en" className={bodyFont.variable}>
       <body className="font-[var(--font-body)] antialiased">
         <ClerkProvider publishableKey={publishableKey}>
           <WebSiteSchema />
@@ -65,7 +59,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           >
             Skip to main content
           </a>
-          <AnnouncementBar />
           <Header />
           <main id="main-content">{children}</main>
           <Footer />

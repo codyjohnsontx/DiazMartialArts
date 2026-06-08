@@ -1,9 +1,7 @@
-import Link from 'next/link';
-
-import { Card } from '@/components/Card';
+import { Button } from '@/components/Button';
 import { ContactForm } from '@/components/ContactForm';
+import { Eyebrow } from '@/components/Eyebrow';
 import { LocalBusinessSchema } from '@/components/LocalBusinessSchema';
-import { Section } from '@/components/Section';
 import { site } from '@/content/site';
 import { pageMetadata } from '@/lib/seo';
 
@@ -11,68 +9,90 @@ export const metadata = pageMetadata({
   title: 'Contact',
   description: 'Book a free trial and contact Diaz Martial Arts in San Marcos, TX.',
   path: '/contact',
-  keywords: ['book martial arts trial', 'diaz martial arts contact', 'san marcos martial arts gym'],
+  keywords: [
+    'book martial arts trial',
+    'diaz martial arts contact',
+    'san marcos martial arts gym',
+  ],
 });
 
 export default function ContactPage() {
   return (
     <>
       <LocalBusinessSchema />
-      <Section
-        title="Contact"
-        titleAs="h1"
-        eyebrow="Book a Free Trial"
-        description="Tell us your goals and availability. Our team will help you choose the right class and get started."
-      >
-        <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-          <Card interactive={false}>
-            <ContactForm />
-          </Card>
 
-          <div className="space-y-6">
-            <Card>
-              <h2 className="text-xl font-bold text-ink">Visit the academy</h2>
-              <address className="mt-3 not-italic text-sm leading-relaxed text-black/75">
+      {/* HERO */}
+      <section className="border-b border-black/10">
+        <div className="mx-auto grid w-full max-w-6xl items-end gap-12 px-4 py-14 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-8">
+          <div>
+            <Eyebrow>Book a free trial</Eyebrow>
+            <h1 className="display mt-5 text-5xl sm:text-7xl lg:text-[88px]">
+              Visit the gym
+            </h1>
+          </div>
+          <p className="text-base leading-relaxed text-black/75 sm:text-lg">
+            Tell us your goals and availability. We&apos;ll help you choose the right
+            class and get you started — usually within 24 hours.
+          </p>
+        </div>
+      </section>
+
+      {/* FORM + SIDEBAR */}
+      <section className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
+        <div className="grid gap-8 lg:grid-cols-[1.2fr_1fr] lg:items-center">
+          <ContactForm />
+
+          <div className="flex flex-col gap-4">
+            <div className="border border-black/10 bg-white p-7">
+              <Eyebrow>Visit us</Eyebrow>
+              <p className="mt-3.5 text-base leading-relaxed">
                 {site.address.street}
                 <br />
                 {site.address.city}, {site.address.state} {site.address.zip}
-              </address>
-              <p className="mt-4 text-sm text-black/75">
-                Phone: <a href={site.phoneHref}>{site.phone}</a>
-                <br />
-                Email: <a href={`mailto:${site.email}`}>{site.email}</a>
               </p>
-
-              <h3 className="mt-6 text-sm font-semibold uppercase tracking-[0.16em] text-bronze">
-                Hours
-              </h3>
-              <ul className="mt-2 space-y-1 text-sm text-black/75">
-                {site.hours.map((line) => (
-                  <li key={line}>{line}</li>
+              <div className="mt-4 grid gap-1">
+                {site.hours.map((h) => (
+                  <div
+                    key={h}
+                    className="text-[13px] text-black/72 [font-variant-numeric:tabular-nums]"
+                  >
+                    {h}
+                  </div>
                 ))}
-              </ul>
-            </Card>
+              </div>
+              <div className="mt-5 grid gap-1.5 border-t border-black/10 pt-5">
+                <a
+                  href={site.phoneHref}
+                  className="text-sm font-bold text-ink hover:text-ember"
+                >
+                  📞 {site.phone}
+                </a>
+                <a
+                  href={`mailto:${site.email}`}
+                  className="text-sm font-bold text-ink hover:text-ember"
+                >
+                  ✉ {site.email}
+                </a>
+              </div>
+            </div>
 
-            <Card>
-              <h2 className="text-lg font-bold text-ink">Already a member?</h2>
-              <p className="mt-2 text-sm text-black/75">
+            <div className="bg-ink p-7 text-sand">
+              <Eyebrow variant="light">Already a member?</Eyebrow>
+              <p className="my-3 text-sm leading-relaxed text-white/72">
                 Manage your account and on-demand access from the member hub.
               </p>
-              <div className="mt-4 flex flex-wrap gap-3">
-                <Link
-                  href="/account"
-                  className="text-sm font-semibold text-ember hover:text-[#941f15]"
-                >
-                  Go to My Account
-                </Link>
-                <Link href="/ondemand" className="text-sm font-semibold text-ink hover:text-ember">
-                  Open Diaz on Demand
-                </Link>
+              <div className="flex flex-wrap gap-2">
+                <Button href="/account" variant="ghost-light">
+                  My Account
+                </Button>
+                <Button href="/ondemand" variant="ghost-light">
+                  On Demand
+                </Button>
               </div>
-            </Card>
+            </div>
           </div>
         </div>
-      </Section>
+      </section>
     </>
   );
 }

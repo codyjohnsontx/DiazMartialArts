@@ -30,7 +30,7 @@ test.describe('Mobile navigation', () => {
     await expect(toggle).toHaveAttribute('aria-expanded', 'true');
   });
 
-  test('mobile nav contains all primary links including Diaz on Demand', async ({ page }) => {
+  test('mobile nav contains all primary links including On Demand', async ({ page }) => {
     await page.getByRole('button', { name: 'Toggle menu' }).click();
     const mobileNav = page.locator('#mobile-nav');
     for (const { label } of NAV_LINKS) {
@@ -46,9 +46,9 @@ test.describe('Mobile navigation', () => {
     await expect(toggle).toHaveAttribute('aria-expanded', 'false');
   });
 
-  test('clicking "Diaz on Demand" routes signed-out users to sign-in', async ({ page }) => {
+  test('clicking "On Demand" routes signed-out users to sign-in', async ({ page }) => {
     await page.getByRole('button', { name: 'Toggle menu' }).click();
-    await page.locator('#mobile-nav').getByRole('link', { name: 'Diaz on Demand' }).click();
+    await page.locator('#mobile-nav').getByRole('link', { name: 'On Demand' }).click();
     await expect(page).toHaveURL(/\/sign-in/);
   });
 

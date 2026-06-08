@@ -14,10 +14,10 @@ test.describe('Public pages — HTTP 200 + heading + footer', () => {
 });
 
 test.describe('Coaches page details', () => {
-  test('shows Coach Eddie Diaz and his rank', async ({ page }) => {
+  test('shows Coach Eddie Diaz and head instructor label', async ({ page }) => {
     await page.goto('/coaches');
-    await expect(page.getByText('Coach Eddie Diaz')).toBeVisible();
-    await expect(page.getByText('Black Belt, Head Instructor')).toBeVisible();
+    await expect(page.getByText(/Eddie Diaz/i).first()).toBeVisible();
+    await expect(page.getByText(/Head Instructor/i).first()).toBeVisible();
   });
 });
 
@@ -29,15 +29,17 @@ test.describe('Announcements page details', () => {
 });
 
 test.describe('Schedule page details', () => {
-  test('renders weekly schedule table', async ({ page }) => {
+  test('renders weekly schedule heading and day tabs', async ({ page }) => {
     await page.goto('/schedule');
-    await expect(page.getByRole('table', { name: 'Weekly class schedule' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: /Weekly class schedule/i }),
+    ).toBeVisible();
   });
 });
 
 test.describe('FAQ page details', () => {
-  test('renders at least one FAQ summary', async ({ page }) => {
+  test('renders at least one FAQ question', async ({ page }) => {
     await page.goto('/faq');
-    await expect(page.locator('details summary').first()).toBeVisible();
+    await expect(page.getByRole('button', { name: /experience to start/i })).toBeVisible();
   });
 });

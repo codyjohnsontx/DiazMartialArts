@@ -5,22 +5,16 @@ test.describe('Schedule page', () => {
     await page.goto('/schedule');
   });
 
-  test('renders weekly schedule table', async ({ page }) => {
-    await expect(page.getByRole('table', { name: 'Weekly class schedule' })).toBeVisible();
-  });
-
-  test('renders monthly calendar section', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: 'Monthly Calendar' })).toBeVisible();
-
-    // One of these is rendered depending on whether the embed URL is configured at build time.
+  test('renders the weekly class schedule heading and day tabs', async ({ page }) => {
     await expect(
-      page
-        .locator('iframe[title="Diaz Martial Arts monthly schedule"]')
-        .or(page.getByText('Monthly calendar coming soon.')),
+      page.getByRole('heading', { name: /Weekly class schedule/i }),
     ).toBeVisible();
+    await expect(page.getByRole('button', { name: /Mon/ })).toBeVisible();
   });
 
-  test('renders upcoming events section', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: /Upcoming \(Next 60 Days\)/i })).toBeVisible();
+  test('renders the upcoming events section', async ({ page }) => {
+    await expect(
+      page.getByRole('heading', { name: /Upcoming events/i }),
+    ).toBeVisible();
   });
 });

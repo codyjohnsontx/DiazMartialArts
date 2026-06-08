@@ -2,6 +2,9 @@ import { defineConfig, devices } from '@playwright/test';
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000';
 const useProductionServer = process.env.PLAYWRIGHT_USE_START === '1';
+const serverUrl = new URL(baseURL);
+const serverPort = serverUrl.port || (serverUrl.protocol === 'https:' ? '443' : '80');
+const serverCommand = `${useProductionServer ? 'npm run start' : 'npm run dev'} -- -p ${serverPort}`;
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -24,9 +27,9 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: useProductionServer ? 'npm run start' : 'npm run dev',
+    command: serverCommand,
     url: baseURL,
-    reuseExistingServer: true,
+    reuseExistingServer: false,
     timeout: 120_000,
   },
 });

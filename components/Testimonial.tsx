@@ -11,7 +11,7 @@ export function Testimonial({ quote, name, detail }: TestimonialProps) {
     <Card className="relative h-full bg-white">
       {/* Large decorative quote mark */}
       <span
-        className="pointer-events-none absolute left-4 top-2 select-none font-[var(--font-heading)] text-7xl leading-none text-ember/20"
+        className="pointer-events-none absolute left-4 top-2 select-none font-extrabold text-7xl leading-none text-ember/20"
         aria-hidden="true"
       >
         &ldquo;

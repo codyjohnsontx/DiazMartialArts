@@ -24,7 +24,7 @@ export const site = {
   },
   serviceArea: ['San Marcos', 'Kyle', 'Buda', 'New Braunfels'],
   socials: {
-    instagram: 'https://www.instagram.com/diazmartialarts_/',
+    instagram: 'https://www.instagram.com/diazmasm/',
     facebook: 'https://www.facebook.com/diazmasm',
     youtube: '',
   },
