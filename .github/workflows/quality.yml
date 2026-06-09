@@ -14,7 +14,7 @@ jobs:
     env:
       NEXT_PUBLIC_SITE_URL: https://diazmartialarts.vercel.app
       NEXT_PUBLIC_ONDEMAND_URL: https://ondemand.diazmartialarts.com
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || 'pk_test_Y2kuZXhhbXBsZS5jbGVyay5hY2NvdW50cy5kZXYk' }}
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || 'pk_test_dGVzdC1jaS0xLmNsZXJrLmFjY291bnRzLmRldiQ=' }}
       CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY || 'sk_test_ci' }}
       ONDEMAND_COMING_SOON: "false"
       DEV_FORCE_VOD_ENTITLEMENT: "false"

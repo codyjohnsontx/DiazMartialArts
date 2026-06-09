@@ -5,6 +5,8 @@ test.describe('Account gate', () => {
     page,
   }) => {
     await page.goto('/account');
-    await expect(page).toHaveURL(/\/sign-in\?redirect_url=(%2Faccount|\/account)/);
+    await expect(page).toHaveURL(
+      /(?:\/sign-in\?redirect_url=(%2Faccount|\/account)|clerk\.accounts\.dev\/v1\/client\/handshake\?redirect_url=.*%2Faccount)/,
+    );
   });
 });
