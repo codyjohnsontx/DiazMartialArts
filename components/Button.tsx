@@ -43,6 +43,7 @@ export function Button({
     'inline-flex items-center justify-center rounded-full text-center font-bold leading-snug tracking-[0.02em] transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-70',
     sizeStyles[size],
     buttonStyles[variant],
+    href && disabled && 'cursor-not-allowed opacity-70',
     className,
   );
 

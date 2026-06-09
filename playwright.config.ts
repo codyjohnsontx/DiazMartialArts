@@ -3,7 +3,10 @@ import { defineConfig, devices } from '@playwright/test';
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000';
 const useProductionServer = process.env.PLAYWRIGHT_USE_START === '1';
 const serverUrl = new URL(baseURL);
-const isLocalServer = serverUrl.hostname === 'localhost' || serverUrl.hostname === '127.0.0.1';
+const isLocalServer =
+  serverUrl.hostname === 'localhost' ||
+  serverUrl.hostname === '127.0.0.1' ||
+  serverUrl.hostname === '[::1]';
 const serverPort =
   serverUrl.port || (isLocalServer ? '3000' : serverUrl.protocol === 'https:' ? '443' : '80');
 const serverCommand = `${useProductionServer ? 'npm run start' : 'npm run dev'} -- -p ${serverPort}`;

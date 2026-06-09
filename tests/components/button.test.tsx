@@ -41,6 +41,7 @@ describe('Button', () => {
 
     expect(link).toHaveAttribute('aria-disabled', 'true');
     expect(link).toHaveAttribute('tabindex', '-1');
+    expect(link).toHaveClass('cursor-not-allowed', 'opacity-70');
     expect(onClick).not.toHaveBeenCalled();
   });
 });
