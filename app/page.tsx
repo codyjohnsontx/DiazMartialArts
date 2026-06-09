@@ -1,8 +1,9 @@
 import Link from 'next/link';
 
 import { Button } from '@/components/Button';
+import { Eyebrow } from '@/components/Eyebrow';
+import { HomeUpcomingClasses } from '@/components/HomeUpcomingClasses';
 import { LocalBusinessSchema } from '@/components/LocalBusinessSchema';
-import { Section } from '@/components/Section';
 import { programs } from '@/content/programs';
 import { site } from '@/content/site';
 import { pageMetadata } from '@/lib/seo';
@@ -20,110 +21,240 @@ export const metadata = pageMetadata({
   ],
 });
 
+const ribbon: { label: string; href: string }[] = [
+  { label: 'Brazilian Jiu Jitsu', href: '/programs?tag=Grappling' },
+  { label: 'Muay Thai', href: '/programs?tag=Striking' },
+  { label: 'Boxing', href: '/programs?tag=Striking' },
+  { label: 'Karate', href: '/programs?tag=Striking' },
+  { label: 'Self-Defense', href: '/programs?tag=Self-Defense' },
+  { label: 'Kali · Arnis', href: '/programs?tag=Weapons' },
+  { label: 'IPTT', href: '/programs?tag=Tactical' },
+  { label: 'Kids Programs', href: '/programs?tag=Youth' },
+];
+
+const why = [
+  {
+    n: '01',
+    t: 'Clear coaching, not chaos',
+    d: 'Defined tracks, age groups, and coach-guided progression — instead of expecting people to figure it out alone.',
+  },
+  {
+    n: '02',
+    t: 'One gym, multiple paths',
+    d: `Train across ${programs.length} program tracks — BJJ, Muay Thai, karate, self-defense, tactical, weapons, and youth — without bouncing between gyms.`,
+  },
+  {
+    n: '03',
+    t: 'Built for families and busy adults',
+    d: 'Morning, lunch, evening, and weekend options to stay consistent through real schedules.',
+  },
+];
+
 export default function HomePage() {
   return (
     <>
       <LocalBusinessSchema />
 
-      <section className="relative overflow-hidden border-b border-black/10 bg-[linear-gradient(180deg,#f7f3ed_0%,#f3ede4_52%,#efe6dc_100%)]">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.68),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(180,35,24,0.16),transparent_28%)]" />
-        <div className="relative mx-auto flex min-h-[calc(100svh-9rem)] w-full max-w-6xl items-center justify-center px-4 py-12 sm:px-6 sm:py-14 lg:px-8 lg:py-16">
-          <div className="reveal mx-auto max-w-4xl text-center">
-            <p className="text-xs font-bold uppercase tracking-[0.24em] text-bronze">
-              {site.address.city}, {site.address.state}
-            </p>
-            <h1 className="mt-4 font-[var(--font-heading)] text-5xl uppercase leading-none text-ink sm:text-7xl">
-              Martial Arts for Real <span className="text-ember">Progress</span>
+      {/* HERO */}
+      <section className="border-b border-black/10">
+        <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-4 py-14 sm:px-6 lg:grid-cols-[1.15fr_1fr] lg:gap-16 lg:px-8 lg:py-16">
+          <div>
+            <Eyebrow>
+              {site.address.city} · Texas · Est. 1998
+            </Eyebrow>
+            <h1 className="display mt-5 text-5xl sm:text-7xl lg:text-[96px]">
+              Martial arts
+              <br />
+              for real <span className="text-ember">progress.</span>
             </h1>
-            <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-black/72 sm:text-lg">
-              Train with coach-led structure, a welcoming gym culture, and class options for kids,
-              teens, and adults six days a week.
+            <p className="mt-6 max-w-xl text-base leading-relaxed text-black/75 sm:text-lg">
+              Coach-led structure, a welcoming gym culture, and class options for kids,
+              teens, and adults — six days a week.
             </p>
-
-            <div className="mt-7 flex flex-wrap justify-center gap-3">
-              <Button href={site.ctas.primary.href}>{site.ctas.primary.label}</Button>
-              <Button href={site.ctas.secondary.href} variant="secondary">
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Button href={site.ctas.primary.href} size="lg">
+                {site.ctas.primary.label} →
+              </Button>
+              <Button href={site.ctas.secondary.href} variant="ghost" size="lg">
                 {site.ctas.secondary.label}
               </Button>
             </div>
-
-            <ul className="mx-auto mt-8 grid max-w-3xl gap-3 text-left text-sm text-black/68 sm:grid-cols-3">
-              <li className="border-l border-black/12 pl-3">
-                Youth and adult tracks with coach-guided progression.
-              </li>
-              <li className="border-l border-black/12 pl-3">
-                Gi, no-gi, striking, self-defense, and kids classes.
-              </li>
-              <li className="border-l border-black/12 pl-3">
-                First class is easy to start. Athletic clothes are enough.
-              </li>
-            </ul>
+          </div>
+          <div className="relative flex min-h-[520px] items-center justify-center">
+            <HomeUpcomingClasses />
           </div>
         </div>
       </section>
 
-      <Section
-        eyebrow="Why Diaz Martial Arts"
-        title="A better first step for beginners and a better long-term home for committed students"
-        className="[&>header]:mx-auto [&>header]:text-center [&>header>p]:justify-center"
-      >
-        <div className="mx-auto max-w-3xl space-y-5 text-center">
-          <div className="border-b border-black/10 pb-5">
-            <h3 className="text-xl font-bold text-ink">Clear coaching, not chaos</h3>
-            <p className="mx-auto mt-2 max-w-2xl text-sm leading-relaxed text-black/72">
-              New students do better when the room feels structured. The class lineup here is built
-              around defined tracks, age groups, and coach-guided progression instead of expecting
-              people to figure it out on their own.
-            </p>
-          </div>
-          <div className="border-b border-black/10 pb-5">
-            <h3 className="text-xl font-bold text-ink">One gym, multiple training paths</h3>
-            <p className="mx-auto mt-2 max-w-2xl text-sm leading-relaxed text-black/72">
-              Train across {programs.length} program tracks including BJJ, Muay Thai, karate,
-              self-defense, tactical work, and youth classes without bouncing between separate gyms.
-            </p>
-          </div>
-          <div className="pb-1">
-            <h3 className="text-xl font-bold text-ink">Built for families and busy adults</h3>
-            <p className="mx-auto mt-2 max-w-2xl text-sm leading-relaxed text-black/72">
-              Morning, lunch, evening, and weekend options make it easier to stay consistent for
-              students from {site.serviceArea.join(', ')} and the surrounding area.
-            </p>
+      {/* DISCIPLINE RIBBON */}
+      <section className="bg-ink py-5 text-sand">
+        <div className="mx-auto flex w-full max-w-6xl items-center gap-6 px-4 sm:px-6 lg:px-8">
+          <span className="shrink-0 text-[11px] font-bold uppercase tracking-[0.22em] text-gold">
+            Train
+          </span>
+          <div className="marquee flex-1">
+            {[0, 1].map((copy) => {
+              const isClone = copy === 1;
+              return (
+                <ul
+                  key={copy}
+                  aria-hidden={isClone || undefined}
+                  className="marquee-track m-0 list-none p-0 text-sm font-bold uppercase tracking-[0.04em]"
+                >
+                  {ribbon.map((d) => (
+                    <li
+                      key={d.label}
+                      className="flex items-center whitespace-nowrap"
+                    >
+                      <Link
+                        href={d.href}
+                        tabIndex={isClone ? -1 : undefined}
+                        className="transition hover:text-ember focus-visible:text-ember"
+                      >
+                        {d.label}
+                      </Link>
+                      <span
+                        className="mx-8 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-ember"
+                        aria-hidden="true"
+                      />
+                    </li>
+                  ))}
+                </ul>
+              );
+            })}
           </div>
         </div>
-      </Section>
+      </section>
 
-      <Section
-        eyebrow="Programs"
-        title="Classes for every stage"
-        className="pt-6 text-center [&>header]:mx-auto [&>header]:text-center [&>header>p]:justify-center"
-      >
-        <ul className="mx-auto max-w-4xl divide-y divide-black/10">
-          {programs.map((program) => (
-            <li key={program.title} className="py-5 first:pt-0 last:pb-0">
-              <span
-                className="mx-auto mb-3 block h-0.5 w-5 rounded-full bg-ember"
-                aria-hidden="true"
-              />
+      {/* WHY */}
+      <section className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-6 lg:grid lg:grid-cols-[1fr_2fr] lg:gap-20 lg:px-8 lg:py-24">
+        <div>
+          <Eyebrow>Why Diaz</Eyebrow>
+          <h2 className="display mt-4 text-3xl leading-[1.05] sm:text-4xl lg:text-[44px]">
+            A better first step for beginners. A better long-term home for committed
+            students.
+          </h2>
+        </div>
+        <div className="mt-10 lg:mt-0">
+          {why.map((row, i) => (
+            <div
+              key={row.n}
+              className={`grid grid-cols-[60px_1fr] gap-6 py-7 ${
+                i === 0 ? 'border-t border-black/18' : 'border-t border-black/10'
+              } ${i === why.length - 1 ? 'border-b border-black/18' : ''}`}
+            >
+              <div className="text-[13px] font-extrabold tracking-[0.08em] text-ember">
+                {row.n}
+              </div>
               <div>
-                <h3 className="text-base font-bold text-ink">{program.title}</h3>
-                <p className="mt-1 text-sm leading-relaxed text-black/70">
-                  {program.description}
-                </p>
-                <p className="mt-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-bronze">
-                  {program.age} · {program.level}
+                <h3 className="text-xl font-extrabold tracking-tight sm:text-[22px]">
+                  {row.t}
+                </h3>
+                <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-black/72">
+                  {row.d}
                 </p>
               </div>
-            </li>
+            </div>
           ))}
-        </ul>
-        <Link
-          href="/programs"
-          className="mt-8 inline-flex items-center text-sm font-semibold text-ember hover:text-[#941f15]"
-        >
-          View all programs →
-        </Link>
-      </Section>
+        </div>
+      </section>
+
+      {/* PROGRAMS */}
+      <section className="border-t border-black/8 bg-sand">
+        <div className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-6 lg:px-8 lg:py-24">
+          <div className="mb-12 flex flex-wrap items-end justify-between gap-8">
+            <div>
+              <Eyebrow>Programs</Eyebrow>
+              <h2 className="display mt-4 text-4xl sm:text-5xl lg:text-[56px]">
+                Classes for every stage
+              </h2>
+            </div>
+            <Link
+              href="/programs"
+              className="border-b-2 border-ember pb-1 text-[13px] font-bold text-ink"
+            >
+              VIEW ALL PROGRAMS →
+            </Link>
+          </div>
+          <div className="grid border border-black/10 bg-white sm:grid-cols-2">
+            {programs.map((p, i) => {
+              const lastRow = i >= programs.length - 2;
+              const isLeft = i % 2 === 0;
+              return (
+                <div
+                  key={p.title}
+                  className={`grid grid-cols-[40px_1fr_auto] items-start gap-4 p-7 ${
+                    isLeft ? 'sm:border-r sm:border-black/10' : ''
+                  } ${lastRow ? '' : 'border-b border-black/10'}`}
+                >
+                  <div className="text-[11px] font-extrabold text-ember [font-variant-numeric:tabular-nums]">
+                    {String(i + 1).padStart(2, '0')}
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-bronze">
+                      {p.tag}
+                    </div>
+                    <h3 className="mt-1.5 text-xl font-extrabold tracking-tight">
+                      {p.title}
+                    </h3>
+                    <div className="mt-0.5 text-[13px] font-semibold text-bronze">
+                      {p.sub}
+                    </div>
+                    <p className="mt-3 text-sm leading-relaxed text-black/72">
+                      {p.description}
+                    </p>
+                  </div>
+                  <div
+                    className="text-2xl font-light text-black/30"
+                    aria-hidden="true"
+                  >
+                    →
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA BANNER */}
+      <section className="relative overflow-hidden bg-ink text-sand">
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(circle at 80% 20%, rgba(180,35,24,0.20), transparent 50%)',
+          }}
+          aria-hidden="true"
+        />
+        <div className="relative mx-auto grid w-full max-w-6xl items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-[1.5fr_1fr] lg:gap-16 lg:px-8">
+          <div>
+            <Eyebrow variant="light">Get started</Eyebrow>
+            <h2 className="display mt-4 text-4xl sm:text-5xl lg:text-[64px]">
+              Your first class
+              <br />
+              is on us.
+            </h2>
+            <p className="mt-5 max-w-xl text-base leading-relaxed text-white/72 sm:text-lg">
+              Athletic clothes are enough. Arrive 15 minutes early — we&apos;ll handle the
+              rest.
+            </p>
+          </div>
+          <div className="flex flex-col gap-3">
+            <Button href="/contact" size="lg" className="justify-between">
+              Book a free trial <span aria-hidden="true">→</span>
+            </Button>
+            <Button
+              href={site.phoneHref}
+              variant="ghost-light"
+              size="lg"
+              className="justify-between"
+            >
+              Call {site.phone} <span aria-hidden="true">→</span>
+            </Button>
+          </div>
+        </div>
+      </section>
     </>
   );
 }

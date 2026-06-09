@@ -1,7 +1,6 @@
 'use client';
 
 import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
-import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -9,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 
 import { Button } from './Button';
+import { Crest } from './Crest';
 
 const navItems = [
   { href: '/programs', label: 'Programs' },
@@ -16,7 +16,7 @@ const navItems = [
   { href: '/coaches', label: 'Coaches' },
   { href: '/announcements', label: 'Announcements' },
   { href: '/contact', label: 'Contact' },
-  { href: '/ondemand', label: 'Diaz on Demand' },
+  { href: '/ondemand', label: 'On Demand' },
 ];
 
 export function Header() {
@@ -42,46 +42,51 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-40 border-b border-black/10 bg-sand/95 shadow-soft backdrop-blur">
-      <div className="mx-auto flex h-20 w-full max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-40 border-b border-black/10 bg-sand/95 backdrop-blur">
+      <div className="mx-auto flex h-[76px] w-full max-w-6xl items-center justify-between gap-6 px-4 sm:px-6 lg:gap-8 lg:px-8">
         <Link
           href="/"
           className="flex shrink-0 items-center gap-3 text-ink"
           aria-label="Diaz Martial Arts home"
         >
-          <Image
-            src="/diaz_logo.avif"
-            alt="Diaz Martial Arts"
-            width={40}
-            height={40}
-            priority
-            className="rounded-full"
-          />
-          <span className="text-base font-bold tracking-wide">Diaz Martial Arts</span>
+          <Crest size={42} />
+          <span className="leading-[1.05]">
+            <span className="block text-[15px] font-extrabold tracking-wide">
+              DIAZ MARTIAL ARTS
+            </span>
+          </span>
         </Link>
 
-        <nav className="hidden items-center gap-5 lg:gap-6 md:flex" aria-label="Primary">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              data-active={isActive(item.href)}
-              aria-current={isActive(item.href) ? 'page' : undefined}
-              className="nav-link whitespace-nowrap text-sm font-semibold text-black/80 hover:text-ink"
-            >
-              {item.label}
-            </Link>
-          ))}
+        <nav className="hidden items-center gap-6 lg:gap-7 md:flex" aria-label="Primary">
+          {navItems.map((item) => {
+            const active = isActive(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={active ? 'page' : undefined}
+                className={cn(
+                  'whitespace-nowrap pb-1 text-[13px] font-semibold tracking-[0.02em] transition',
+                  active
+                    ? 'border-b-2 border-ember text-ink'
+                    : 'border-b-2 border-transparent text-black/72 hover:text-ink',
+                )}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
           <SignedOut>
-            <Button href="/sign-in?redirect_url=/account" variant="secondary">
+            <Button href="/sign-in?redirect_url=/account" variant="ghost">
               Member Login
             </Button>
+            <Button href="/contact">Book Free Trial</Button>
           </SignedOut>
           <SignedIn>
-            <Button href="/account" variant="secondary">
+            <Button href="/account" variant="ghost">
               My Account
             </Button>
             <UserButton afterSignOutUrl="/" />
@@ -126,20 +131,29 @@ export function Header() {
             </Link>
           ))}
           <SignedOut>
-            <Button
-              href="/sign-in?redirect_url=/account"
-              className="mt-2 w-full"
-              variant="secondary"
-              onClick={() => setOpen(false)}
-            >
-              Member Login
-            </Button>
+            <div className="mt-2 grid gap-2">
+              <Button
+                href="/sign-in?redirect_url=/account"
+                className="w-full"
+                variant="ghost"
+                onClick={() => setOpen(false)}
+              >
+                Member Login
+              </Button>
+              <Button
+                href="/contact"
+                className="w-full"
+                onClick={() => setOpen(false)}
+              >
+                Book Free Trial
+              </Button>
+            </div>
           </SignedOut>
           <SignedIn>
             <Button
               href="/account"
               className="mt-2 w-full"
-              variant="secondary"
+              variant="ghost"
               onClick={() => setOpen(false)}
             >
               My Account

@@ -8,21 +8,28 @@ export const NAV_LINKS = [
   { href: '/coaches', label: 'Coaches' },
   { href: '/announcements', label: 'Announcements' },
   { href: '/contact', label: 'Contact' },
-  { href: '/ondemand', label: 'Diaz on Demand' },
+  { href: '/ondemand', label: 'On Demand' },
 ];
 
 export const MARKETING_NAV_LINKS = NAV_LINKS.filter((link) => link.href !== '/ondemand');
 
 export const PUBLIC_PAGES: Array<{ path: string; heading: string }> = [
-  { path: '/', heading: 'Martial Arts for Real' },
+  { path: '/', heading: 'Martial arts' },
   { path: '/pricing', heading: 'Pricing' },
   { path: '/programs', heading: 'Programs' },
+  { path: '/programs/brazilian-jiu-jitsu', heading: 'Brazilian Jiu Jitsu' },
+  { path: '/programs/muay-thai-kickboxing', heading: 'Muay Thai' },
+  { path: '/programs/haganah', heading: 'Haganah' },
+  { path: '/programs/tkd-korean-karate', heading: 'TKD Korean Karate' },
+  { path: '/programs/filipino-martial-arts-jkd', heading: 'Filipino Martial Arts' },
+  { path: '/programs/iptt-tactical', heading: 'I.P.T.T. Tactical' },
+  { path: '/programs/kids-lil-dragons-juniors', heading: "Lil' Dragons" },
   { path: '/schedule', heading: 'Schedule' },
   { path: '/coaches', heading: 'Coaches' },
   { path: '/announcements', heading: 'Announcements' },
-  { path: '/contact', heading: 'Contact' },
+  { path: '/contact', heading: 'Visit the gym' },
   { path: '/faq', heading: 'FAQ' },
   { path: '/privacy', heading: 'Privacy' },
   { path: '/terms', heading: 'Terms' },
-  { path: '/sign-in', heading: 'Member Login' },
+  { path: '/sign-in', heading: 'Member portal' },
 ];

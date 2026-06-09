@@ -1,5 +1,3 @@
-import Link from 'next/link';
-
 import { site } from '@/content/site';
 
 export function AnnouncementBar() {
@@ -8,11 +6,18 @@ export function AnnouncementBar() {
   if (!announcement.enabled) return null;
 
   return (
-    <div className="bg-ink px-4 py-2 text-center text-sm text-sand">
-      <span>{announcement.message}</span>{' '}
-      <Link className="font-semibold text-[#f5d8b9] underline decoration-[#f5d8b9]/50 underline-offset-4" href={announcement.link}>
-        {announcement.linkLabel}
-      </Link>
+    <div className="bg-ink text-sand">
+      <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-6 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] sm:px-6 lg:px-8">
+        <span className="flex items-center gap-2.5">
+          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-gold" aria-hidden="true" />
+          <span>{announcement.message}</span>
+        </span>
+        <span className="hidden items-center gap-6 text-white/65 md:flex">
+          <a href={site.phoneHref} className="hover:text-white">
+            {site.phone}
+          </a>
+        </span>
+      </div>
     </div>
   );
 }

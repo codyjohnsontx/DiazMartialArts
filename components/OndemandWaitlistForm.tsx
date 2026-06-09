@@ -2,14 +2,16 @@
 
 import { FormEvent, useState } from 'react';
 
+import { Button } from '@/components/Button';
 import { getPublicEnv } from '@/lib/env';
 
 type Status = 'idle' | 'submitting' | 'success' | 'error';
 type FieldErrors = Partial<Record<'name' | 'email' | 'message', string>>;
 
 const { formspreeEndpoint: endpoint } = getPublicEnv();
+
 const inputClasses =
-  'w-full rounded-lg border border-black/20 bg-white px-3 py-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember';
+  'w-full border border-white/18 bg-white/5 px-3.5 py-3 text-sm text-sand placeholder:text-white/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-gold';
 
 export function OndemandWaitlistForm() {
   const [status, setStatus] = useState<Status>('idle');
@@ -90,31 +92,29 @@ export function OndemandWaitlistForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+    <form onSubmit={handleSubmit} className="grid gap-3" noValidate>
       <div>
-        <label htmlFor="waitlist-name" className="mb-1 block text-sm font-semibold text-ink">
-          Name
+        <label htmlFor="waitlist-name" className="sr-only">
+          Full name
         </label>
         <input
           id="waitlist-name"
           name="name"
           required
           autoComplete="name"
+          placeholder="Full name"
           aria-invalid={Boolean(fieldErrors.name)}
-          aria-describedby={fieldErrors.name ? 'waitlist-name-error' : undefined}
           onChange={() => clearFieldError('name')}
           className={inputClasses}
         />
         {fieldErrors.name && (
-          <p id="waitlist-name-error" className="mt-1 text-sm text-ember">
-            {fieldErrors.name}
-          </p>
+          <p className="mt-1 text-sm text-gold">{fieldErrors.name}</p>
         )}
       </div>
 
       <div>
-        <label htmlFor="waitlist-email" className="mb-1 block text-sm font-semibold text-ink">
-          Email
+        <label htmlFor="waitlist-email" className="sr-only">
+          Email address
         </label>
         <input
           id="waitlist-email"
@@ -122,66 +122,42 @@ export function OndemandWaitlistForm() {
           type="email"
           required
           autoComplete="email"
+          placeholder="Email address"
           aria-invalid={Boolean(fieldErrors.email)}
-          aria-describedby={fieldErrors.email ? 'waitlist-email-error' : undefined}
           onChange={() => clearFieldError('email')}
           className={inputClasses}
         />
         {fieldErrors.email && (
-          <p id="waitlist-email-error" className="mt-1 text-sm text-ember">
-            {fieldErrors.email}
-          </p>
+          <p className="mt-1 text-sm text-gold">{fieldErrors.email}</p>
         )}
       </div>
 
       <div>
-        <label htmlFor="waitlist-phone" className="mb-1 block text-sm font-semibold text-ink">
-          Phone (optional)
+        <label htmlFor="waitlist-status" className="sr-only">
+          Training status
         </label>
-        <input
-          id="waitlist-phone"
-          name="phone"
-          type="tel"
-          autoComplete="tel"
-          className={inputClasses}
-        />
+        <select id="waitlist-status" name="message" className={inputClasses} defaultValue="">
+          <option value="" disabled>
+            Choose one…
+          </option>
+          <option>I&apos;m a current Diaz Martial Arts member</option>
+          <option>I train at another gym</option>
+          <option>I&apos;m new to martial arts</option>
+        </select>
       </div>
 
-      <div>
-        <label htmlFor="waitlist-message" className="mb-1 block text-sm font-semibold text-ink">
-          Message (optional)
-        </label>
-        <textarea
-          id="waitlist-message"
-          name="message"
-          rows={4}
-          aria-invalid={Boolean(fieldErrors.message)}
-          aria-describedby={fieldErrors.message ? 'waitlist-message-error' : undefined}
-          onChange={() => clearFieldError('message')}
-          className={inputClasses}
-        />
-        {fieldErrors.message && (
-          <p id="waitlist-message-error" className="mt-1 text-sm text-ember">
-            {fieldErrors.message}
-          </p>
-        )}
-      </div>
-
-      <button
-        type="submit"
-        disabled={status === 'submitting'}
-        className="inline-flex items-center justify-center rounded-full bg-ember px-5 py-2.5 text-sm font-semibold text-white shadow-soft transition hover:bg-[#941f15] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember disabled:cursor-not-allowed disabled:opacity-70"
-      >
-        {status === 'submitting' ? 'Joining...' : 'Join the waitlist'}
-      </button>
+      <Button type="submit" size="lg" disabled={status === 'submitting'} className="justify-between">
+        {status === 'submitting' ? 'Joining…' : 'Join waitlist'}
+        <span aria-hidden="true">→</span>
+      </Button>
 
       {formError && (
-        <p role="alert" className="text-sm text-ember">
+        <p role="alert" className="text-sm text-gold">
           {formError}
         </p>
       )}
       {statusMessage && (
-        <p role="status" className="text-sm font-semibold text-ink">
+        <p role="status" className="text-sm font-semibold text-sand">
           {statusMessage}
         </p>
       )}

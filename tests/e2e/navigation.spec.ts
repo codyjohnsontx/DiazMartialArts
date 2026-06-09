@@ -28,14 +28,14 @@ test.describe('Navigation', () => {
     });
   }
 
-  test('desktop nav "Diaz on Demand" redirects signed-out users to sign-in', async (
+  test('desktop nav "On Demand" redirects signed-out users to sign-in', async (
     { page },
     testInfo,
   ) => {
     test.skip(testInfo.project.name === 'Mobile', 'Desktop nav is hidden on mobile viewports.');
     await page.goto('/');
     const nav = page.getByRole('navigation', { name: 'Primary' });
-    await nav.getByRole('link', { name: 'Diaz on Demand' }).click();
+    await nav.getByRole('link', { name: 'On Demand' }).click();
     await expect(page).toHaveURL(/\/sign-in/);
   });
 
@@ -51,9 +51,8 @@ test.describe('Navigation', () => {
     await expect(page).toHaveURL('/terms');
   });
 
-  test('announcement bar "See announcements" link → /announcements', async ({ page }) => {
+  test('header home link is present', async ({ page }) => {
     await page.goto('/');
-    await page.getByRole('link', { name: 'See announcements' }).click();
-    await expect(page).toHaveURL('/announcements');
+    await expect(page.getByRole('link', { name: 'Diaz Martial Arts home' })).toBeVisible();
   });
 });

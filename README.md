@@ -174,11 +174,25 @@ Use two review passes for design updates:
 
 ```bash
 npm run lint
+npm run typecheck
+npm run test:unit
+npm run test:coverage
+npm run test:e2e
 npm run build
 npm run test
 npm run test:smoke
+npm run quality
 npm run format:check
 ```
+
+Vitest covers unit and component tests under `tests/unit` and `tests/components`.
+Coverage is intentionally scoped to shared `lib` modules and selected behavior-heavy
+components so the first gate stays useful while coverage grows. GitHub Actions runs
+`npm run quality` on pushes to `main` and pull requests; configure
+`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` as repository secrets.
+Temporary note: `npm run quality` currently omits typecheck/build while the
+known Sanity studio blocker is tracked; use `npm run quality:strict` once that
+blocker is resolved.
 
 ## Repo Boundary
 

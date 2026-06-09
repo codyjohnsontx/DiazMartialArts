@@ -1,25 +1,48 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+
+import { cn } from '@/lib/utils';
+
+export type FlyerCategory = 'Events' | 'Promos' | 'Testings' | 'Closures';
 
 export type AnnouncementFlyer = {
   id: string;
   src: string;
   alt: string;
+  title: string;
+  tag: string;
+  date: string;
+  category: FlyerCategory;
+  width: number;
+  height: number;
 };
 
 type AnnouncementFlyerGalleryProps = {
   flyers: AnnouncementFlyer[];
 };
 
+const filters: ('All' | FlyerCategory)[] = [
+  'All',
+  'Events',
+  'Promos',
+  'Testings',
+  'Closures',
+];
+
 export function AnnouncementFlyerGallery({ flyers }: AnnouncementFlyerGalleryProps) {
+  const [filter, setFilter] = useState<'All' | FlyerCategory>('All');
   const [activeId, setActiveId] = useState<string | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
 
-  const [featuredFlyer, ...gridFlyers] = flyers;
+  const visible = useMemo(
+    () => (filter === 'All' ? flyers : flyers.filter((f) => f.category === filter)),
+    [filter, flyers],
+  );
+
   const activeFlyer = flyers.find((flyer) => flyer.id === activeId);
 
   function openFlyer(id: string) {
@@ -76,51 +99,106 @@ export function AnnouncementFlyerGallery({ flyers }: AnnouncementFlyerGalleryPro
     }
   }
 
-  function renderFlyerButton(flyer: AnnouncementFlyer, isFeatured = false, className = '') {
-    return (
-      <button
-        key={flyer.id}
-        type="button"
-        aria-label={`Enlarge ${flyer.alt}`}
-        className={`block h-full w-full cursor-zoom-in overflow-hidden rounded-lg border border-black/10 bg-white p-0 text-left shadow-[0_20px_70px_-45px_rgba(16,18,20,0.45)] transition hover:-translate-y-0.5 hover:shadow-[0_28px_90px_-48px_rgba(16,18,20,0.55)] ${className}`}
-        onClick={() => openFlyer(flyer.id)}
-      >
-        {isFeatured ? (
-          <Image
-            src={flyer.src}
-            alt={flyer.alt}
-            width={1650}
-            height={1275}
-            loading="eager"
-            className="h-auto w-full"
-          />
-        ) : (
-          <span className="flex aspect-[22/17] items-center justify-center bg-white">
-            <Image
-              src={flyer.src}
-              alt={flyer.alt}
-              width={1650}
-              height={1275}
-              loading="lazy"
-              className="h-full w-full object-contain"
-            />
-          </span>
-        )}
-      </button>
-    );
-  }
-
   return (
     <>
-      <div className="mx-auto max-w-6xl space-y-8">
-        {featuredFlyer && renderFlyerButton(featuredFlyer, true, 'mx-auto max-w-5xl')}
-
-        {gridFlyers.length > 0 && (
-          <div className="grid gap-8 md:grid-cols-2">
-            {gridFlyers.map((flyer) => renderFlyerButton(flyer))}
-          </div>
-        )}
+      {/* FILTERS */}
+      <div className="mb-8 flex flex-wrap gap-2">
+        {filters.map((t) => {
+          const active = filter === t;
+          return (
+            <button
+              key={t}
+              type="button"
+              aria-pressed={active}
+              onClick={() => setFilter(t)}
+              className={cn(
+                'rounded-full px-3.5 py-2 text-xs font-bold uppercase tracking-[0.06em] transition',
+                active
+                  ? 'border border-ink bg-ink text-sand'
+                  : 'border border-black/18 bg-transparent text-black/70 hover:border-black/40',
+              )}
+            >
+              {t}
+            </button>
+          );
+        })}
       </div>
+
+      {/* GRID */}
+      <div className="grid gap-8 md:grid-cols-2">
+        {visible.map((flyer, i) => {
+          const featured = i === 0 && filter === 'All';
+          return (
+            <article
+              key={flyer.id}
+              className={cn(
+                'flex flex-col overflow-hidden border border-black/10 bg-white shadow-[0_20px_70px_-45px_rgba(16,18,20,0.45)]',
+                featured && 'md:col-span-2',
+              )}
+            >
+              <button
+                type="button"
+                aria-label={`Enlarge ${flyer.alt}`}
+                onClick={() => openFlyer(flyer.id)}
+                className="group relative block w-full cursor-zoom-in overflow-hidden bg-white"
+              >
+                {featured ? (
+                  <Image
+                    src={flyer.src}
+                    alt={flyer.alt}
+                    width={flyer.width}
+                    height={flyer.height}
+                    loading="eager"
+                    className="h-auto w-full transition group-hover:scale-[1.01]"
+                  />
+                ) : (
+                  <span className="flex aspect-[4/3] items-center justify-center bg-white">
+                    <Image
+                      src={flyer.src}
+                      alt={flyer.alt}
+                      width={flyer.width}
+                      height={flyer.height}
+                      loading="lazy"
+                      className="h-full w-full object-contain transition group-hover:scale-[1.01]"
+                    />
+                  </span>
+                )}
+                <span className="absolute left-3.5 top-3.5 bg-sand px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.18em] text-ember">
+                  {flyer.tag}
+                </span>
+              </button>
+              <div className="border-t border-black/10 p-4">
+                <h3
+                  className={cn(
+                    'font-extrabold tracking-tight',
+                    featured ? 'text-2xl' : 'text-base',
+                  )}
+                >
+                  {flyer.title}
+                </h3>
+                <div className="mt-2 flex items-center justify-between">
+                  <span className="text-xs font-semibold text-black/60">
+                    {flyer.date}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => openFlyer(flyer.id)}
+                    className="text-xs font-bold uppercase tracking-[0.06em] text-ember hover:text-[#941f15]"
+                  >
+                    View →
+                  </button>
+                </div>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+
+      {visible.length === 0 && (
+        <p className="mt-10 text-center text-sm text-black/60">
+          No announcements in this category.
+        </p>
+      )}
 
       {activeFlyer && (
         <div
@@ -144,8 +222,8 @@ export function AnnouncementFlyerGallery({ flyers }: AnnouncementFlyerGalleryPro
           <Image
             src={activeFlyer.src}
             alt={activeFlyer.alt}
-            width={1650}
-            height={1275}
+            width={activeFlyer.width}
+            height={activeFlyer.height}
             loading="eager"
             className="max-h-full w-auto max-w-full rounded-lg bg-white object-contain shadow-[0_30px_90px_rgba(0,0,0,0.45)]"
             onClick={(event) => event.stopPropagation()}

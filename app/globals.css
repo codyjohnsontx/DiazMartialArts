@@ -17,8 +17,8 @@ body {
 
 body {
   background:
-    radial-gradient(circle at 6% -4%, rgba(180, 35, 24, 0.11), transparent 34%),
-    radial-gradient(circle at 92% 4%, rgba(138, 75, 16, 0.12), transparent 37%),
+    radial-gradient(circle at 6% -4%, rgba(180, 35, 24, 0.1), transparent 34%),
+    radial-gradient(circle at 92% 4%, rgba(138, 75, 16, 0.1), transparent 37%),
     linear-gradient(180deg, #f9f5ef 0%, #f6f1e9 58%, #f4eee5 100%);
   color: var(--text-primary);
   text-rendering: optimizeLegibility;
@@ -26,14 +26,6 @@ body {
 
 main {
   isolation: isolate;
-}
-
-h1,
-h2,
-h3,
-h4 {
-  letter-spacing: -0.01em;
-  text-wrap: balance;
 }
 
 p {
@@ -55,28 +47,45 @@ p {
 }
 
 @layer components {
-  .nav-link {
-    position: relative;
-    transition: color 180ms ease;
+  .display {
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -0.025em;
+    line-height: 0.92;
+    text-wrap: balance;
   }
 
-  .nav-link::after {
-    content: '';
-    position: absolute;
-    bottom: -5px;
-    left: 0;
-    height: 2px;
-    width: 100%;
-    background-color: #b42318;
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 180ms ease;
+  .marquee {
+    display: flex;
+    overflow: hidden;
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 5%,
+      #000 95%,
+      transparent
+    );
   }
 
-  .nav-link:hover::after,
-  .nav-link:focus-visible::after,
-  .nav-link[data-active='true']::after {
-    transform: scaleX(1);
+  .marquee-track {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    animation: marquee-scroll 40s linear infinite;
+  }
+
+  .marquee:hover .marquee-track,
+  .marquee:focus-within .marquee-track {
+    animation-play-state: paused;
+  }
+
+  @keyframes marquee-scroll {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-100%);
+    }
   }
 
   .surface-card {
@@ -97,7 +106,6 @@ p {
     border-color: rgba(180, 35, 24, 0.3);
     box-shadow: 0 18px 40px -24px rgba(16, 18, 20, 0.45);
   }
-
 }
 
 @media (prefers-reduced-motion: reduce) {
