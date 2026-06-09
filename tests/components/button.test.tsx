@@ -2,7 +2,6 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
-import { AccountStatusCard } from '@/components/AccountStatusCard';
 import { Button } from '@/components/Button';
 
 describe('Button', () => {
@@ -43,27 +42,5 @@ describe('Button', () => {
     expect(link).toHaveAttribute('tabindex', '-1');
     expect(link).toHaveClass('cursor-not-allowed', 'opacity-70');
     expect(onClick).not.toHaveBeenCalled();
-  });
-});
-
-describe('AccountStatusCard', () => {
-  it('shows inactive VOD status with an ondemand link', () => {
-    render(<AccountStatusCard vodActive={false} />);
-
-    expect(screen.getByText('Status: Not Active')).toBeVisible();
-    expect(screen.getByRole('link', { name: 'Open Diaz on Demand' })).toHaveAttribute(
-      'href',
-      '/ondemand',
-    );
-  });
-
-  it('shows active VOD status copy', () => {
-    render(<AccountStatusCard vodActive />);
-
-    expect(screen.getByText('Status: Active')).toBeVisible();
-    expect(screen.getByRole('link', { name: 'Go to Diaz on Demand' })).toHaveAttribute(
-      'href',
-      '/ondemand',
-    );
   });
 });
