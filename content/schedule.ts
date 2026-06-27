@@ -6,8 +6,24 @@ export type ClassBlock = {
 
 export type WeeklySchedule = {
   day: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
+  note?: string;
   classes: ClassBlock[];
 };
+
+export const printableSchedules = [
+  {
+    title: 'Kids Class Schedule',
+    image: '/schedules/kids-class-schedule.png',
+    pdf: '/schedules/DMA%202026%20Kids%20Class%20Schedule.pdf',
+    alt: 'Diaz Martial Arts kids class schedule',
+  },
+  {
+    title: 'Adult Class Schedule',
+    image: '/schedules/adult-class-schedule.png',
+    pdf: '/schedules/DMA%202026%20Adult%20Class%20Schedule.pdf',
+    alt: 'Diaz Martial Arts adult class schedule',
+  },
+] as const;
 
 export const classDescriptions: Record<string, string> = {
   'Brazilian Jiu Jitsu (Gi/Gi-less)':
@@ -57,6 +73,7 @@ export const classDescriptions: Record<string, string> = {
 export const weeklySchedule: WeeklySchedule[] = [
   {
     day: 'Monday',
+    note: 'Kids A-Day',
     classes: [
       { time: '7:00-8:00 AM', program: 'Brazilian Jiu Jitsu (Gi/Gi-less)', coach: 'Adult Class' },
       { time: '10:00-10:50 AM', program: 'Filipino Martial Arts & JKD (Equipment)', coach: 'Adult Class' },
@@ -76,6 +93,7 @@ export const weeklySchedule: WeeklySchedule[] = [
   },
   {
     day: 'Tuesday',
+    note: 'Kids A-Day',
     classes: [
       { time: '7:00-8:00 AM', program: 'Brazilian Jiu Jitsu (Gi/Gi-less)', coach: 'Adult Class' },
       { time: '11:00-11:50 AM', program: 'Muay Thai/Muay Lao/Boxing/Kick-Boxing', coach: 'Adult Class' },
@@ -93,6 +111,7 @@ export const weeklySchedule: WeeklySchedule[] = [
   },
   {
     day: 'Wednesday',
+    note: 'Kids B-Day',
     classes: [
       { time: '7:00-8:00 AM', program: 'Brazilian Jiu Jitsu (Gi/Gi-less)', coach: 'Adult Class' },
       { time: '10:00-10:50 AM', program: 'Filipino Martial Arts & JKD (Equipment)', coach: 'Adult Class' },
@@ -112,6 +131,7 @@ export const weeklySchedule: WeeklySchedule[] = [
   },
   {
     day: 'Thursday',
+    note: 'Kids B-Day',
     classes: [
       { time: '7:00-8:00 AM', program: 'Brazilian Jiu Jitsu (Gi/Gi-less)', coach: 'Adult Class' },
       { time: '11:00-11:50 AM', program: 'Muay Thai/Muay Lao/Boxing/Kick-Boxing', coach: 'Adult Class' },

@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 
@@ -8,6 +9,7 @@ import { Eyebrow } from '@/components/Eyebrow';
 import { type ProgramTag } from '@/content/programs';
 import {
   classDescriptions,
+  printableSchedules,
   type WeeklySchedule,
   weeklySchedule,
 } from '@/content/schedule';
@@ -103,17 +105,13 @@ export function ScheduleContent({ upcoming }: Props) {
       <section className="border-b border-black/10">
         <div className="mx-auto grid w-full max-w-6xl items-end gap-12 px-4 py-14 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-8">
           <div>
-            <Eyebrow>Train smart</Eyebrow>
-            <h1 className="display mt-5 text-5xl sm:text-7xl lg:text-[88px]">
+            <h1 className="display text-5xl sm:text-7xl lg:text-[88px]">
               Schedule
             </h1>
           </div>
           <p className="text-base leading-relaxed text-black/75 sm:text-lg">
             Use the weekly lineup for your routine, then check the monthly calendar for
-            events. Looking for digital training?{' '}
-            <Link href="/ondemand" className="font-bold text-ember">
-              Diaz on Demand →
-            </Link>
+            events.
           </p>
         </div>
       </section>
@@ -163,6 +161,11 @@ export function ScheduleContent({ upcoming }: Props) {
                 <div className="text-[10px] font-bold uppercase tracking-[0.22em] opacity-70 sm:text-[11px]">
                   {dayShort[d.day]}
                 </div>
+                {d.note && (
+                  <div className="mt-1 text-[9px] font-bold uppercase tracking-[0.12em] opacity-70 sm:text-[10px]">
+                    {d.note}
+                  </div>
+                )}
                 <div className="mt-1 text-2xl font-extrabold [font-variant-numeric:tabular-nums] sm:text-[28px]">
                   {d.classes.length}
                 </div>
@@ -233,6 +236,43 @@ export function ScheduleContent({ upcoming }: Props) {
               );
             })
           )}
+        </div>
+      </section>
+
+      {/* PRINTABLE SCHEDULES */}
+      <section className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <Eyebrow>Printable sheets</Eyebrow>
+            <h2 className="display mt-3 text-2xl sm:text-3xl">
+              Class schedule flyers
+            </h2>
+          </div>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          {printableSchedules.map((schedule) => (
+            <article key={schedule.title}>
+              <div className="mb-3 flex items-center justify-between gap-4">
+                <h3 className="text-lg font-extrabold text-ink">{schedule.title}</h3>
+                <Link
+                  href={schedule.pdf}
+                  className="text-sm font-bold text-ember hover:underline"
+                  target="_blank"
+                >
+                  Open PDF
+                </Link>
+              </div>
+              <Image
+                src={schedule.image}
+                alt={schedule.alt}
+                width={1800}
+                height={1390}
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                className="h-auto w-full border border-black/10 bg-white"
+              />
+            </article>
+          ))}
         </div>
       </section>
 
