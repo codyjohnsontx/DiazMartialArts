@@ -148,7 +148,7 @@ export function ScheduleContent({ upcoming }: Props) {
                 key={d.day}
                 type="button"
                 role="tab"
-                aria-label={`${d.day}${d.note ? `, ${d.note}` : ''} schedule`}
+                aria-label={`${d.day} schedule`}
                 aria-selected={active}
                 onClick={() => !closed && setActiveDay(d.day)}
                 disabled={closed}
