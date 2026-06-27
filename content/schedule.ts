@@ -6,6 +6,7 @@ export type ClassBlock = {
 
 export type WeeklySchedule = {
   day: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
+  note?: string;
   classes: ClassBlock[];
 };
 
@@ -57,6 +58,7 @@ export const classDescriptions: Record<string, string> = {
 export const weeklySchedule: WeeklySchedule[] = [
   {
     day: 'Monday',
+    note: 'Kids A-Day',
     classes: [
       { time: '7:00-8:00 AM', program: 'Brazilian Jiu Jitsu (Gi/Gi-less)', coach: 'Adult Class' },
       { time: '10:00-10:50 AM', program: 'Filipino Martial Arts & JKD (Equipment)', coach: 'Adult Class' },
@@ -76,6 +78,7 @@ export const weeklySchedule: WeeklySchedule[] = [
   },
   {
     day: 'Tuesday',
+    note: 'Kids A-Day',
     classes: [
       { time: '7:00-8:00 AM', program: 'Brazilian Jiu Jitsu (Gi/Gi-less)', coach: 'Adult Class' },
       { time: '11:00-11:50 AM', program: 'Muay Thai/Muay Lao/Boxing/Kick-Boxing', coach: 'Adult Class' },
@@ -93,6 +96,7 @@ export const weeklySchedule: WeeklySchedule[] = [
   },
   {
     day: 'Wednesday',
+    note: 'Kids B-Day',
     classes: [
       { time: '7:00-8:00 AM', program: 'Brazilian Jiu Jitsu (Gi/Gi-less)', coach: 'Adult Class' },
       { time: '10:00-10:50 AM', program: 'Filipino Martial Arts & JKD (Equipment)', coach: 'Adult Class' },
@@ -112,6 +116,7 @@ export const weeklySchedule: WeeklySchedule[] = [
   },
   {
     day: 'Thursday',
+    note: 'Kids B-Day',
     classes: [
       { time: '7:00-8:00 AM', program: 'Brazilian Jiu Jitsu (Gi/Gi-less)', coach: 'Adult Class' },
       { time: '11:00-11:50 AM', program: 'Muay Thai/Muay Lao/Boxing/Kick-Boxing', coach: 'Adult Class' },

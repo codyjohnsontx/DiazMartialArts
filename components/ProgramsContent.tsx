@@ -81,18 +81,10 @@ export function ProgramsContent() {
     <>
       {/* PAGE HEADER */}
       <section className="border-b border-black/10">
-        <div className="mx-auto grid w-full max-w-6xl items-end gap-12 px-4 py-14 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-8">
-          <div>
-            <Eyebrow>Training Path</Eyebrow>
-            <h1 className="display mt-5 text-5xl sm:text-7xl lg:text-[88px]">
-              Programs
-            </h1>
-          </div>
-          <p className="text-base leading-relaxed text-black/75 sm:text-lg">
-            Choose a class track that matches your age, experience, and goals.
-            Beginner-friendly onboarding under one roof — gi, no-gi, striking, weapons,
-            and self-defense.
-          </p>
+        <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
+          <h1 className="display text-5xl sm:text-7xl lg:text-[88px]">
+            Programs
+          </h1>
         </div>
 
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 border-t border-black/10 px-4 py-5 sm:px-6 lg:px-8">
@@ -116,9 +108,6 @@ export function ProgramsContent() {
                 </button>
               );
             })}
-          </div>
-          <div className="text-xs font-bold uppercase tracking-[0.18em] text-bronze [font-variant-numeric:tabular-nums]">
-            {filtered.length} program{filtered.length !== 1 ? 's' : ''}
           </div>
         </div>
       </section>
