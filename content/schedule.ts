@@ -10,6 +10,21 @@ export type WeeklySchedule = {
   classes: ClassBlock[];
 };
 
+export const printableSchedules = [
+  {
+    title: 'Kids Class Schedule',
+    image: '/schedules/kids-class-schedule.png',
+    pdf: '/schedules/DMA%202026%20Kids%20Class%20Schedule.pdf',
+    alt: 'Diaz Martial Arts kids class schedule',
+  },
+  {
+    title: 'Adult Class Schedule',
+    image: '/schedules/adult-class-schedule.png',
+    pdf: '/schedules/DMA%202026%20Adult%20Class%20Schedule.pdf',
+    alt: 'Diaz Martial Arts adult class schedule',
+  },
+] as const;
+
 export const classDescriptions: Record<string, string> = {
   'Brazilian Jiu Jitsu (Gi/Gi-less)':
     'Technique-focused BJJ class covering positions, transitions, and submissions for both gi and no-gi training.',

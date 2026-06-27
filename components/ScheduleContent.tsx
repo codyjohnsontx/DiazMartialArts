@@ -9,6 +9,7 @@ import { Eyebrow } from '@/components/Eyebrow';
 import { type ProgramTag } from '@/content/programs';
 import {
   classDescriptions,
+  printableSchedules,
   type WeeklySchedule,
   weeklySchedule,
 } from '@/content/schedule';
@@ -84,21 +85,6 @@ const monthShort = [
   'DEC',
 ];
 
-const printableSchedules = [
-  {
-    title: 'Kids Class Schedule',
-    image: '/schedules/kids-class-schedule.png',
-    pdf: '/schedules/DMA%202026%20Kids%20Class%20Schedule.pdf',
-    alt: 'Diaz Martial Arts kids class schedule',
-  },
-  {
-    title: 'Adult Class Schedule',
-    image: '/schedules/adult-class-schedule.png',
-    pdf: '/schedules/DMA%202026%20Adult%20Class%20Schedule.pdf',
-    alt: 'Diaz Martial Arts adult class schedule',
-  },
-] as const;
-
 function formatEventLocation(event: UpcomingEvent): string {
   const time = event.start.toLocaleTimeString('en-US', {
     hour: 'numeric',
@@ -162,7 +148,7 @@ export function ScheduleContent({ upcoming }: Props) {
                 key={d.day}
                 type="button"
                 role="tab"
-                aria-label={`${d.day} schedule`}
+                aria-label={`${d.day}${d.note ? `, ${d.note}` : ''} schedule`}
                 aria-selected={active}
                 onClick={() => !closed && setActiveDay(d.day)}
                 disabled={closed}

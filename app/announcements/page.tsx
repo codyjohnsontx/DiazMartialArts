@@ -152,7 +152,7 @@ const flyers: AnnouncementFlyer[] = [
   {
     id: 'fite-nite-bjj',
     src: '/announcements/fite-nite-bjj-july-31-2026.jpg',
-    alt: 'Fite Nite BJJ at Diaz Martial Arts on Thursday July 31',
+    alt: 'Fite Nite BJJ at Diaz Martial Arts on Friday July 31',
     title: 'Fite Nite BJJ',
     tag: 'BJJ',
     date: 'July 31, 2026',
