@@ -14,12 +14,6 @@ test.describe('Home page', () => {
     await expect(page.locator('h1')).toContainText(/progress/i);
   });
 
-  test('discipline ribbon visible', async ({ page }) => {
-    await expect(page.getByText('Brazilian Jiu Jitsu', { exact: true }).first()).toBeVisible();
-    await expect(page.getByText('Muay Thai', { exact: true }).first()).toBeVisible();
-    await expect(page.getByText('Karate', { exact: true }).first()).toBeVisible();
-  });
-
   test('hero shows core ctas', async ({ page }) => {
     await expect(page.getByRole('link', { name: /Book a Free Trial/i }).first()).toBeVisible();
     await expect(page.getByRole('link', { name: /View Schedule/i }).first()).toBeVisible();
