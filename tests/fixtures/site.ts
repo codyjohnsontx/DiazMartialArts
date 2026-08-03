@@ -2,6 +2,19 @@
 
 export const SITE_NAME = 'Diaz Martial Arts';
 
+/**
+ * Members live in the separate Diaz on Demand app. Mirrors readOndemandUrl in
+ * lib/env.ts: undefined when unset or still the reserved .invalid placeholder,
+ * otherwise the normalised URL the site actually emits.
+ */
+export const ONDEMAND_URL: string | undefined = (() => {
+  const raw = process.env.NEXT_PUBLIC_ONDEMAND_URL?.trim();
+  if (!raw) return undefined;
+
+  const url = new URL(raw);
+  return url.hostname.endsWith('.invalid') ? undefined : url.toString();
+})();
+
 export const NAV_LINKS = [
   { href: '/programs', label: 'Programs' },
   { href: '/schedule', label: 'Schedule' },
@@ -36,5 +49,4 @@ export const PUBLIC_PAGES: Array<{ path: string; heading: string }> = [
   { path: '/faq', heading: 'FAQ' },
   { path: '/privacy', heading: 'Privacy' },
   { path: '/terms', heading: 'Terms' },
-  { path: '/sign-in', heading: 'Member portal' },
 ];

@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-import { NAV_LINKS } from '../fixtures/site';
+import { NAV_LINKS, ONDEMAND_URL } from '../fixtures/site';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -46,10 +46,20 @@ test.describe('Mobile navigation', () => {
     await expect(toggle).toHaveAttribute('aria-expanded', 'false');
   });
 
-  test('clicking "On Demand" routes signed-out users to sign-in', async ({ page }) => {
+  test('mobile menu Member Login points at the configured member app', async ({ page }) => {
+    test.skip(!ONDEMAND_URL, 'NEXT_PUBLIC_ONDEMAND_URL is unset or still the placeholder.');
     await page.getByRole('button', { name: 'Toggle menu' }).click();
-    await page.locator('#mobile-nav').getByRole('link', { name: 'On Demand' }).click();
-    await expect(page).toHaveURL(/\/sign-in/);
+    await expect(
+      page.locator('#mobile-nav').getByRole('link', { name: 'Member Login' }),
+    ).toHaveAttribute('href', ONDEMAND_URL!);
+  });
+
+  test('mobile menu omits Member Login when no member app is configured', async ({ page }) => {
+    test.skip(Boolean(ONDEMAND_URL), 'NEXT_PUBLIC_ONDEMAND_URL points at a member app.');
+    await page.getByRole('button', { name: 'Toggle menu' }).click();
+    const mobileNav = page.locator('#mobile-nav');
+    await expect(mobileNav.getByRole('link', { name: 'Member Login' })).toHaveCount(0);
+    await expect(mobileNav.getByRole('link', { name: 'Book Free Trial' })).toBeVisible();
   });
 
   test('pressing Escape closes the menu', async ({ page }) => {

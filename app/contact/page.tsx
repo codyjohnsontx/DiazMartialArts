@@ -3,7 +3,10 @@ import { ContactForm } from '@/components/ContactForm';
 import { Eyebrow } from '@/components/Eyebrow';
 import { LocalBusinessSchema } from '@/components/LocalBusinessSchema';
 import { site } from '@/content/site';
+import { getPublicEnv } from '@/lib/env';
 import { pageMetadata } from '@/lib/seo';
+
+const { ondemandUrl } = getPublicEnv();
 
 export const metadata = pageMetadata({
   title: 'Contact',
@@ -82,9 +85,11 @@ export default function ContactPage() {
                 Manage your account and on-demand access from the member hub.
               </p>
               <div className="flex flex-wrap gap-2">
-                <Button href="/account" variant="ghost-light">
-                  My Account
-                </Button>
+                {ondemandUrl && (
+                  <Button href={ondemandUrl} variant="ghost-light">
+                    Member Login
+                  </Button>
+                )}
                 <Button href="/ondemand" variant="ghost-light">
                   On Demand
                 </Button>

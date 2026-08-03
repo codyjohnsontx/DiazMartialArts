@@ -16,12 +16,10 @@ export default defineConfig({
       reporter: ['text', 'html'],
       include: [
         'lib/**/*.ts',
-        'components/AccountStatusCard.tsx',
         'components/Button.tsx',
         'components/ContactForm.tsx',
         'components/FaqAccordion.tsx',
         'components/HomeUpcomingClasses.tsx',
-        'components/MemberPortalWaitlistForm.tsx',
         'components/OndemandWaitlistForm.tsx',
         'components/ScheduleContent.tsx',
       ],

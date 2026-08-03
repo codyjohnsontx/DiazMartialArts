@@ -1,4 +1,3 @@
-import { ClerkProvider } from '@clerk/nextjs';
 import type { Metadata } from 'next';
 import { Manrope } from 'next/font/google';
 
@@ -6,7 +5,7 @@ import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { WebSiteSchema } from '@/components/WebSiteSchema';
 import { site } from '@/content/site';
-import { getPublicEnv, getRequiredClerkEnv } from '@/lib/env';
+import { getPublicEnv } from '@/lib/env';
 
 import './globals.css';
 
@@ -17,7 +16,6 @@ const bodyFont = Manrope({
 });
 
 const { siteUrl } = getPublicEnv();
-const { publishableKey } = getRequiredClerkEnv();
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -51,18 +49,16 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" className={bodyFont.variable}>
       <body className="font-[var(--font-body)] antialiased">
-        <ClerkProvider publishableKey={publishableKey}>
-          <WebSiteSchema />
-          <a
-            href="#main-content"
-            className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:rounded-md focus:bg-ember focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
-          >
-            Skip to main content
-          </a>
-          <Header />
-          <main id="main-content">{children}</main>
-          <Footer />
-        </ClerkProvider>
+        <WebSiteSchema />
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:rounded-md focus:bg-ember focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+        >
+          Skip to main content
+        </a>
+        <Header />
+        <main id="main-content">{children}</main>
+        <Footer />
       </body>
     </html>
   );

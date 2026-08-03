@@ -1,22 +1,18 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Auth pages', () => {
-  test('/sign-in renders a member portal coming soon CTA without Clerk login', async ({ page }) => {
-    await page.goto('/sign-in');
-    await expect(
-      page.getByRole('heading', { name: /Member portal coming soon/i }),
-    ).toBeVisible();
-    await expect(page.getByText(/Online login is closed/i)).toBeVisible();
-    await expect(page.getByRole('button', { name: /Join the waitlist/i })).toBeVisible();
-    await expect(page.locator('[class*="cl-"]').first()).toHaveCount(0);
-  });
+/**
+ * Member login lives in the separate Diaz on Demand app. These legacy paths stay
+ * behind only as redirects into /ondemand, which is the one place that knows
+ * where members actually go.
+ */
+test.describe('Legacy auth paths', () => {
+  for (const path of ['/sign-in', '/sign-up', '/sign-in/factor-one', '/sign-up/verify']) {
+    test(`${path} redirects to /ondemand`, async ({ request }) => {
+      const response = await request.get(path, { maxRedirects: 0 });
 
-  test('/sign-up renders a hard access wall without Clerk signup', async ({ page }) => {
-    await page.goto('/sign-up');
-    await expect(
-      page.getByRole('heading', { name: /Account creation is closed/i }),
-    ).toBeVisible();
-    await expect(page.getByText(/new online accounts are not open yet/i)).toBeVisible();
-    await expect(page.locator('[class*="cl-"]').first()).toHaveCount(0);
-  });
+      expect(response.status()).toBeGreaterThanOrEqual(300);
+      expect(response.status()).toBeLessThan(400);
+      expect(response.headers().location).toBe('/ondemand');
+    });
+  }
 });

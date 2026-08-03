@@ -8,7 +8,6 @@ This repository is separate from the Diaz on Demand VOD product. The website lin
 
 - Next.js (App Router) + TypeScript
 - Tailwind CSS
-- Clerk auth for member login/account
 - ESLint + Prettier + Playwright
 - SEO metadata, structured data, robots, sitemap
 
@@ -38,7 +37,8 @@ Environment validation notes:
 
 - `NEXT_PUBLIC_SITE_URL` must be a full absolute URL in Preview/Production.
 - `NEXT_PUBLIC_ONDEMAND_URL`, if set, must also be a full absolute URL.
-- Missing or invalid Clerk/site URL env vars fail early with explicit messages.
+- Invalid site/on-demand URL env vars fail early with explicit messages.
+- No environment variable is required to boot the public site locally.
 
 ## Editable Content Files
 
@@ -74,50 +74,42 @@ Set `NEXT_PUBLIC_FORMSPREE_ENDPOINT` in `.env.local`.
 - If set: form submits directly to Formspree.
 - If unset: form shows a clear setup message.
 
-## Member Login + Account Hub (Clerk)
+## Member Login
 
-This site uses Clerk for member authentication and acts as the member-facing website entry point for Diaz Martial Arts. It can also route members into the separate Diaz on Demand app.
+Member accounts live in the separate Diaz on Demand app, not in this repository.
+This site is the marketing funnel; it holds no sessions and has no auth
+dependency. The two run on different domains, so a session here would not carry
+over to the member app anyway.
+
+`NEXT_PUBLIC_ONDEMAND_URL` is the single source of that destination; nothing
+hardcodes it. The header "Member Login" control is a plain outbound link to it.
+
+That app is not deployed yet, so `.env.example` ships a placeholder on the
+reserved `.invalid` TLD. While the variable is unset or still the placeholder the
+site hides its member entry points rather than linking somewhere dead:
+
+- the header and contact page drop the "Member Login" control
+- `/ondemand` shows the coming soon page instead of forwarding
+
+Replace the placeholder with the real URL once the app is deployed.
 
 Routes:
 
-- `/sign-in`
-- `/sign-up`
-- `/sign-out`
-- `/account` (protected)
-- `/ondemand` (canonical redirect into the Diaz on Demand app)
+- `/ondemand` forwards every visitor to the Diaz on Demand app, or renders the
+  coming-soon page when `ONDEMAND_COMING_SOON=true`.
+- `/sign-in` and `/sign-up` are redirects to the Diaz on Demand app, kept only so
+  older links and bookmarks do not 404.
 
-Required auth env vars:
-
-- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
-- `CLERK_SECRET_KEY`
-
-Vercel environment examples:
-
-- `NEXT_PUBLIC_SITE_URL=https://diazmartialarts.vercel.app`
-- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_...`
-- `CLERK_SECRET_KEY=sk_live_...`
-
-Optional Diaz on Demand + entitlements env vars:
+On Demand env vars:
 
 - `NEXT_PUBLIC_ONDEMAND_URL`
-  - Base URL for the separate Diaz on Demand app (for example `https://ondemand.diazmartialarts.com`).
+  - Base URL of the deployed Diaz on Demand app. A malformed value fails the
+    build loudly; an unset value or the `.invalid` placeholder is treated as
+    "not deployed yet".
 - `ONDEMAND_COMING_SOON`
-  - Set `true` in production to show a public Diaz on Demand coming-soon page with a waitlist form.
-  - Leave unset or `false` in local/preview environments to keep the redirect flow available while building the VOD app.
-- `DIAZ_ENTITLEMENTS_API_URL` (server-side only, optional)
-- `DIAZ_ENTITLEMENTS_API_KEY` (server-side only, optional)
-- `DIAZ_ENTITLEMENTS_TIMEOUT_MS` (server-side only, optional, defaults to `5000`)
-- `DEV_FORCE_VOD_ENTITLEMENT` (`true`/`false`, dev fallback only)
-
-Entitlement behavior:
-
-- Server helper: `lib/entitlements.ts`
-- If `DIAZ_ENTITLEMENTS_API_URL` and `DIAZ_ENTITLEMENTS_API_KEY` are set, the server calls:
-  - `GET {DIAZ_ENTITLEMENTS_API_URL}/users/{clerkUserId}/entitlements`
-  - Sends header: `x-diaz-api-key`
-- If API is not configured:
-  - In development, `DEV_FORCE_VOD_ENTITLEMENT=true` enables VOD entitlement.
-  - Otherwise VOD defaults to inactive.
+  - Set `true` to show the Diaz on Demand coming-soon page with a waitlist form
+    even once `NEXT_PUBLIC_ONDEMAND_URL` is set.
+  - Leave unset or `false` to forward visitors to the member app.
 
 ## SEO and Structured Data
 
@@ -144,7 +136,7 @@ Use two review passes for design updates:
 1. Run app locally and review desktop + mobile for core pages:
    - `/`, `/programs`, `/schedule`, `/coaches`, `/pricing`, `/contact`, `/faq`
 2. Capture screenshots and compare before/after each pass.
-3. Confirm no regressions in spacing, hierarchy, contrast, and nav/account entry points.
+3. Confirm no regressions in spacing, hierarchy, contrast, and nav entry points.
 
 ## Vercel Deploy
 
@@ -165,9 +157,8 @@ Use two review passes for design updates:
    - `/pricing`
    - `/schedule`
    - `/contact`
-   - `/sign-in`
-   - `/account` while signed out
-   - `/ondemand` while signed out
+   - `/sign-in` redirects to the member app
+   - `/ondemand`
 7. Promote only after preview validation passes.
 
 ## Quality Scripts
@@ -188,8 +179,7 @@ npm run format:check
 Vitest covers unit and component tests under `tests/unit` and `tests/components`.
 Coverage is intentionally scoped to shared `lib` modules and selected behavior-heavy
 components so the first gate stays useful while coverage grows. GitHub Actions runs
-`npm run quality` on pushes to `main` and pull requests; configure
-`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` as repository secrets.
+`npm run quality` on pushes to `main` and pull requests.
 Temporary note: `npm run quality` currently omits typecheck/build while the
 known Sanity studio blocker is tracked; use `npm run quality:strict` once that
 blocker is resolved.

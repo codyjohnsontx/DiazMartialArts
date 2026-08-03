@@ -13,11 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NEXT_PUBLIC_SITE_URL: https://diazmartialarts.vercel.app
-      NEXT_PUBLIC_ONDEMAND_URL: https://ondemand.diazmartialarts.com
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || 'pk_test_dGVzdC1jaS0xLmNsZXJrLmFjY291bnRzLmRldiQ=' }}
-      CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY || 'sk_test_ci' }}
+      # A stand-in for the deployed Diaz on Demand app so CI exercises the
+      # configured member-link path. Requests to it are stubbed in the e2e tests.
+      NEXT_PUBLIC_ONDEMAND_URL: https://ondemand.example.com
       ONDEMAND_COMING_SOON: "false"
-      DEV_FORCE_VOD_ENTITLEMENT: "false"
     steps:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
