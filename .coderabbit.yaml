@@ -48,8 +48,9 @@ reviews:
     # Config is read from the pull request HEAD branch, not the base, so a
     # change here can be tested in its own pull request before merging.
 
-    # TypeScript incremental build state. Gitignored, and tsconfig.tsbuildinfo
-    # sits in the working tree today.
+    # TypeScript incremental build state. Gitignored, and tsconfig.json sets
+    # `incremental: true`, so `npm run typecheck` writes tsconfig.tsbuildinfo
+    # into the working tree.
     - '!**/*.tsbuildinfo'
     # Next.js and generic build output. All gitignored, so these are insurance
     # against a stray `git add -f` rather than a live problem. `dist` and
@@ -61,8 +62,9 @@ reviews:
     - '!**/dist/**'
     - '!**/build/**'
     - '!out/**'
-    # Test and coverage artifacts. Playwright writes the first two (see
-    # playwright.config.ts), vitest the third.
+    # Test and coverage artifacts, all gitignored. Playwright writes the first
+    # two and vitest the third, each at its default path - playwright.config.ts
+    # and vitest.config.ts do not override them.
     - '!**/playwright-report/**'
     - '!**/test-results/**'
     - '!**/coverage/**'
@@ -78,7 +80,7 @@ reviews:
     - '!**/*.ico'
     - '!**/*.pdf'
     # SVG is deliberately absent. `**/*.svg` is on CodeRabbit's built-in skip
-    # list, so the tracked SVGs under public/images/ are unreviewed today
+    # list, so the tracked SVGs under public/ are unreviewed today
     # whatever this file says, and the only way to change that would be an
     # include - which would cost the review of every other file. If an SVG ever
     # needs eyes (it is text, and when inlined rather than served through an
