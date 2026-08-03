@@ -21,7 +21,7 @@ const features = [
   {
     n: '01',
     t: 'Structured video curriculum',
-    d: 'Coach-led lessons grouped into clear progression paths — fundamentals, advanced techniques, drills, and conditioning.',
+    d: 'Coach-led lessons grouped into clear progression paths: fundamentals, advanced techniques, drills, and conditioning.',
   },
   {
     n: '02',

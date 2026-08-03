@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 import { PUBLIC_PAGES } from '../fixtures/site';
 
-test.describe('Public pages — HTTP 200 + heading + footer', () => {
+test.describe('Public pages - HTTP 200 + heading + footer', () => {
   for (const { path, heading } of PUBLIC_PAGES) {
     test(`${path} returns 200 and shows heading`, async ({ page }) => {
       const response = await page.goto(path);

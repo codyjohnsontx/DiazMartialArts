@@ -1,4 +1,4 @@
-/** Shared constants for Playwright tests — no Next.js imports. */
+/** Shared constants for Playwright tests. No Next.js imports. */
 
 export const SITE_NAME = 'Diaz Martial Arts';
 

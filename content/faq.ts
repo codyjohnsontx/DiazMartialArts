@@ -33,7 +33,7 @@ export const faqGroups: FaqGroup[] = [
       {
         question: 'Can I freeze my membership?',
         answer:
-          'Yes — short freezes are supported for travel, illness, or injury. Contact the front desk to arrange.',
+          'Yes. Short freezes are supported for travel, illness, or injury. Contact the front desk to arrange.',
       },
       {
         question: 'Do you offer family discounts?',
