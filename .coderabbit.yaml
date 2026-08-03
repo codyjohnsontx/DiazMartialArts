@@ -5,8 +5,13 @@
 # the exclusions below were written against what is actually tracked here.
 
 reviews:
-  # Already the default. Stated so nobody quietly moves it to assertive.
-  profile: chill
+  # Keep this key, and keep it assertive. The account's Organization UI setting
+  # is ASSERTIVE (seen on DiazMartialArts pull requests #15, #16 and #17, which
+  # have no repo config and report profile ASSERTIVE). A repo-level
+  # .coderabbit.yaml overrides the Organization UI, so this has to stay explicit:
+  # dropping the key, or copying `chill` over from another repo, would silently
+  # make reviews shallower than they are today.
+  profile: assertive
 
   auto_review:
     enabled: true
