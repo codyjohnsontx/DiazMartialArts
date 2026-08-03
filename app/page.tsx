@@ -48,10 +48,7 @@ export default function HomePage() {
       <section className="border-b border-black/10">
         <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-4 py-14 sm:px-6 lg:grid-cols-[1.15fr_1fr] lg:gap-16 lg:px-8 lg:py-16">
           <div>
-            <Eyebrow>
-              {site.address.city} · Texas · Est. 1998
-            </Eyebrow>
-            <h1 className="display mt-5 text-5xl sm:text-7xl lg:text-[96px]">
+            <h1 className="display text-5xl sm:text-7xl lg:text-[96px]">
               Martial arts
               <br />
               for real <span className="text-ember">progress.</span>
