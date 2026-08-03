@@ -32,7 +32,7 @@ export default function ContactPage() {
           </div>
           <p className="text-base leading-relaxed text-black/75 sm:text-lg">
             Tell us your goals and availability. We&apos;ll help you choose the right
-            class and get you started — usually within 24 hours.
+            class and get you started, usually within 24 hours.
           </p>
         </div>
       </section>

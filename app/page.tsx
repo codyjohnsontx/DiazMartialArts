@@ -25,12 +25,12 @@ const why = [
   {
     n: '01',
     t: 'Clear coaching, not chaos',
-    d: 'Defined tracks, age groups, and coach-guided progression — instead of expecting people to figure it out alone.',
+    d: 'Defined tracks, age groups, and coach-guided progression. Nobody is left to figure it out alone.',
   },
   {
     n: '02',
     t: 'One gym, multiple paths',
-    d: `Train across ${programs.length} program tracks — BJJ, Muay Thai, karate, self-defense, tactical, weapons, and youth — without bouncing between gyms.`,
+    d: `Train across ${programs.length} program tracks: BJJ, Muay Thai, karate, self-defense, tactical, weapons, and youth. No bouncing between gyms.`,
   },
   {
     n: '03',
@@ -58,7 +58,7 @@ export default function HomePage() {
             </h1>
             <p className="mt-6 max-w-xl text-base leading-relaxed text-black/75 sm:text-lg">
               Coach-led structure, a welcoming gym culture, and class options for kids,
-              teens, and adults — six days a week.
+              teens, and adults. Six days a week.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button href={site.ctas.primary.href} size="lg">
@@ -69,7 +69,7 @@ export default function HomePage() {
               </Button>
             </div>
           </div>
-          <div className="relative flex min-h-[520px] items-center justify-center">
+          <div className="relative flex items-center justify-start lg:min-h-[520px] lg:justify-center">
             <HomeUpcomingClasses />
           </div>
         </div>
@@ -185,7 +185,7 @@ export default function HomePage() {
               is on us.
             </h2>
             <p className="mt-5 max-w-xl text-base leading-relaxed text-white/72 sm:text-lg">
-              Athletic clothes are enough. Arrive 15 minutes early — we&apos;ll handle the
+              Athletic clothes are enough. Arrive 15 minutes early. We&apos;ll handle the
               rest.
             </p>
           </div>
