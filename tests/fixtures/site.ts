@@ -3,9 +3,9 @@
 export const SITE_NAME = 'Diaz Martial Arts';
 
 /**
- * Members live in the separate Diaz on Demand app. Mirrors readOndemandUrl in
- * lib/env.ts: undefined when unset or still the reserved .invalid placeholder,
- * otherwise the normalised URL the site actually emits.
+ * Members live in the separate Diaz on Demand app. Mirrors resolveOndemandUrl in
+ * lib/ondemand-url.mjs: undefined when unset or still the reserved .invalid
+ * placeholder, otherwise the normalised URL the site actually emits.
  */
 export const ONDEMAND_URL: string | undefined = (() => {
   const raw = process.env.NEXT_PUBLIC_ONDEMAND_URL?.trim();
