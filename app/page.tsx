@@ -21,17 +21,6 @@ export const metadata = pageMetadata({
   ],
 });
 
-const ribbon: { label: string; href: string }[] = [
-  { label: 'Brazilian Jiu Jitsu', href: '/programs?tag=Grappling' },
-  { label: 'Muay Thai', href: '/programs?tag=Striking' },
-  { label: 'Boxing', href: '/programs?tag=Striking' },
-  { label: 'Karate', href: '/programs?tag=Striking' },
-  { label: 'Self-Defense', href: '/programs?tag=Self-Defense' },
-  { label: 'Kali · Arnis', href: '/programs?tag=Weapons' },
-  { label: 'IPTT', href: '/programs?tag=Tactical' },
-  { label: 'Kids Programs', href: '/programs?tag=Youth' },
-];
-
 const why = [
   {
     n: '01',
@@ -82,46 +71,6 @@ export default function HomePage() {
           </div>
           <div className="relative flex min-h-[520px] items-center justify-center">
             <HomeUpcomingClasses />
-          </div>
-        </div>
-      </section>
-
-      {/* DISCIPLINE RIBBON */}
-      <section className="bg-ink py-5 text-sand">
-        <div className="mx-auto flex w-full max-w-6xl items-center gap-6 px-4 sm:px-6 lg:px-8">
-          <span className="shrink-0 text-[11px] font-bold uppercase tracking-[0.22em] text-gold">
-            Train
-          </span>
-          <div className="marquee flex-1">
-            {[0, 1].map((copy) => {
-              const isClone = copy === 1;
-              return (
-                <ul
-                  key={copy}
-                  aria-hidden={isClone || undefined}
-                  className="marquee-track m-0 list-none p-0 text-sm font-bold uppercase tracking-[0.04em]"
-                >
-                  {ribbon.map((d) => (
-                    <li
-                      key={d.label}
-                      className="flex items-center whitespace-nowrap"
-                    >
-                      <Link
-                        href={d.href}
-                        tabIndex={isClone ? -1 : undefined}
-                        className="transition hover:text-ember focus-visible:text-ember"
-                      >
-                        {d.label}
-                      </Link>
-                      <span
-                        className="mx-8 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-ember"
-                        aria-hidden="true"
-                      />
-                    </li>
-                  ))}
-                </ul>
-              );
-            })}
           </div>
         </div>
       </section>
