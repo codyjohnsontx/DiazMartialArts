@@ -15,7 +15,7 @@
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:smoke": "npm run build && PLAYWRIGHT_USE_START=1 playwright test tests/e2e/home.spec.ts tests/e2e/navigation.spec.ts tests/e2e/mobile-nav.spec.ts tests/e2e/contact.spec.ts tests/e2e/auth-pages.spec.ts tests/e2e/account-gate.spec.ts tests/e2e/ondemand-route.spec.ts tests/e2e/schedule.spec.ts",
+    "test:smoke": "npm run build && PLAYWRIGHT_USE_START=1 playwright test tests/e2e/home.spec.ts tests/e2e/navigation.spec.ts tests/e2e/mobile-nav.spec.ts tests/e2e/contact.spec.ts tests/e2e/auth-pages.spec.ts tests/e2e/ondemand-route.spec.ts tests/e2e/schedule.spec.ts",
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
     "test:report": "playwright show-report",
@@ -23,7 +23,6 @@
     "quality:strict": "npm run lint && npm run typecheck && npm run test:coverage && npm run build && PLAYWRIGHT_USE_START=1 npm run test:e2e"
   },
   "dependencies": {
-    "@clerk/nextjs": "^6.14.4",
     "next": "14.2.35",
     "react": "18.3.1",
     "react-dom": "18.3.1",

@@ -3,7 +3,10 @@ import { ContactForm } from '@/components/ContactForm';
 import { Eyebrow } from '@/components/Eyebrow';
 import { LocalBusinessSchema } from '@/components/LocalBusinessSchema';
 import { site } from '@/content/site';
+import { getPublicEnv } from '@/lib/env';
 import { pageMetadata } from '@/lib/seo';
+
+const { ondemandUrl } = getPublicEnv();
 
 export const metadata = pageMetadata({
   title: 'Contact',
@@ -79,12 +82,15 @@ export default function ContactPage() {
             <div className="bg-ink p-7 text-sand">
               <Eyebrow variant="light">Already a member?</Eyebrow>
               <p className="my-3 text-sm leading-relaxed text-white/72">
-                Manage your account and on-demand access from the member hub.
+                Member accounts and video access live in Diaz on Demand. Head there for
+                access or launch updates.
               </p>
               <div className="flex flex-wrap gap-2">
-                <Button href="/account" variant="ghost-light">
-                  My Account
-                </Button>
+                {ondemandUrl && (
+                  <Button href={ondemandUrl} variant="ghost-light">
+                    Member Login
+                  </Button>
+                )}
                 <Button href="/ondemand" variant="ghost-light">
                   On Demand
                 </Button>

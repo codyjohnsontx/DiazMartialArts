@@ -90,3 +90,21 @@ npm run lint
 npm run test
 npx tsc --noEmit
 ```
+
+## Project Notes
+
+- This site has no authentication. Member accounts live in the separate Diaz on
+  Demand app; `NEXT_PUBLIC_ONDEMAND_URL` is the single source of that
+  destination and nothing hardcodes it. See the "Member Login" section of
+  `README.md`. Do not reintroduce an auth provider here without instruction.
+- The root `app/loading.tsx` makes every page stream, so a `redirect()` inside a
+  page component is downgraded to a client-side redirect (HTTP 200 plus a
+  `NEXT_REDIRECT` marker) that crawlers and non-JS clients never follow. When a
+  path needs a real HTTP redirect, declare it in `next.config.mjs` instead.
+
+## Maintaining this file
+
+Keep this file for knowledge useful to almost every future agent session in this project.
+Do not repeat what the codebase already shows; point to the authoritative file or command instead.
+Prefer rewriting or pruning existing entries over appending new ones.
+When updating this file, preserve this bar for all agents and keep entries concise.

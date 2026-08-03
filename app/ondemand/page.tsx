@@ -1,12 +1,10 @@
-import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 
 import { Button } from '@/components/Button';
 import { Eyebrow } from '@/components/Eyebrow';
 import { OndemandWaitlistForm } from '@/components/OndemandWaitlistForm';
 import { Placeholder } from '@/components/Placeholder';
-import { getAppEnv, getPublicEnv } from '@/lib/env';
-import { getEntitlements } from '@/lib/entitlements';
+import { getAppEnv } from '@/lib/env';
 import { pageMetadata } from '@/lib/seo';
 
 export const metadata = pageMetadata({
@@ -43,9 +41,11 @@ const samples = [
 ];
 
 export default async function OndemandRoutePage() {
-  const { ondemandComingSoon } = getAppEnv();
+  const { ondemandComingSoon, ondemandUrl } = getAppEnv();
 
-  if (ondemandComingSoon) {
+  // Show the coming-soon page whenever there is nowhere to forward people to,
+  // so this route never dead-ends on an unconfigured member app.
+  if (ondemandComingSoon || !ondemandUrl) {
     return (
       <>
         {/* HERO */}
@@ -184,21 +184,9 @@ export default async function OndemandRoutePage() {
     );
   }
 
-  let userId: string | null = null;
-
-  try {
-    const authState = await auth();
-    userId = authState.userId;
-  } catch {
-    redirect('/sign-in?redirect_url=/ondemand');
-  }
-
-  if (!userId) {
-    redirect('/sign-in?redirect_url=/ondemand');
-  }
-
-  const entitlements = await getEntitlements(userId);
-  const { ondemandUrl } = getPublicEnv();
-
-  redirect(`${ondemandUrl}${entitlements.vod ? '/library' : '/subscribe'}`);
+  // The Diaz on Demand app owns members and their access, so hand every visitor
+  // straight to it rather than checking anything here. next.config.mjs normally
+  // handles this as a real HTTP redirect before the request reaches this page;
+  // this covers the window where the env changed but nothing has rebuilt yet.
+  redirect(ondemandUrl);
 }
