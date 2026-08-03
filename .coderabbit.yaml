@@ -61,15 +61,17 @@ reviews:
     - '!**/playwright-report/**'
     - '!**/test-results/**'
     - '!**/coverage/**'
-    # Raster images. This repo tracks a lot of them under public/ (announcement
+    # Binary assets. This repo tracks a lot of them under public/ (announcement
     # flyers, class schedules, program photos) and there is nothing to review in
-    # a binary image diff.
+    # a binary diff.
     - '!**/*.png'
     - '!**/*.jpg'
     - '!**/*.jpeg'
     - '!**/*.gif'
     - '!**/*.webp'
+    - '!**/*.avif'
     - '!**/*.ico'
+    - '!**/*.pdf'
     # SVG is deliberately absent. `**/*.svg` is on CodeRabbit's built-in skip
     # list, so the tracked SVGs under public/images/ are unreviewed today
     # whatever this file says, and the only way to change that would be an
