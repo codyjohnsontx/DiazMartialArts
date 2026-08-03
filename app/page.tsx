@@ -69,7 +69,7 @@ export default function HomePage() {
               </Button>
             </div>
           </div>
-          <div className="relative flex min-h-[520px] items-center justify-center">
+          <div className="relative flex items-center justify-start lg:min-h-[520px] lg:justify-center">
             <HomeUpcomingClasses />
           </div>
         </div>
