@@ -82,7 +82,8 @@ export default function ContactPage() {
             <div className="bg-ink p-7 text-sand">
               <Eyebrow variant="light">Already a member?</Eyebrow>
               <p className="my-3 text-sm leading-relaxed text-white/72">
-                Manage your account and on-demand access from the member hub.
+                Member accounts and video access live in Diaz on Demand. Head there for
+                access or launch updates.
               </p>
               <div className="flex flex-wrap gap-2">
                 {ondemandUrl && (

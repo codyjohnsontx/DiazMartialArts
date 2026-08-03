@@ -1,3 +1,5 @@
+import { resolveOndemandComingSoon, resolveOndemandUrl } from './ondemand-url.mjs';
+
 export type AppEnv = {
   siteUrl: string;
   /**
@@ -66,29 +68,12 @@ function readOptionalUrl(name: string, value: string | undefined): string | unde
   return parseAbsoluteUrl(name, trimmed);
 }
 
-/**
- * The Diaz on Demand app has no URL yet, so `.env.example` ships a placeholder
- * on the RFC 2606 reserved `.invalid` TLD, which can never resolve. Treat that
- * placeholder exactly like an unset value: the site hides its member entry
- * points rather than pointing them at a host that does not exist. A malformed
- * value still throws, so a real typo fails loudly instead of going quiet.
- */
-function readOndemandUrl(): string | undefined {
-  const value = readOptionalUrl(
-    'NEXT_PUBLIC_ONDEMAND_URL',
-    process.env.NEXT_PUBLIC_ONDEMAND_URL,
-  );
-  if (!value) return undefined;
-
-  return new URL(value).hostname.endsWith('.invalid') ? undefined : value;
-}
-
 function readPublicEnv(): PublicEnv {
   if (cachedPublicEnv) return cachedPublicEnv;
 
   cachedPublicEnv = {
     siteUrl: readSiteUrl(),
-    ondemandUrl: readOndemandUrl(),
+    ondemandUrl: resolveOndemandUrl(process.env.NEXT_PUBLIC_ONDEMAND_URL),
     googleCalendarEmbedUrl: readOptionalUrl(
       'NEXT_PUBLIC_GOOGLE_CALENDAR_EMBED_URL',
       process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_EMBED_URL,
@@ -115,7 +100,7 @@ export function getAppEnv(): AppEnv {
 
   cachedAppEnv = {
     ...readPublicEnv(),
-    ondemandComingSoon: process.env.ONDEMAND_COMING_SOON?.trim().toLowerCase() === 'true',
+    ondemandComingSoon: resolveOndemandComingSoon(process.env.ONDEMAND_COMING_SOON),
   };
 
   return cachedAppEnv;

@@ -10,12 +10,24 @@ permissions:
 
 jobs:
   quality:
+    name: quality (${{ matrix.member_app }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      # The site behaves differently depending on whether the separate Diaz on
+      # Demand app is configured, and each state skips the other's tests. Run
+      # both so neither branch can rot: "configured" uses a stand-in host for the
+      # deployed member app, "unconfigured" uses the same reserved .invalid
+      # placeholder .env.example ships, which is what production runs today.
+      matrix:
+        include:
+          - member_app: configured
+            ondemand_url: https://ondemand.example.com
+          - member_app: unconfigured
+            ondemand_url: https://replace-me.invalid
     env:
       NEXT_PUBLIC_SITE_URL: https://diazmartialarts.vercel.app
-      # A stand-in for the deployed Diaz on Demand app so CI exercises the
-      # configured member-link path. Requests to it are stubbed in the e2e tests.
-      NEXT_PUBLIC_ONDEMAND_URL: https://ondemand.example.com
+      NEXT_PUBLIC_ONDEMAND_URL: ${{ matrix.ondemand_url }}
       ONDEMAND_COMING_SOON: "false"
     steps:
       - name: Checkout

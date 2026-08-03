@@ -185,6 +185,8 @@ export default async function OndemandRoutePage() {
   }
 
   // The Diaz on Demand app owns members and their access, so hand every visitor
-  // straight to it rather than checking anything here.
+  // straight to it rather than checking anything here. next.config.mjs normally
+  // handles this as a real HTTP redirect before the request reaches this page;
+  // this covers the window where the env changed but nothing has rebuilt yet.
   redirect(ondemandUrl);
 }

@@ -96,9 +96,11 @@ Replace the placeholder with the real URL once the app is deployed.
 Routes:
 
 - `/ondemand` forwards every visitor to the Diaz on Demand app, or renders the
-  coming-soon page when `ONDEMAND_COMING_SOON=true`.
-- `/sign-in` and `/sign-up` are redirects to the Diaz on Demand app, kept only so
-  older links and bookmarks do not 404.
+  coming-soon page when `ONDEMAND_COMING_SOON=true`. The forward is a real HTTP
+  redirect declared in `next.config.mjs`, not a page-level `redirect()` — see the
+  streaming caveat in `CLAUDE.md`.
+- `/sign-in` and `/sign-up` are redirects to `/ondemand`, kept only so older
+  links and bookmarks do not 404.
 
 On Demand env vars:
 
@@ -110,6 +112,9 @@ On Demand env vars:
   - Set `true` to show the Diaz on Demand coming-soon page with a waitlist form
     even once `NEXT_PUBLIC_ONDEMAND_URL` is set.
   - Leave unset or `false` to forward visitors to the member app.
+  - Both variables are read in `next.config.mjs` to decide whether the
+    `/ondemand` redirect exists, so changing either needs a rebuild to take
+    effect there. Vercel redeploys on an env change, so this is automatic.
 
 ## SEO and Structured Data
 

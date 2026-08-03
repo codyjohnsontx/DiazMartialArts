@@ -3,18 +3,17 @@ import { expect, test } from '@playwright/test';
 import { ONDEMAND_URL } from '../fixtures/site';
 
 test.describe('Ondemand entry route', () => {
-  test('/ondemand hands visitors to the member app once it is configured', async ({ page }) => {
+  test('/ondemand hands visitors to the member app once it is configured', async ({ request }) => {
     test.skip(!ONDEMAND_URL, 'NEXT_PUBLIC_ONDEMAND_URL is unset or still the placeholder.');
 
-    // The member app is a separate deployment CI cannot reach, so stub it and
-    // assert only that the site hands the visitor over.
-    await page.route(`${ONDEMAND_URL}**`, (route) =>
-      route.fulfill({ status: 200, contentType: 'text/html', body: '<h1>Member app</h1>' }),
-    );
+    // Must be a real HTTP redirect, not a client-side one: the root
+    // app/loading.tsx makes pages stream, so a page-level redirect() flushes a
+    // 200 that crawlers and non-JS clients never follow.
+    const response = await request.get('/ondemand', { maxRedirects: 0 });
 
-    await page.goto('/ondemand');
-
-    await expect(page).toHaveURL(ONDEMAND_URL!);
+    expect(response.status()).toBeGreaterThanOrEqual(300);
+    expect(response.status()).toBeLessThan(400);
+    expect(response.headers().location).toBe(ONDEMAND_URL);
   });
 
   test('/ondemand shows the coming soon page when no member app is configured', async ({
