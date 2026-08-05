@@ -189,6 +189,11 @@ Temporary note: `npm run quality` currently omits typecheck/build while the
 known Sanity studio blocker is tracked; use `npm run quality:strict` once that
 blocker is resolved.
 
+CodeRabbit reviews each pull request once, on the code as it stands when the pull
+request is published, and does not re-review the commits pushed after that. Ask
+for a fresh pass by commenting `@coderabbitai review` on the pull request. See
+`.coderabbit.yaml` for the rest of the review settings.
+
 ## Repo Boundary
 
 - Website repo: `git@github.com:codyjohnsontx/DiazMartialArts.git`

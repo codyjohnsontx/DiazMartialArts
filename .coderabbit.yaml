@@ -1,0 +1,96 @@
+# CodeRabbit configuration
+#
+# Goal: one review per pull request, on final code, with the review quality
+# left intact. Shape borrowed from the reviewed version on DiazOnDemand main;
+# the exclusions below were written against what is actually tracked here.
+
+reviews:
+  # Keep this key, and keep it assertive. The account's Organization UI setting
+  # is ASSERTIVE (seen on DiazMartialArts pull requests #15, #16 and #17, which
+  # have no repo config and report profile ASSERTIVE). A repo-level
+  # .coderabbit.yaml overrides the Organization UI, so this has to stay explicit:
+  # dropping the key, or copying `chill` over from another repo, would silently
+  # make reviews shallower than they are today.
+  profile: assertive
+
+  auto_review:
+    enabled: true
+
+    # THE ONE THAT MATTERS.
+    # Default is true: CodeRabbit re-reviews as new commits land, so every
+    # pipeline fix commit spends another review on a branch we are still
+    # working on. With this off, CodeRabbit reviews once and re-reviews only
+    # when asked with `@coderabbitai review`.
+    auto_incremental_review: false
+
+    # Already the default. Draft pull requests are not reviewed, which is what
+    # makes "open as a draft, publish when ready" safe.
+    drafts: false
+
+  # Skip what nobody should be reviewing: generated, build, or binary files.
+  #
+  # Absence from this list is not exclusion. CodeRabbit ships its own built-in
+  # skip list (published under "Default ignored paths" at
+  # https://docs.coderabbit.ai/configuration/path-instructions), and anything on
+  # it stays skipped whatever is written here. `package-lock.json` is on it, so
+  # it is not repeated below - there is nothing to gain by excluding what is
+  # already blocked. Ordinary source and markdown are not on it, so they are
+  # reviewed by default and need no include.
+  path_filters:
+    # DO NOT ADD AN ENTRY WITHOUT A LEADING `!`. Read this before you try.
+    #
+    # An entry without `!` is an INCLUDE, and a single include NARROWS the whole
+    # review to only what it matches. Everything else is then skipped with
+    # "excluded by none and included by none". On DiazOnDemand that silently
+    # switched review off for nearly the whole repository for most of a day.
+    # There is no safe force-include. If you think you need one, stop and ask.
+    #
+    # Config is read from the pull request HEAD branch, not the base, so a
+    # change here can be tested in its own pull request before merging.
+
+    # TypeScript incremental build state. Gitignored, and tsconfig.json sets
+    # `incremental: true`, so `npm run typecheck` writes tsconfig.tsbuildinfo
+    # into the working tree.
+    - '!**/*.tsbuildinfo'
+    # Next.js and generic build output. All gitignored, so these are insurance
+    # against a stray `git add -f` rather than a live problem. `dist` and
+    # `build` match at any depth, so they would also hide a source directory
+    # that happened to take one of those names. Nothing tracked collides today;
+    # revisit if one ever does, because hiding real source is the failure this
+    # file exists to avoid.
+    - '!**/.next/**'
+    - '!**/dist/**'
+    - '!**/build/**'
+    - '!out/**'
+    # Test and coverage artifacts, all gitignored. Playwright writes the first
+    # two and vitest the third, each at its default path - playwright.config.ts
+    # and vitest.config.ts do not override them.
+    - '!**/playwright-report/**'
+    - '!**/test-results/**'
+    - '!**/coverage/**'
+    # Binary assets. This repo tracks a lot of them under public/ (announcement
+    # flyers, class schedules, program photos) and there is nothing to review in
+    # a binary diff.
+    - '!**/*.png'
+    - '!**/*.jpg'
+    - '!**/*.jpeg'
+    - '!**/*.gif'
+    - '!**/*.webp'
+    - '!**/*.avif'
+    - '!**/*.ico'
+    - '!**/*.pdf'
+    # SVG is deliberately absent. `**/*.svg` is on CodeRabbit's built-in skip
+    # list, so the tracked SVGs under public/ are unreviewed today
+    # whatever this file says, and the only way to change that would be an
+    # include - which would cost the review of every other file. If an SVG ever
+    # needs eyes (it is text, and when inlined rather than served through an
+    # <img> it can carry inline <script>, on* handlers, or javascript: hrefs),
+    # review it by hand instead.
+
+  # The summary Cody actually reads.
+  high_level_summary: true
+
+  # The status line is how we tell a finished review from a running one.
+  review_status: true
+
+  poem: false
