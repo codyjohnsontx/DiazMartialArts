@@ -39,12 +39,9 @@ export function Placeholder({
   if (src) {
     return (
       <div
-        className={cn(
-          'relative w-full overflow-hidden rounded-sm bg-black/5',
-          className,
-        )}
+        className={cn('relative w-full overflow-hidden rounded-sm bg-black/5', className)}
         style={{
-          height: ratio ? undefined : height ?? DEFAULT_PLACEHOLDER_HEIGHT,
+          height: ratio ? undefined : (height ?? DEFAULT_PLACEHOLDER_HEIGHT),
           aspectRatio: ratio,
         }}
       >
@@ -62,10 +59,7 @@ export function Placeholder({
 
   return (
     <div
-      className={cn(
-        'relative flex w-full items-end overflow-hidden rounded-sm p-4',
-        className,
-      )}
+      className={cn('relative flex w-full items-end overflow-hidden rounded-sm p-4', className)}
       style={{
         height: ratio ? undefined : height,
         aspectRatio: ratio,

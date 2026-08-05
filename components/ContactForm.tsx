@@ -12,12 +12,7 @@ type FieldErrors = Partial<Record<FieldName, string>>;
 
 const { formspreeEndpoint: endpoint } = getPublicEnv();
 
-const ageGroups = [
-  'Adult (16+)',
-  'Teen (13–15)',
-  'Junior (7–13)',
-  "Lil' Dragon (4–7)",
-];
+const ageGroups = ['Adult (16+)', 'Teen (13–15)', 'Junior (7–13)', "Lil' Dragon (4–7)"];
 
 const interests = [
   'BJJ Gi/No-Gi',
@@ -157,9 +152,7 @@ export function ContactForm() {
   return (
     <form onSubmit={handleSubmit} className="border border-black/10 bg-white p-7 sm:p-9" noValidate>
       <h2 className="text-2xl font-extrabold tracking-tight">Free trial request</h2>
-      <p className="mt-2 text-sm text-black/65">
-        No card required. Athletic clothes are enough.
-      </p>
+      <p className="mt-2 text-sm text-black/65">No card required. Athletic clothes are enough.</p>
 
       <div className="mt-7 grid gap-5 sm:grid-cols-2">
         <div>
@@ -208,9 +201,7 @@ export function ContactForm() {
             onChange={() => clearFieldError('email')}
             className={inputClass}
           />
-          {fieldErrors.email && (
-            <p className="mt-1 text-sm text-ember">{fieldErrors.email}</p>
-          )}
+          {fieldErrors.email && <p className="mt-1 text-sm text-ember">{fieldErrors.email}</p>}
         </div>
 
         <div>
@@ -225,9 +216,7 @@ export function ContactForm() {
             onChange={() => clearFieldError('phone')}
             className={inputClass}
           />
-          {fieldErrors.phone && (
-            <p className="mt-1 text-sm text-ember">{fieldErrors.phone}</p>
-          )}
+          {fieldErrors.phone && <p className="mt-1 text-sm text-ember">{fieldErrors.phone}</p>}
         </div>
         <div>
           <FieldLabel htmlFor="ageGroup">Age group</FieldLabel>
@@ -274,9 +263,7 @@ export function ContactForm() {
             onChange={() => clearFieldError('message')}
             className={cn(inputClass, 'min-h-[100px] resize-y')}
           />
-          {fieldErrors.message && (
-            <p className="mt-1 text-sm text-ember">{fieldErrors.message}</p>
-          )}
+          {fieldErrors.message && <p className="mt-1 text-sm text-ember">{fieldErrors.message}</p>}
         </div>
       </div>
 

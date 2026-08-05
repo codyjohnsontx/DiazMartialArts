@@ -25,13 +25,7 @@ function FooterTitle({ children }: { children: React.ReactNode }) {
   );
 }
 
-function FooterCol({
-  title,
-  links,
-}: {
-  title: string;
-  links: { href: string; label: string }[];
-}) {
+function FooterCol({ title, links }: { title: string; links: { href: string; label: string }[] }) {
   return (
     <div>
       <FooterTitle>{title}</FooterTitle>

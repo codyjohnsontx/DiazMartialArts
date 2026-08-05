@@ -28,10 +28,9 @@ test.describe('Navigation', () => {
     });
   }
 
-  test('header Member Login points straight at the configured member app', async (
-    { page },
-    testInfo,
-  ) => {
+  test('header Member Login points straight at the configured member app', async ({
+    page,
+  }, testInfo) => {
     test.skip(testInfo.project.name === 'Mobile', 'Desktop nav is hidden on mobile viewports.');
     test.skip(!ONDEMAND_URL, 'NEXT_PUBLIC_ONDEMAND_URL is unset or still the placeholder.');
     await page.goto('/');

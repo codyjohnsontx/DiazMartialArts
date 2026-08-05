@@ -9,11 +9,7 @@ export const metadata = pageMetadata({
   description:
     'Meet the Diaz Martial Arts coaching team leading youth and adult martial arts instruction.',
   path: '/coaches',
-  keywords: [
-    'martial arts coaches',
-    'bjj instructors san marcos',
-    'kids martial arts instructors',
-  ],
+  keywords: ['martial arts coaches', 'bjj instructors san marcos', 'kids martial arts instructors'],
 });
 
 export default function CoachesPage() {
@@ -23,9 +19,7 @@ export default function CoachesPage() {
     return (
       <section className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-6 lg:px-8">
         <Eyebrow>Instruction</Eyebrow>
-        <h1 className="display mt-5 text-5xl sm:text-7xl lg:text-[88px]">
-          Coaches
-        </h1>
+        <h1 className="display mt-5 text-5xl sm:text-7xl lg:text-[88px]">Coaches</h1>
         <p className="mt-6 max-w-xl text-base leading-relaxed text-black/75 sm:text-lg">
           Coach profiles are being updated. Please check back soon.
         </p>
@@ -40,13 +34,11 @@ export default function CoachesPage() {
         <div className="mx-auto grid w-full max-w-6xl items-end gap-12 px-4 py-14 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-8">
           <div>
             <Eyebrow>Instruction</Eyebrow>
-            <h1 className="display mt-5 text-5xl sm:text-7xl lg:text-[88px]">
-              Coaches
-            </h1>
+            <h1 className="display mt-5 text-5xl sm:text-7xl lg:text-[88px]">Coaches</h1>
           </div>
           <p className="text-base leading-relaxed text-black/75 sm:text-lg">
-            Experienced instructors focused on technical growth, safety, and long-term
-            student development.
+            Experienced instructors focused on technical growth, safety, and long-term student
+            development.
           </p>
         </div>
       </section>
@@ -69,10 +61,7 @@ export default function CoachesPage() {
           </h2>
           <div className="mt-6 space-y-3">
             {head.bio.split('\n\n').map((paragraph, i) => (
-              <p
-                key={i}
-                className="text-base leading-relaxed text-black/75"
-              >
+              <p key={i} className="text-base leading-relaxed text-black/75">
                 {paragraph}
               </p>
             ))}
@@ -82,7 +71,6 @@ export default function CoachesPage() {
           </Button>
         </div>
       </section>
-
     </>
   );
 }

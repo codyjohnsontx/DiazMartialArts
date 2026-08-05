@@ -178,11 +178,7 @@ export const metadata = pageMetadata({
   description:
     'June and July 2026 announcements, events, closures, promotions, schedules, and class updates for Diaz Martial Arts in San Marcos, Texas.',
   path: '/announcements',
-  keywords: [
-    'martial arts events san marcos',
-    'bjj tournament',
-    'martial arts seminar texas',
-  ],
+  keywords: ['martial arts events san marcos', 'bjj tournament', 'martial arts seminar texas'],
 });
 
 export default function AnnouncementsPage() {
@@ -193,9 +189,7 @@ export default function AnnouncementsPage() {
         <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
           <div>
             <Eyebrow>Events calendar</Eyebrow>
-            <h1 className="display mt-5 text-5xl sm:text-7xl lg:text-[80px]">
-              Announcements
-            </h1>
+            <h1 className="display mt-5 text-5xl sm:text-7xl lg:text-[80px]">Announcements</h1>
           </div>
         </div>
       </section>

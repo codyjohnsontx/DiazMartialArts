@@ -107,9 +107,7 @@ export function OndemandWaitlistForm() {
           onChange={() => clearFieldError('name')}
           className={inputClasses}
         />
-        {fieldErrors.name && (
-          <p className="mt-1 text-sm text-gold">{fieldErrors.name}</p>
-        )}
+        {fieldErrors.name && <p className="mt-1 text-sm text-gold">{fieldErrors.name}</p>}
       </div>
 
       <div>
@@ -127,9 +125,7 @@ export function OndemandWaitlistForm() {
           onChange={() => clearFieldError('email')}
           className={inputClasses}
         />
-        {fieldErrors.email && (
-          <p className="mt-1 text-sm text-gold">{fieldErrors.email}</p>
-        )}
+        {fieldErrors.email && <p className="mt-1 text-sm text-gold">{fieldErrors.email}</p>}
       </div>
 
       <div>
@@ -146,7 +142,12 @@ export function OndemandWaitlistForm() {
         </select>
       </div>
 
-      <Button type="submit" size="lg" disabled={status === 'submitting'} className="justify-between">
+      <Button
+        type="submit"
+        size="lg"
+        disabled={status === 'submitting'}
+        className="justify-between"
+      >
         {status === 'submitting' ? 'Joining…' : 'Join waitlist'}
         <span aria-hidden="true">→</span>
       </Button>

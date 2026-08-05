@@ -82,9 +82,7 @@ export function ProgramsContent() {
       {/* PAGE HEADER */}
       <section className="border-b border-black/10">
         <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
-          <h1 className="display text-5xl sm:text-7xl lg:text-[88px]">
-            Programs
-          </h1>
+          <h1 className="display text-5xl sm:text-7xl lg:text-[88px]">Programs</h1>
         </div>
 
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 border-t border-black/10 px-4 py-5 sm:px-6 lg:px-8">
@@ -136,9 +134,7 @@ export function ProgramsContent() {
                   {p.title}
                 </h3>
                 <div className="text-[13px] font-semibold text-bronze">{p.sub}</div>
-                <p className="my-4 flex-1 text-sm leading-relaxed text-black/72">
-                  {p.description}
-                </p>
+                <p className="my-4 flex-1 text-sm leading-relaxed text-black/72">{p.description}</p>
                 <div className="flex gap-4 border-t border-black/10 pt-3 text-xs font-semibold">
                   <span>
                     <span className="text-black/50">Ages</span> · {p.age}
@@ -155,9 +151,7 @@ export function ProgramsContent() {
         {/* HOW IT WORKS */}
         <div className="mt-20 border-y border-black/10 py-12">
           <Eyebrow>Getting started</Eyebrow>
-          <h2 className="display mt-3 text-3xl sm:text-4xl">
-            What your first month looks like
-          </h2>
+          <h2 className="display mt-3 text-3xl sm:text-4xl">What your first month looks like</h2>
           <div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {onboardingSteps.map((s) => (
               <div key={s.n} className="border-t-2 border-ember pt-4">
@@ -165,9 +159,7 @@ export function ProgramsContent() {
                   {s.n}
                 </div>
                 <h3 className="mt-2 text-lg font-extrabold">{s.t}</h3>
-                <p className="mt-1.5 text-[13.5px] leading-relaxed text-black/72">
-                  {s.d}
-                </p>
+                <p className="mt-1.5 text-[13.5px] leading-relaxed text-black/72">{s.d}</p>
               </div>
             ))}
           </div>

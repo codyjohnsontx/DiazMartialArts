@@ -29,10 +29,7 @@ describe('HomeUpcomingClasses', () => {
       'href',
       '/schedule',
     );
-    expect(screen.getByRole('link', { name: /Try a class/i })).toHaveAttribute(
-      'href',
-      '/contact',
-    );
+    expect(screen.getByRole('link', { name: /Try a class/i })).toHaveAttribute('href', '/contact');
   });
 
   it('shows the next available day after classes end', () => {

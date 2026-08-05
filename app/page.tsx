@@ -54,8 +54,8 @@ export default function HomePage() {
               for real <span className="text-ember">progress.</span>
             </h1>
             <p className="mt-6 max-w-xl text-base leading-relaxed text-black/75 sm:text-lg">
-              Coach-led structure, a welcoming gym culture, and class options for kids,
-              teens, and adults. Six days a week.
+              Coach-led structure, a welcoming gym culture, and class options for kids, teens, and
+              adults. Six days a week.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button href={site.ctas.primary.href} size="lg">
@@ -77,8 +77,7 @@ export default function HomePage() {
         <div>
           <Eyebrow>Why Diaz</Eyebrow>
           <h2 className="display mt-4 text-3xl leading-[1.05] sm:text-4xl lg:text-[44px]">
-            A better first step for beginners. A better long-term home for committed
-            students.
+            A better first step for beginners. A better long-term home for committed students.
           </h2>
         </div>
         <div className="mt-10 lg:mt-0">
@@ -89,16 +88,10 @@ export default function HomePage() {
                 i === 0 ? 'border-t border-black/18' : 'border-t border-black/10'
               } ${i === why.length - 1 ? 'border-b border-black/18' : ''}`}
             >
-              <div className="text-[13px] font-extrabold tracking-[0.08em] text-ember">
-                {row.n}
-              </div>
+              <div className="text-[13px] font-extrabold tracking-[0.08em] text-ember">{row.n}</div>
               <div>
-                <h3 className="text-xl font-extrabold tracking-tight sm:text-[22px]">
-                  {row.t}
-                </h3>
-                <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-black/72">
-                  {row.d}
-                </p>
+                <h3 className="text-xl font-extrabold tracking-tight sm:text-[22px]">{row.t}</h3>
+                <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-black/72">{row.d}</p>
               </div>
             </div>
           ))}
@@ -140,20 +133,11 @@ export default function HomePage() {
                     <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-bronze">
                       {p.tag}
                     </div>
-                    <h3 className="mt-1.5 text-xl font-extrabold tracking-tight">
-                      {p.title}
-                    </h3>
-                    <div className="mt-0.5 text-[13px] font-semibold text-bronze">
-                      {p.sub}
-                    </div>
-                    <p className="mt-3 text-sm leading-relaxed text-black/72">
-                      {p.description}
-                    </p>
+                    <h3 className="mt-1.5 text-xl font-extrabold tracking-tight">{p.title}</h3>
+                    <div className="mt-0.5 text-[13px] font-semibold text-bronze">{p.sub}</div>
+                    <p className="mt-3 text-sm leading-relaxed text-black/72">{p.description}</p>
                   </div>
-                  <div
-                    className="text-2xl font-light text-black/30"
-                    aria-hidden="true"
-                  >
+                  <div className="text-2xl font-light text-black/30" aria-hidden="true">
                     →
                   </div>
                 </div>
@@ -168,8 +152,7 @@ export default function HomePage() {
         <div
           className="absolute inset-0"
           style={{
-            background:
-              'radial-gradient(circle at 80% 20%, rgba(180,35,24,0.20), transparent 50%)',
+            background: 'radial-gradient(circle at 80% 20%, rgba(180,35,24,0.20), transparent 50%)',
           }}
           aria-hidden="true"
         />
@@ -182,8 +165,7 @@ export default function HomePage() {
               is on us.
             </h2>
             <p className="mt-5 max-w-xl text-base leading-relaxed text-white/72 sm:text-lg">
-              Athletic clothes are enough. Arrive 15 minutes early. We&apos;ll handle the
-              rest.
+              Athletic clothes are enough. Arrive 15 minutes early. We&apos;ll handle the rest.
             </p>
           </div>
           <div className="flex flex-col gap-3">

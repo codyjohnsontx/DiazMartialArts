@@ -25,7 +25,10 @@ const startTimeFormatter = new Intl.DateTimeFormat('en-US', {
   hour12: true,
 });
 
-function parseClock(value: string, fallbackPeriod?: string): { hour: number; minute: number } | null {
+function parseClock(
+  value: string,
+  fallbackPeriod?: string,
+): { hour: number; minute: number } | null {
   const match = value.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
   if (!match) return null;
 
@@ -43,7 +46,9 @@ function parseClock(value: string, fallbackPeriod?: string): { hour: number; min
   return { hour, minute };
 }
 
-export function parseClassTimeRange(time: string): { startMinutes: number; endMinutes: number } | null {
+export function parseClassTimeRange(
+  time: string,
+): { startMinutes: number; endMinutes: number } | null {
   const [startRaw, endRaw] = time.split('-').map((part) => part.trim());
   if (!startRaw || !endRaw) return null;
 
@@ -62,7 +67,11 @@ export function parseClassTimeRange(time: string): { startMinutes: number; endMi
   return { startMinutes, endMinutes };
 }
 
-function inferStartPeriod(startRaw: string, endRaw: string, endPeriod?: string): string | undefined {
+function inferStartPeriod(
+  startRaw: string,
+  endRaw: string,
+  endPeriod?: string,
+): string | undefined {
   if (!endPeriod) return undefined;
 
   const startHour = Number(startRaw.match(/^(\d{1,2})/)?.[1]);
@@ -118,9 +127,7 @@ export function getClassesForProgram(matchers: string[]): ProgramDaySchedule[] {
   return weeklySchedule
     .map((entry) => ({
       day: entry.day,
-      classes: entry.classes.filter((c) =>
-        lower.some((m) => c.program.toLowerCase().includes(m)),
-      ),
+      classes: entry.classes.filter((c) => lower.some((m) => c.program.toLowerCase().includes(m))),
     }))
     .filter((entry) => entry.classes.length > 0);
 }

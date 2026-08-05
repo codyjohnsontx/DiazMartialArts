@@ -10,11 +10,6 @@ afterEach(() => {
 });
 
 vi.mock('next/image', () => ({
-  default: ({
-    alt,
-    src,
-    ...props
-  }: React.ImgHTMLAttributes<HTMLImageElement> & { src: string }) =>
+  default: ({ alt, src, ...props }: React.ImgHTMLAttributes<HTMLImageElement> & { src: string }) =>
     React.createElement('img', { alt, src, ...props }),
 }));
-

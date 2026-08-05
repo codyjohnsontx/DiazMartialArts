@@ -141,11 +141,7 @@ export function Header() {
                 Member Login
               </Button>
             )}
-            <Button
-              href="/contact"
-              className="w-full"
-              onClick={() => setOpen(false)}
-            >
+            <Button href="/contact" className="w-full" onClick={() => setOpen(false)}>
               Book Free Trial
             </Button>
           </div>
