@@ -179,12 +179,16 @@ npm run test
 npm run test:smoke
 npm run quality
 npm run format:check
+npm run format
 ```
 
 Vitest covers unit and component tests under `tests/unit` and `tests/components`.
 Coverage is intentionally scoped to shared `lib` modules and selected behavior-heavy
 components so the first gate stays useful while coverage grows. GitHub Actions runs
 `npm run quality` on pushes to `main` and pull requests.
+`npm run quality` starts with `npm run format:check`, so unformatted files fail the
+gate; run `npm run format` to fix them. Prettier settings live in `.prettierrc` and
+the excluded paths in `.prettierignore`.
 Temporary note: `npm run quality` currently omits typecheck/build while the
 known Sanity studio blocker is tracked; use `npm run quality:strict` once that
 blocker is resolved.
