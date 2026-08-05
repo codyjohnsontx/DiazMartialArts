@@ -92,7 +92,10 @@ function parseIcs(icsText: string): UpcomingEvent[] {
     if (sepIdx <= 0) continue;
 
     const key = line.slice(0, sepIdx).split(';')[0];
-    const value = line.slice(sepIdx + 1).replace(/\\n/g, '\n').trim();
+    const value = line
+      .slice(sepIdx + 1)
+      .replace(/\\n/g, '\n')
+      .trim();
 
     if (key) raw[key] = value;
   }
@@ -123,7 +126,10 @@ function fallbackUpcoming(): UpcomingEvent[] {
   return filterWindow(mapped);
 }
 
-export async function getUpcomingEvents(): Promise<{ source: 'ics' | 'fallback'; events: UpcomingEvent[] }> {
+export async function getUpcomingEvents(): Promise<{
+  source: 'ics' | 'fallback';
+  events: UpcomingEvent[];
+}> {
   const { googleCalendarIcsUrl: icsUrl } = getPublicEnv();
 
   if (!icsUrl) {

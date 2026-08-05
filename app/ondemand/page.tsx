@@ -83,11 +83,7 @@ export default async function OndemandRoutePage() {
               </div>
             </div>
             <div className="relative">
-              <Placeholder
-                label="Hero video · BJJ technique reel"
-                tint="ember"
-                height={420}
-              />
+              <Placeholder label="Hero video · BJJ technique reel" tint="ember" height={420} />
               <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                 <div className="flex h-20 w-20 items-center justify-center rounded-full bg-sand shadow-lift">
                   <span
@@ -119,9 +115,7 @@ export default async function OndemandRoutePage() {
                     </div>
                     <div>
                       <h3 className="text-xl font-extrabold tracking-tight">{f.t}</h3>
-                      <p className="mt-1.5 text-[14.5px] leading-relaxed text-black/72">
-                        {f.d}
-                      </p>
+                      <p className="mt-1.5 text-[14.5px] leading-relaxed text-black/72">{f.d}</p>
                     </div>
                   </div>
                 ))}
@@ -147,9 +141,7 @@ export default async function OndemandRoutePage() {
         <section id="samples" className="border-t border-black/8 bg-sand">
           <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
             <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-              <h2 className="display text-2xl sm:text-3xl">
-                Sample lessons · BJJ track
-              </h2>
+              <h2 className="display text-2xl sm:text-3xl">Sample lessons · BJJ track</h2>
               <span className="text-xs font-bold uppercase tracking-[0.18em] text-bronze">
                 Locked until launch
               </span>
@@ -171,9 +163,7 @@ export default async function OndemandRoutePage() {
                     <div className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-ember">
                       BJJ · {v.n}
                     </div>
-                    <h3 className="mt-1.5 text-[15px] font-bold tracking-tight">
-                      {v.t}
-                    </h3>
+                    <h3 className="mt-1.5 text-[15px] font-bold tracking-tight">{v.t}</h3>
                   </div>
                 </article>
               ))}

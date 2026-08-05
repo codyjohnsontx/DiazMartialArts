@@ -41,7 +41,9 @@ describe('ScheduleContent', () => {
     expect(sunday).toBeDisabled();
     await user.click(sunday);
 
-    const weeklySection = screen.getByRole('heading', { name: 'Weekly class schedule' }).closest('section');
+    const weeklySection = screen
+      .getByRole('heading', { name: 'Weekly class schedule' })
+      .closest('section');
     expect(weeklySection).not.toBeNull();
     expect(
       within(weeklySection as HTMLElement).getAllByText('Brazilian Jiu Jitsu (Gi/Gi-less)').length,

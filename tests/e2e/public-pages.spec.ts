@@ -7,7 +7,9 @@ test.describe('Public pages - HTTP 200 + heading + footer', () => {
     test(`${path} returns 200 and shows heading`, async ({ page }) => {
       const response = await page.goto(path);
       expect(response?.status()).toBe(200);
-      await expect(page.getByRole('heading', { name: new RegExp(heading, 'i') }).first()).toBeVisible();
+      await expect(
+        page.getByRole('heading', { name: new RegExp(heading, 'i') }).first(),
+      ).toBeVisible();
       await expect(page.getByRole('contentinfo')).toBeVisible();
     });
   }
@@ -31,11 +33,17 @@ test.describe('Announcements page details', () => {
 test.describe('Schedule page details', () => {
   test('renders weekly schedule heading and day tabs', async ({ page }) => {
     await page.goto('/schedule');
-    await expect(
-      page.getByRole('heading', { name: /Weekly class schedule/i }),
-    ).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Weekly class schedule/i })).toBeVisible();
 
-    for (const day of ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']) {
+    for (const day of [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
+    ]) {
       await expect(page.getByRole('tab', { name: `${day} schedule` })).toBeVisible();
     }
   });

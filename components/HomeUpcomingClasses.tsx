@@ -3,11 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 
-import {
-  formatCountdown,
-  getScheduleLabel,
-  getUpcomingClassBlocks,
-} from '@/lib/classSchedule';
+import { formatCountdown, getScheduleLabel, getUpcomingClassBlocks } from '@/lib/classSchedule';
 
 export function HomeUpcomingClasses() {
   const [now, setNow] = useState(() => new Date());
@@ -30,9 +26,7 @@ export function HomeUpcomingClasses() {
         <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-bronze">
           Coming up
         </div>
-        <div className="mt-2 text-lg font-extrabold tracking-tight">
-          Schedule updates soon
-        </div>
+        <div className="mt-2 text-lg font-extrabold tracking-tight">Schedule updates soon</div>
         <Link href="/schedule" className="mt-4 inline-block text-[13px] font-bold text-ember">
           View full schedule →
         </Link>
@@ -67,7 +61,10 @@ export function HomeUpcomingClasses() {
         <div>
           <ul className="space-y-1.5">
             {nextBlock.classes.slice(0, 3).map((classBlock) => (
-              <li key={`${classBlock.time}-${classBlock.program}`} className="text-sm font-bold leading-snug">
+              <li
+                key={`${classBlock.time}-${classBlock.program}`}
+                className="text-sm font-bold leading-snug"
+              >
                 {classBlock.program}
               </li>
             ))}

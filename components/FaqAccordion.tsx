@@ -19,9 +19,7 @@ export function FaqAccordion({ groups }: Props) {
     <div className="grid gap-12 lg:grid-cols-[240px_1fr] lg:gap-16">
       {/* SIDEBAR */}
       <nav className="self-start lg:sticky lg:top-28">
-        <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-bronze">
-          Topics
-        </div>
+        <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-bronze">Topics</div>
         <ul className="mt-4 grid gap-1">
           {groups.map((g, i) => {
             const active = i === activeGroup;
@@ -59,9 +57,7 @@ export function FaqAccordion({ groups }: Props) {
       <div className="grid gap-12">
         {groups.map((g, gi) => (
           <div key={g.name} id={`g-${gi}`}>
-            <h2 className="display border-b-2 border-ember pb-3 text-2xl sm:text-3xl">
-              {g.name}
-            </h2>
+            <h2 className="display border-b-2 border-ember pb-3 text-2xl sm:text-3xl">{g.name}</h2>
             <div className="mt-4">
               {g.items.map((item, ii) => {
                 const key = `${gi}-${ii}`;
@@ -74,9 +70,7 @@ export function FaqAccordion({ groups }: Props) {
                       aria-expanded={isOpen}
                       className="flex w-full items-center justify-between gap-4 py-5 text-left"
                     >
-                      <span className="text-base font-bold sm:text-lg">
-                        {item.question}
-                      </span>
+                      <span className="text-base font-bold sm:text-lg">{item.question}</span>
                       <span
                         aria-hidden="true"
                         className={cn(

@@ -79,4 +79,3 @@ describe('getUpcomingEvents', () => {
     expect(result.source).toBe('fallback');
   });
 });
-

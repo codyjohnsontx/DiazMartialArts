@@ -105,13 +105,10 @@ export function ScheduleContent({ upcoming }: Props) {
       <section className="border-b border-black/10">
         <div className="mx-auto grid w-full max-w-6xl items-end gap-12 px-4 py-14 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-8">
           <div>
-            <h1 className="display text-5xl sm:text-7xl lg:text-[88px]">
-              Schedule
-            </h1>
+            <h1 className="display text-5xl sm:text-7xl lg:text-[88px]">Schedule</h1>
           </div>
           <p className="text-base leading-relaxed text-black/75 sm:text-lg">
-            Use the weekly lineup for your routine, then check the monthly calendar for
-            events.
+            Use the weekly lineup for your routine, then check the monthly calendar for events.
           </p>
         </div>
       </section>
@@ -180,9 +177,7 @@ export function ScheduleContent({ upcoming }: Props) {
         {/* CLASSES */}
         <div className="mt-6 border border-black/10 bg-white">
           {dayData.classes.length === 0 ? (
-            <p className="px-6 py-10 text-center text-sm text-black/60">
-              No classes scheduled.
-            </p>
+            <p className="px-6 py-10 text-center text-sm text-black/60">No classes scheduled.</p>
           ) : (
             dayData.classes.map((c, i) => {
               const tag = programToTag(c.program);
@@ -192,10 +187,7 @@ export function ScheduleContent({ upcoming }: Props) {
               return (
                 <details
                   key={`${dayData.day}-${i}-${c.time}-${c.program}`}
-                  className={cn(
-                    'group',
-                    i > 0 && 'border-t border-black/8',
-                  )}
+                  className={cn('group', i > 0 && 'border-t border-black/8')}
                 >
                   <summary className="grid cursor-pointer list-none grid-cols-[90px_1fr] items-center gap-4 px-6 py-4 sm:grid-cols-[110px_60px_1fr_140px_auto] sm:px-6">
                     <div className="text-base font-extrabold tracking-tight [font-variant-numeric:tabular-nums] sm:text-lg">
@@ -205,12 +197,8 @@ export function ScheduleContent({ upcoming }: Props) {
                       {duration}
                     </div>
                     <div>
-                      <div className="text-[15px] font-bold sm:text-base">
-                        {c.program}
-                      </div>
-                      <div className="mt-0.5 text-xs text-black/55">
-                        {cat} class
-                      </div>
+                      <div className="text-[15px] font-bold sm:text-base">{c.program}</div>
+                      <div className="mt-0.5 text-xs text-black/55">{cat} class</div>
                     </div>
                     <div className="hidden sm:block">
                       <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-black/70">
@@ -244,9 +232,7 @@ export function ScheduleContent({ upcoming }: Props) {
         <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <div>
             <Eyebrow>Printable sheets</Eyebrow>
-            <h2 className="display mt-3 text-2xl sm:text-3xl">
-              Class schedule flyers
-            </h2>
+            <h2 className="display mt-3 text-2xl sm:text-3xl">Class schedule flyers</h2>
           </div>
         </div>
 
@@ -282,9 +268,7 @@ export function ScheduleContent({ upcoming }: Props) {
           <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
             <div>
               <Eyebrow variant="light">Next 60 days</Eyebrow>
-              <h2 className="display mt-3 text-3xl sm:text-[44px]">
-                Upcoming events
-              </h2>
+              <h2 className="display mt-3 text-3xl sm:text-[44px]">Upcoming events</h2>
             </div>
             <Button href="/announcements" variant="ghost-light">
               Open monthly calendar →
@@ -299,25 +283,16 @@ export function ScheduleContent({ upcoming }: Props) {
                 const m = monthShort[e.start.getMonth()];
                 const d = String(e.start.getDate()).padStart(2, '0');
                 return (
-                  <div
-                    key={e.id}
-                    className="flex min-h-[200px] flex-col gap-4 bg-ink p-6"
-                  >
+                  <div key={e.id} className="flex min-h-[200px] flex-col gap-4 bg-ink p-6">
                     <div className="flex items-baseline gap-2">
-                      <div className="text-[11px] font-bold tracking-[0.22em] text-gold">
-                        {m}
-                      </div>
+                      <div className="text-[11px] font-bold tracking-[0.22em] text-gold">{m}</div>
                       <div className="text-5xl font-extrabold leading-none tracking-tight [font-variant-numeric:tabular-nums] sm:text-[56px]">
                         {d}
                       </div>
                     </div>
                     <div className="mt-auto">
-                      <h3 className="text-lg font-extrabold tracking-tight">
-                        {e.title}
-                      </h3>
-                      <p className="mt-1.5 text-[13px] text-white/65">
-                        {formatEventLocation(e)}
-                      </p>
+                      <h3 className="text-lg font-extrabold tracking-tight">{e.title}</h3>
+                      <p className="mt-1.5 text-[13px] text-white/65">{formatEventLocation(e)}</p>
                     </div>
                   </div>
                 );

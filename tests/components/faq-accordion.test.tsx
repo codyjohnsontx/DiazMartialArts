@@ -37,4 +37,3 @@ describe('FaqAccordion', () => {
     expect(membership).toHaveClass('border-ember');
   });
 });
-

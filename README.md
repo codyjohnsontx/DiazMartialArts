@@ -179,15 +179,18 @@ npm run test
 npm run test:smoke
 npm run quality
 npm run format:check
+npm run format
 ```
 
 Vitest covers unit and component tests under `tests/unit` and `tests/components`.
 Coverage is intentionally scoped to shared `lib` modules and selected behavior-heavy
 components so the first gate stays useful while coverage grows. GitHub Actions runs
 `npm run quality` on pushes to `main` and pull requests.
-Temporary note: `npm run quality` currently omits typecheck/build while the
-known Sanity studio blocker is tracked; use `npm run quality:strict` once that
-blocker is resolved.
+`npm run quality` starts with `npm run format:check`, so unformatted files fail the
+gate; run `npm run format` to fix them. Prettier settings live in `.prettierrc` and
+the excluded paths in `.prettierignore`.
+`npm run quality` omits typecheck and build; `npm run quality:strict` adds both and
+runs the end-to-end tests against a production build.
 
 CodeRabbit reviews each pull request once, on the code as it stands when the pull
 request is published, and does not re-review the commits pushed after that. Ask

@@ -23,13 +23,7 @@ type AnnouncementFlyerGalleryProps = {
   flyers: AnnouncementFlyer[];
 };
 
-const filters: ('All' | FlyerCategory)[] = [
-  'All',
-  'Events',
-  'Promos',
-  'Testings',
-  'Closures',
-];
+const filters: ('All' | FlyerCategory)[] = ['All', 'Events', 'Promos', 'Testings', 'Closures'];
 
 export function AnnouncementFlyerGallery({ flyers }: AnnouncementFlyerGalleryProps) {
   const [filter, setFilter] = useState<'All' | FlyerCategory>('All');
@@ -177,9 +171,7 @@ export function AnnouncementFlyerGallery({ flyers }: AnnouncementFlyerGalleryPro
                   {flyer.title}
                 </h3>
                 <div className="mt-2 flex items-center justify-between">
-                  <span className="text-xs font-semibold text-black/60">
-                    {flyer.date}
-                  </span>
+                  <span className="text-xs font-semibold text-black/60">{flyer.date}</span>
                   <button
                     type="button"
                     onClick={() => openFlyer(flyer.id)}

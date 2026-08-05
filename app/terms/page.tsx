@@ -12,10 +12,12 @@ export default function TermsPage() {
     <Section title="Terms of Service" eyebrow="Legal">
       <div className="space-y-4 text-sm leading-relaxed text-black/75">
         <p>
-          By using this website, you agree to use the content for lawful purposes and acknowledge that class schedules and pricing may change.
+          By using this website, you agree to use the content for lawful purposes and acknowledge
+          that class schedules and pricing may change.
         </p>
         <p>
-          Trial sessions and memberships are subject to academy policies provided during registration.
+          Trial sessions and memberships are subject to academy policies provided during
+          registration.
         </p>
         <p>
           Contact us if you need a full copy of membership terms and academy conduct guidelines.

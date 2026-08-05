@@ -19,8 +19,8 @@
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
     "test:report": "playwright show-report",
-    "quality": "npm run lint && npm run test:coverage && npm run test:e2e",
-    "quality:strict": "npm run lint && npm run typecheck && npm run test:coverage && npm run build && PLAYWRIGHT_USE_START=1 npm run test:e2e"
+    "quality": "npm run format:check && npm run lint && npm run test:coverage && npm run test:e2e",
+    "quality:strict": "npm run format:check && npm run lint && npm run typecheck && npm run test:coverage && npm run build && PLAYWRIGHT_USE_START=1 npm run test:e2e"
   },
   "dependencies": {
     "next": "14.2.35",

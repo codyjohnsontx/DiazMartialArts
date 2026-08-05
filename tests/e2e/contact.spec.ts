@@ -26,9 +26,7 @@ test.describe('Contact page', () => {
     await expect(page.getByLabel('First name')).toHaveValue('Test');
     await expect(page.getByLabel('Last name')).toHaveValue('User');
     await expect(page.getByLabel('Email')).toHaveValue('test@example.com');
-    await expect(page.getByLabel(/What are your goals/i)).toHaveValue(
-      'This is a test message.',
-    );
+    await expect(page.getByLabel(/What are your goals/i)).toHaveValue('This is a test message.');
   });
 
   test('submitting empty form shows a helpful error state', async ({ page }) => {
@@ -38,9 +36,7 @@ test.describe('Contact page', () => {
     await expect(
       page
         .getByText(/Please correct the highlighted fields/i)
-        .or(
-          page.getByText(/Add NEXT_PUBLIC_FORMSPREE_ENDPOINT to enable form submissions/i),
-        ),
+        .or(page.getByText(/Add NEXT_PUBLIC_FORMSPREE_ENDPOINT to enable form submissions/i)),
     ).toBeVisible();
   });
 

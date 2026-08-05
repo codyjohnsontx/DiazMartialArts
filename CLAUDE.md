@@ -87,11 +87,13 @@ Use these commands to validate work:
 npm run dev
 npm run build
 npm run lint
+npm run format
 npm run test
 npx tsc --noEmit
-
-
 ```
+
+Prettier formatting is part of the quality gate, so run `npm run format` before
+marking work complete or CI fails on unformatted files.
 
 ## Project Notes
 

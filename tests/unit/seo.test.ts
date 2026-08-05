@@ -46,4 +46,3 @@ describe('pageMetadata', () => {
     expect(metadata.robots).toEqual({ index: false, follow: false });
   });
 });
-

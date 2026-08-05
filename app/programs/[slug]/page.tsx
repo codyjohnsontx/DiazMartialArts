@@ -50,9 +50,7 @@ export default function ProgramPage({ params }: { params: { slug: string } }) {
         <div className="mx-auto grid w-full max-w-6xl items-end gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1fr_340px] lg:gap-16 lg:px-8">
           <div>
             <Eyebrow>{program.tag}</Eyebrow>
-            <h1 className="display mt-5 text-4xl sm:text-6xl lg:text-7xl">
-              {program.title}
-            </h1>
+            <h1 className="display mt-5 text-4xl sm:text-6xl lg:text-7xl">{program.title}</h1>
             <p className="mt-2 text-base font-semibold text-bronze">{program.sub}</p>
             <p className="mt-4 max-w-xl text-base leading-relaxed text-black/75 sm:text-lg">
               {program.description}
@@ -104,14 +102,9 @@ export default function ProgramPage({ params }: { params: { slug: string } }) {
         <Section eyebrow="This week" title="Class schedule">
           <div className="border border-black/10 bg-white">
             {schedule.map((entry, di) => (
-              <div
-                key={entry.day}
-                className={di > 0 ? 'border-t border-black/10' : undefined}
-              >
+              <div key={entry.day} className={di > 0 ? 'border-t border-black/10' : undefined}>
                 <div className="bg-sand/60 px-6 py-3">
-                  <h3 className="text-xs font-bold uppercase tracking-[0.18em]">
-                    {entry.day}
-                  </h3>
+                  <h3 className="text-xs font-bold uppercase tracking-[0.18em]">{entry.day}</h3>
                 </div>
                 {entry.classes.map((c, ci) => (
                   <div

@@ -10,17 +10,13 @@ export function CTABanner() {
         <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#f5d8b9]">
           {site.address.city}, {site.address.state}
         </p>
-        <h3 className="mt-3 text-3xl font-bold text-white sm:text-4xl">
-          Classes 6 days a week.
-        </h3>
+        <h3 className="mt-3 text-3xl font-bold text-white sm:text-4xl">Classes 6 days a week.</h3>
         <div className="mt-5 border-l-2 border-ember pl-4">
           <p className="text-sm text-white/80">{site.address.street}</p>
           <p className="mt-0.5 text-sm text-white/80">
             {site.address.city}, {site.address.state} {site.address.zip}
           </p>
-          <p className="mt-1 text-xs text-white/55">
-            {site.hours.slice(0, 2).join(' · ')}
-          </p>
+          <p className="mt-1 text-xs text-white/55">{site.hours.slice(0, 2).join(' · ')}</p>
         </div>
         <p className="mt-4 max-w-2xl text-base text-white/75">
           Drop in for a free first class or check the schedule to find the right session for you.

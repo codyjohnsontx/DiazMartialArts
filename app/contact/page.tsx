@@ -12,11 +12,7 @@ export const metadata = pageMetadata({
   title: 'Contact',
   description: 'Book a free trial and contact Diaz Martial Arts in San Marcos, TX.',
   path: '/contact',
-  keywords: [
-    'book martial arts trial',
-    'diaz martial arts contact',
-    'san marcos martial arts gym',
-  ],
+  keywords: ['book martial arts trial', 'diaz martial arts contact', 'san marcos martial arts gym'],
 });
 
 export default function ContactPage() {
@@ -29,13 +25,11 @@ export default function ContactPage() {
         <div className="mx-auto grid w-full max-w-6xl items-end gap-12 px-4 py-14 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-8">
           <div>
             <Eyebrow>Book a free trial</Eyebrow>
-            <h1 className="display mt-5 text-5xl sm:text-7xl lg:text-[88px]">
-              Visit the gym
-            </h1>
+            <h1 className="display mt-5 text-5xl sm:text-7xl lg:text-[88px]">Visit the gym</h1>
           </div>
           <p className="text-base leading-relaxed text-black/75 sm:text-lg">
-            Tell us your goals and availability. We&apos;ll help you choose the right
-            class and get you started, usually within 24 hours.
+            Tell us your goals and availability. We&apos;ll help you choose the right class and get
+            you started, usually within 24 hours.
           </p>
         </div>
       </section>
@@ -64,10 +58,7 @@ export default function ContactPage() {
                 ))}
               </div>
               <div className="mt-5 grid gap-1.5 border-t border-black/10 pt-5">
-                <a
-                  href={site.phoneHref}
-                  className="text-sm font-bold text-ink hover:text-ember"
-                >
+                <a href={site.phoneHref} className="text-sm font-bold text-ink hover:text-ember">
                   📞 {site.phone}
                 </a>
                 <a
@@ -82,8 +73,8 @@ export default function ContactPage() {
             <div className="bg-ink p-7 text-sand">
               <Eyebrow variant="light">Already a member?</Eyebrow>
               <p className="my-3 text-sm leading-relaxed text-white/72">
-                Member accounts and video access live in Diaz on Demand. Head there for
-                access or launch updates.
+                Member accounts and video access live in Diaz on Demand. Head there for access or
+                launch updates.
               </p>
               <div className="flex flex-wrap gap-2">
                 {ondemandUrl && (
