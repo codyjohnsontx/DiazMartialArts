@@ -28,6 +28,39 @@ test.describe('Announcements page details', () => {
     await page.goto('/announcements');
     await expect(page.getByRole('heading', { name: 'Announcements', level: 1 })).toBeVisible();
   });
+
+  test('carries no class-schedule flyer and loads every flyer image', async ({ page }) => {
+    await page.goto('/announcements');
+
+    // A class timetable reads as current operating hours, so it belongs on
+    // /schedule alone and the feed must not carry a competing copy.
+    await expect(page.getByRole('heading', { name: /Class Schedule/i })).toHaveCount(0);
+    await expect(page.locator('main img[src*="class-schedule"]')).toHaveCount(0);
+
+    // Flyers below the fold load lazily, so walk the page before checking them.
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+
+    const flyers = page.locator('main article img');
+    const flyerCount = await flyers.count();
+    expect(flyerCount).toBeGreaterThan(0);
+
+    for (let i = 0; i < flyerCount; i++) {
+      const flyer = flyers.nth(i);
+      await expect
+        .poll(() => flyer.evaluate((img: HTMLImageElement) => img.naturalWidth))
+        .toBeGreaterThan(0);
+    }
+  });
+
+  test('every category filter still lists announcements', async ({ page }) => {
+    await page.goto('/announcements');
+
+    for (const category of ['Events', 'Promos', 'Testings', 'Closures']) {
+      await page.getByRole('button', { name: new RegExp(`^${category}$`, 'i') }).click();
+      await expect(page.locator('main article')).not.toHaveCount(0);
+      await expect(page.getByText(/No announcements in this category/i)).toHaveCount(0);
+    }
+  });
 });
 
 test.describe('Schedule page details', () => {
