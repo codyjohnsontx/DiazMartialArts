@@ -28,6 +28,48 @@ test.describe('Announcements page details', () => {
     await page.goto('/announcements');
     await expect(page.getByRole('heading', { name: 'Announcements', level: 1 })).toBeVisible();
   });
+
+  test('carries no class-schedule flyer and loads every flyer image', async ({ page }) => {
+    await page.goto('/announcements');
+
+    // A class timetable reads as current operating hours, so it belongs on
+    // /schedule alone and the feed must not carry a competing copy.
+    await expect(page.getByRole('heading', { name: /Class Schedule/i })).toHaveCount(0);
+    await expect(page.locator('main img[src*="class-schedule"]')).toHaveCount(0);
+
+    const flyers = page.locator('main article img');
+    const flyerCount = await flyers.count();
+    expect(flyerCount).toBeGreaterThan(0);
+
+    // Every flyer but the first renders loading="lazy", so bring them into view
+    // one at a time. A single jump to the page bottom would leave whether the
+    // rest ever load up to the browser's lazy-load heuristics, which vary with
+    // viewport and connection - scrolling to each one makes the check decisive.
+    for (let i = 0; i < flyerCount; i++) {
+      const flyer = flyers.nth(i);
+      await flyer.scrollIntoViewIfNeeded();
+      await expect
+        .poll(() => flyer.evaluate((img: HTMLImageElement) => img.naturalWidth))
+        .toBeGreaterThan(0);
+    }
+  });
+
+  test('every category filter still lists announcements', async ({ page }) => {
+    await page.goto('/announcements');
+
+    for (const category of ['Events', 'Promos', 'Testings', 'Closures']) {
+      await page.getByRole('button', { name: new RegExp(`^${category}$`, 'i') }).click();
+      await expect(page.locator('main article')).not.toHaveCount(0);
+      await expect(page.getByText(/No announcements in this category/i)).toHaveCount(0);
+
+      // The two assertions above would also hold if clicking a filter did
+      // nothing, so prove the filter actually excludes. A monthly calendar is
+      // an Event and will never be a Promo, however the feed grows later.
+      if (category === 'Promos') {
+        await expect(page.getByRole('heading', { name: 'June Events Calendar' })).toHaveCount(0);
+      }
+    }
+  });
 });
 
 test.describe('Schedule page details', () => {
