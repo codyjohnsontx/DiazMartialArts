@@ -239,6 +239,7 @@ export const weeklySchedule: WeeklySchedule[] = [
         program: 'Muay Thai/Muay Lao/Boxing/Kick-Boxing',
         coach: 'Adult Class',
       },
+      { time: '12:00-1:00 PM', program: 'I.P.T.T. Handgun (Adult Only)', coach: 'Adult Class' },
       {
         time: '5:00-5:45 PM',
         program: 'Advanced Juniors Sparring (Ages 7-13)',
