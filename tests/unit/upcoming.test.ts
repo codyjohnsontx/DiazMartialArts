@@ -13,6 +13,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.useRealTimers();
+  vi.doUnmock('@/content/upcoming');
 });
 
 describe('getUpcomingEvents', () => {
@@ -24,6 +25,41 @@ describe('getUpcomingEvents', () => {
     expect(result.source).toBe('fallback');
     // content/upcoming.ts intentionally ships no events, so the fallback is empty.
     expect(result.events).toEqual([]);
+  });
+
+  it('maps fallback content items to dates and clips them to the 60-day window', async () => {
+    vi.doMock('@/content/upcoming', () => ({
+      upcomingItems: [
+        {
+          id: 'in-window',
+          title: 'In Window',
+          start: '2026-05-10T18:00:00-05:00',
+          end: '2026-05-10T20:00:00-05:00',
+          location: 'Main Mat',
+          notes: 'Bring water.',
+        },
+        {
+          id: 'past-window',
+          title: 'Past Window',
+          start: '2026-08-01T18:00:00-05:00',
+        },
+      ],
+    }));
+    const { getUpcomingEvents } = await loadUpcoming();
+
+    const result = await getUpcomingEvents();
+
+    expect(result.source).toBe('fallback');
+    expect(result.events.map((event) => event.id)).toEqual(['in-window']);
+    expect(result.events[0].start).toBeInstanceOf(Date);
+    expect(result.events[0].start.toISOString()).toBe('2026-05-10T23:00:00.000Z');
+    expect(result.events[0].end).toBeInstanceOf(Date);
+    expect(result.events[0].end?.toISOString()).toBe('2026-05-11T01:00:00.000Z');
+    expect(result.events[0]).toMatchObject({
+      title: 'In Window',
+      location: 'Main Mat',
+      notes: 'Bring water.',
+    });
   });
 
   it('parses, sorts, and limits events from an ICS feed', async () => {
