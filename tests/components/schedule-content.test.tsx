@@ -28,6 +28,8 @@ describe('ScheduleContent', () => {
     render(<ScheduleContent upcoming={[]} />);
 
     expect(screen.getByText(/No special events on the calendar right now/i)).toBeVisible();
+    expect(screen.getByText(/Regular classes run six days a week/i)).toBeVisible();
+    expect(screen.getByText(/the full weekly schedule is at the top of this page/i)).toBeVisible();
     expect(screen.getByRole('link', { name: /Book Free Trial/i })).toHaveAttribute(
       'href',
       '/contact',

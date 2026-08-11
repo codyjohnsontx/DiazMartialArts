@@ -13,16 +13,23 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.useRealTimers();
+  vi.unstubAllEnvs();
   vi.doUnmock('@/content/upcoming');
 });
 
 describe('getUpcomingEvents', () => {
   it('uses fallback content when no ICS URL is configured', async () => {
+    vi.stubEnv('NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL', '');
+    const fetchSpy = vi.fn();
+    vi.stubGlobal('fetch', fetchSpy);
     const { getUpcomingEvents } = await loadUpcoming();
 
     const result = await getUpcomingEvents();
 
     expect(result.source).toBe('fallback');
+    // No feed was even requested, so this is the no-ICS path rather than a feed
+    // that returned zero events.
+    expect(fetchSpy).not.toHaveBeenCalled();
     // content/upcoming.ts intentionally ships no events, so the fallback is empty.
     expect(result.events).toEqual([]);
   });
