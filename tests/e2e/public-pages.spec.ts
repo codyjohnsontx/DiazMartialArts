@@ -37,15 +37,17 @@ test.describe('Announcements page details', () => {
     await expect(page.getByRole('heading', { name: /Class Schedule/i })).toHaveCount(0);
     await expect(page.locator('main img[src*="class-schedule"]')).toHaveCount(0);
 
-    // Flyers below the fold load lazily, so walk the page before checking them.
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-
     const flyers = page.locator('main article img');
     const flyerCount = await flyers.count();
     expect(flyerCount).toBeGreaterThan(0);
 
+    // Every flyer but the first renders loading="lazy", so bring them into view
+    // one at a time. A single jump to the page bottom would leave whether the
+    // rest ever load up to the browser's lazy-load heuristics, which vary with
+    // viewport and connection - scrolling to each one makes the check decisive.
     for (let i = 0; i < flyerCount; i++) {
       const flyer = flyers.nth(i);
+      await flyer.scrollIntoViewIfNeeded();
       await expect
         .poll(() => flyer.evaluate((img: HTMLImageElement) => img.naturalWidth))
         .toBeGreaterThan(0);
