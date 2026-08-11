@@ -22,7 +22,8 @@ describe('getUpcomingEvents', () => {
     const result = await getUpcomingEvents();
 
     expect(result.source).toBe('fallback');
-    expect(result.events.map((event) => event.id)).toEqual(['fallback-3', 'fallback-4']);
+    // content/upcoming.ts intentionally ships no events, so the fallback is empty.
+    expect(result.events).toEqual([]);
   });
 
   it('parses, sorts, and limits events from an ICS feed', async () => {

@@ -276,7 +276,15 @@ export function ScheduleContent({ upcoming }: Props) {
           </div>
 
           {upcoming.length === 0 ? (
-            <p className="text-sm text-white/60">No upcoming events in the next 60 days.</p>
+            <div className="max-w-xl">
+              <p className="text-base leading-relaxed text-white/72 sm:text-lg">
+                No special events on the calendar right now. Regular classes run six days a week,
+                and the full weekly schedule is at the top of this page.
+              </p>
+              <Button href="/contact" size="lg" className="mt-6">
+                Book Free Trial →
+              </Button>
+            </div>
           ) : (
             <div className="grid gap-px bg-white/10 sm:grid-cols-2 lg:grid-cols-4">
               {upcoming.slice(0, 4).map((e) => {
