@@ -56,13 +56,20 @@ All primary content is in `content/`:
 `/schedule` ships with three sections:
 
 1. Weekly schedule table from `content/schedule.ts`
-2. Monthly Google Calendar embed
+2. Printable class schedule flyers - images and PDFs in `public/schedules/`,
+   listed by `printableSchedules` in `content/schedule.ts`
 3. Upcoming events list limited to the next 60 days
+
+The table and the flyers state the same class times on the same page, so a
+revised flyer means updating both. `printableSchedules` points at the PDFs by
+their exact URL-encoded filenames, so replace those files in place rather than
+renaming them.
 
 Environment variables:
 
 - `NEXT_PUBLIC_GOOGLE_CALENDAR_EMBED_URL`
-  - Google Calendar embed URL for the monthly iframe section.
+  - Optional. Validated in `lib/env.ts`, but no page renders an embedded
+    calendar today; `/schedule` links out to `/announcements` instead.
 - `NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL` (optional)
   - Public ICS URL used to fetch upcoming events.
   - If missing or unavailable, the site falls back to `content/upcoming.ts`.
