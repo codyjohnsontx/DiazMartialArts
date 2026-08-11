@@ -277,7 +277,7 @@ export function ScheduleContent({ upcoming }: Props) {
 
           {upcoming.length === 0 ? (
             <div className="max-w-xl">
-              <p className="text-base leading-relaxed text-white/72 sm:text-lg">
+              <p className="text-base leading-relaxed text-white/70 sm:text-lg">
                 No special events on the calendar right now. Regular classes run six days a week,
                 and the full weekly schedule is at the top of this page.
               </p>
