@@ -61,6 +61,13 @@ test.describe('Announcements page details', () => {
       await page.getByRole('button', { name: new RegExp(`^${category}$`, 'i') }).click();
       await expect(page.locator('main article')).not.toHaveCount(0);
       await expect(page.getByText(/No announcements in this category/i)).toHaveCount(0);
+
+      // The two assertions above would also hold if clicking a filter did
+      // nothing, so prove the filter actually excludes. A monthly calendar is
+      // an Event and will never be a Promo, however the feed grows later.
+      if (category === 'Promos') {
+        await expect(page.getByRole('heading', { name: 'June Events Calendar' })).toHaveCount(0);
+      }
     }
   });
 });
