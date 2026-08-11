@@ -137,11 +137,7 @@ export const weeklySchedule: WeeklySchedule[] = [
         program: 'Muay Thai/Muay Lao/Boxing/Kick-Boxing',
         coach: 'Adult Class',
       },
-      {
-        time: '12:00-1:00 PM',
-        program: 'Teen/Adult Haganah (Israeli Self Defense)',
-        coach: 'Adult Class',
-      },
+      { time: '12:00-1:00 PM', program: 'I.P.T.T. Handgun (Adult Only)', coach: 'Adult Class' },
       {
         time: '5:00-5:45 PM',
         program: 'Advanced Juniors Weapons (Ages 7-13)',
@@ -241,11 +237,6 @@ export const weeklySchedule: WeeklySchedule[] = [
       {
         time: '11:00-11:50 AM',
         program: 'Muay Thai/Muay Lao/Boxing/Kick-Boxing',
-        coach: 'Adult Class',
-      },
-      {
-        time: '12:00-1:00 PM',
-        program: 'Teen/Adult Haganah (Israeli Self Defense)',
         coach: 'Adult Class',
       },
       {
