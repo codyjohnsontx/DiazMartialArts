@@ -65,6 +65,11 @@ revised flyer means updating both. `printableSchedules` points at the PDFs by
 their exact URL-encoded filenames, so replace those files in place rather than
 renaming them.
 
+`content/upcoming.ts` ships empty on purpose; only genuine scheduled events belong
+in it. When nothing falls inside the 60-day window the upcoming events section
+renders its empty state, which points readers back to the weekly schedule and a
+free trial rather than showing placeholder events.
+
 Environment variables:
 
 - `NEXT_PUBLIC_GOOGLE_CALENDAR_EMBED_URL`

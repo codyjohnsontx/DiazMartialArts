@@ -24,6 +24,22 @@ describe('ScheduleContent', () => {
     expect(screen.getAllByText('Brazilian Jiu Jitsu (Gi/Gi-less)').length).toBeGreaterThan(0);
   });
 
+  it('points visitors at regular classes when no events are scheduled', () => {
+    render(<ScheduleContent upcoming={[]} />);
+
+    expect(screen.getByText(/No special events on the calendar right now/i)).toBeVisible();
+    expect(screen.getByText(/Regular classes run six days a week/i)).toBeVisible();
+    expect(screen.getByText(/the full weekly schedule is at the top of this page/i)).toBeVisible();
+    expect(screen.getByRole('link', { name: /Book Free Trial/i })).toHaveAttribute(
+      'href',
+      '/contact',
+    );
+    expect(screen.getByRole('link', { name: /Open monthly calendar/i })).toHaveAttribute(
+      'href',
+      '/announcements',
+    );
+  });
+
   it('switches between available day tabs', async () => {
     const user = userEvent.setup();
     render(<ScheduleContent upcoming={upcoming} />);
