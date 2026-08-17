@@ -15,8 +15,9 @@ import tailwindConfig from '@/tailwind.config';
  */
 const opacityScale = Object.keys(resolveConfig(tailwindConfig).theme?.opacity ?? {});
 
-// Utilities that take a colour, and therefore a `/<alpha>` modifier. Excludes
-// utilities where a slash means a fraction (`w-1/2`, `top-1/2`).
+// Utilities whose value is always a colour, so a `/<alpha>` modifier is always
+// an opacity value. Excludes utilities where a slash means a fraction
+// (`w-1/2`, `top-1/2`).
 const COLOUR_UTILITIES = [
   'accent',
   'bg',
@@ -31,15 +32,33 @@ const COLOUR_UTILITIES = [
   'ring',
   'shadow',
   'stroke',
-  'text',
   'to',
   'via',
 ];
 
+// `text-` is shared with the font-size utility, whose modifier is a line height
+// (`text-sm/6`) rather than an opacity value.
+const FONT_SIZES = ['xs', 'sm', 'base', 'lg', 'xl', '[0-9]xl'];
+
+// A named colour (`white`, `slate-500`) or an arbitrary one (`[#101214]`).
+const COLOUR = String.raw`(?:\[[^\]]+\]|[A-Za-z0-9-]+)`;
+// The same, minus the font-size spellings: the named sizes, and bracketed
+// values that are not colour-shaped (`text-[0.8rem]`, `text-[length:var(--x)]`).
+const TEXT_COLOUR = String.raw`(?:\[(?:#|rgb|hsl|oklch|oklab|color:)[^\]]*\]|(?!(?:${FONT_SIZES.join('|')})/)[A-Za-z0-9-]+)`;
+
 const MODIFIER = new RegExp(
-  String.raw`\b(?:${COLOUR_UTILITIES.join('|')})-[A-Za-z0-9-]+/(\[[^\]]+\]|\d+)`,
+  String.raw`\b(?:(?:${COLOUR_UTILITIES.join('|')})-${COLOUR}|text-${TEXT_COLOUR})/(\[[^\]]+\]|\d+)`,
   'g',
 );
+
+function offScaleModifiers(line: string): string[] {
+  return (
+    Array.from(line.matchAll(MODIFIER))
+      // Arbitrary values (`text-white/[0.72]`) bypass the scale and always generate.
+      .filter(([, alpha]) => !alpha.startsWith('[') && !opacityScale.includes(alpha))
+      .map(([match]) => match)
+  );
+}
 
 // Mirrors the `content` globs in tailwind.config.ts.
 const SOURCE_ROOTS = ['app', 'components'];
@@ -59,16 +78,39 @@ describe('tailwind colour opacity modifiers', () => {
     expect(opacityScale).not.toContain('72');
   });
 
+  it('flags off-scale alphas without misreading other slash utilities', () => {
+    const inert = [
+      'text-white/72',
+      'text-black/72',
+      'border-white/18',
+      'border-black/8',
+      'bg-[#101214]/73',
+      'text-[#fff]/73',
+    ];
+    const valid = [
+      'text-white/70',
+      'border-black/10',
+      'bg-[#101214]/70',
+      'text-white/[0.72]',
+      'text-sm/6',
+      'text-base/7',
+      'text-2xl/9',
+      'text-[0.8rem]/6',
+      'w-1/2',
+      'top-1/2',
+    ];
+
+    expect(inert.filter((cls) => offScaleModifiers(cls).length === 0)).toEqual([]);
+    expect(valid.filter((cls) => offScaleModifiers(cls).length > 0)).toEqual([]);
+  });
+
   it('only uses opacity values that generate a CSS rule', () => {
     const offScale = SOURCE_ROOTS.flatMap((root) =>
       sourceFiles(root).flatMap((file) =>
         readFileSync(file, 'utf8')
           .split('\n')
           .flatMap((line, index) =>
-            Array.from(line.matchAll(MODIFIER))
-              // Arbitrary values (`text-white/[0.72]`) bypass the scale and always generate.
-              .filter(([, alpha]) => !alpha.startsWith('[') && !opacityScale.includes(alpha))
-              .map(([match]) => `${file}:${index + 1} ${match}`),
+            offScaleModifiers(line).map((match) => `${file}:${index + 1} ${match}`),
           ),
       ),
     );
