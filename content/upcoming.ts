@@ -9,7 +9,8 @@ export type UpcomingItem = {
    * True when the source flyer gives a date but no clock time. The card then
    * shows the date span instead of a time, rather than implying midnight.
    *
-   * Write all-day dates as UTC midnight (`...T00:00:00Z`). They are floating
+   * Write all-day dates as UTC midnight (`...T00:00:00Z`), and write `end` as
+   * the last day the event runs rather than the day after it. They are floating
    * calendar dates, not instants, and /schedule renders them in UTC so every
    * visitor sees the day the flyer prints regardless of their own time zone.
    */
@@ -26,8 +27,8 @@ export type UpcomingItem = {
 // silently: no error, no warning. Once the last one ages out the section falls back
 // to its empty state, which is how /schedule came to tell visitors there were no
 // events while /announcements was full of them.
-// tests/unit/upcoming-content.test.ts fails once every entry below is over, so
-// that staleness is loud instead of silent.
+// tests/unit/upcoming-content.test.ts fails as soon as any entry below is over,
+// so that staleness is loud instead of silent.
 //
 // To update: take dates from the current monthly events calendar on
 // /announcements (app/announcements/page.tsx, images in public/announcements/).

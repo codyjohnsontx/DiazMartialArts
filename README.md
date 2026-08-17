@@ -75,10 +75,10 @@ schedule and a free trial rather than showing placeholders.
 
 That silent decay is what once left `/schedule` announcing no events while
 `/announcements` was full of them, so `tests/unit/upcoming-content.test.ts` fails
-as soon as the list holds only events that are already over. An empty list
-still passes - that is the deliberate empty state. Refresh the list from the
-current monthly events calendar on `/announcements`, and give an event `allDay`
-rather than a guessed time when its flyer prints only a date.
+as soon as any entry in the list is over. An empty list still passes - that is
+the deliberate empty state. Refresh the list from the current monthly events
+calendar on `/announcements`, and give an event `allDay` rather than a guessed
+time when its flyer prints only a date.
 
 Environment variables:
 
