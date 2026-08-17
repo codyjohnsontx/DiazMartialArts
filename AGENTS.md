@@ -110,7 +110,9 @@ marking work complete or CI fails on unformatted files.
   generates no CSS rule at all, so the element silently inherits its colour
   while the build stays green. Use a scale value, or the arbitrary form
   (`text-white/[0.72]`). `tests/unit/tailwindOpacity.test.ts` fails on any
-  off-scale value.
+  off-scale value. When the guard trips, fix the class, not the config: adding
+  the off-scale value to `theme.opacity` in `tailwind.config.ts` legalises that
+  one typo and leaves the next one silent.
 
 ## Maintaining this file
 
