@@ -5,10 +5,43 @@ export type UpcomingItem = {
   end?: string;
   location?: string;
   notes?: string;
+  /**
+   * True when the source flyer gives a date but no clock time. The card then
+   * shows the date span instead of a time, rather than implying midnight.
+   *
+   * Write all-day dates as UTC midnight (`...T00:00:00Z`). They are floating
+   * calendar dates, not instants, and /schedule renders them in UTC so every
+   * visitor sees the day the flyer prints regardless of their own time zone.
+   */
+  allDay?: boolean;
 };
 
-// Genuine scheduled events only, or nothing at all. Everything listed here is
-// published on /schedule as a real event a member could show up for, so never
-// add placeholder or example entries. An empty list is a supported state: the
-// "Upcoming events" section renders a deliberate empty state for it.
-export const upcomingItems: UpcomingItem[] = [];
+// Hand-maintained list behind the "Upcoming events" section on /schedule. It is
+// the fallback source only: NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL takes precedence
+// whenever it is set, and nothing here is read then.
+//
+// MAINTENANCE - nothing updates this file automatically. lib/upcoming.ts keeps
+// only entries starting within the next 60 days, so an entry drops off the page
+// silently the moment its date passes: no error, no warning. Once the last one
+// ages out the section falls back to its empty state, which is how /schedule came
+// to tell visitors there were no events while /announcements was full of them.
+// tests/unit/upcoming-content.test.ts fails once every entry below has passed, so
+// that staleness is loud instead of silent.
+//
+// To update: take dates from the current monthly events calendar on
+// /announcements (app/announcements/page.tsx, images in public/announcements/).
+// Genuine scheduled events only - never a placeholder, and never a guessed date
+// or time. If a flyer gives no time, set allDay rather than inventing one; if it
+// gives no date, leave the event out. An empty list is a supported state: the
+// section then renders a deliberate empty state pointing at the weekly schedule.
+export const upcomingItems: UpcomingItem[] = [
+  {
+    // Source: the August 2026 panel of public/announcements/july-2026-events-calendar.jpg
+    // ("26-27 Stripe Testing (White Stripe)"). That panel gives no time of day.
+    id: 'stripe-testing-white-stripe-2026-08',
+    title: 'Stripe Testing (White Stripe)',
+    start: '2026-08-26T00:00:00Z',
+    end: '2026-08-27T00:00:00Z',
+    allDay: true,
+  },
+];

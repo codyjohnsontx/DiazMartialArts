@@ -24,6 +24,65 @@ describe('ScheduleContent', () => {
     expect(screen.getAllByText('Brazilian Jiu Jitsu (Gi/Gi-less)').length).toBeGreaterThan(0);
   });
 
+  it('shows the date span for an all-day event rather than a made-up time', () => {
+    render(
+      <ScheduleContent
+        upcoming={[
+          {
+            id: 'stripe-testing',
+            title: 'Stripe Testing (White Stripe)',
+            start: new Date('2026-08-26T00:00:00Z'),
+            end: new Date('2026-08-27T00:00:00Z'),
+            allDay: true,
+          },
+        ]}
+      />,
+    );
+
+    expect(screen.getByText('Stripe Testing (White Stripe)')).toBeVisible();
+    // Read in UTC, so this holds in every time zone CI or a visitor might use.
+    expect(screen.getByText('AUG')).toBeVisible();
+    expect(screen.getByText('26')).toBeVisible();
+    expect(screen.getByText('Through August 27')).toBeVisible();
+    // Midnight is an artefact of a date-only source, never a real class time.
+    expect(screen.queryByText(/12:00 AM/)).toBeNull();
+  });
+
+  it('tracks the event grid columns to the number of events', () => {
+    // The cards are divided by the grid background showing through 1px gaps, so a
+    // column with no card in it renders as an empty grey panel.
+    const { container } = render(<ScheduleContent upcoming={upcoming} />);
+
+    const grid = container.querySelector('.gap-px');
+    expect(grid).not.toBeNull();
+    expect(grid?.className).not.toMatch(/grid-cols-2|grid-cols-4/);
+  });
+
+  it('labels a single-day all-day event without inventing a time', () => {
+    render(
+      <ScheduleContent
+        upcoming={[
+          {
+            id: 'one-day',
+            title: 'Clean Up Day',
+            start: new Date('2026-08-26T00:00:00Z'),
+            allDay: true,
+          },
+        ]}
+      />,
+    );
+
+    expect(screen.getByText('All day')).toBeVisible();
+  });
+
+  it('still shows a start time for events that have one', () => {
+    render(<ScheduleContent upcoming={upcoming} />);
+
+    // The exact clock value follows the runtime time zone; what matters is that a
+    // timed event keeps showing a real time next to its location.
+    expect(screen.getByText(/^Main Mat · \d{1,2}:\d{2} (AM|PM)$/)).toBeVisible();
+  });
+
   it('points visitors at regular classes when no events are scheduled', () => {
     render(<ScheduleContent upcoming={[]} />);
 

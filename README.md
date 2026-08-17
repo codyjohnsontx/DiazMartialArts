@@ -65,10 +65,18 @@ revised flyer means updating both. `printableSchedules` points at the PDFs by
 their exact URL-encoded filenames, so replace those files in place rather than
 renaming them.
 
-`content/upcoming.ts` ships empty on purpose; only genuine scheduled events belong
-in it. When nothing falls inside the 60-day window the upcoming events section
-renders its empty state, which points readers back to the weekly schedule and a
-free trial rather than showing placeholder events.
+`content/upcoming.ts` is the hand-maintained fallback list, and only genuine
+scheduled events belong in it. Nothing refreshes it automatically: an entry
+disappears from the page silently once its date passes, and when nothing is left
+inside the 60-day window the section renders its empty state, pointing readers
+back to the weekly schedule and a free trial rather than showing placeholders.
+
+That silent decay is what once left `/schedule` announcing no events while
+`/announcements` was full of them, so `tests/unit/upcoming-content.test.ts` fails
+as soon as the list holds only events that have already happened. An empty list
+still passes - that is the deliberate empty state. Refresh the list from the
+current monthly events calendar on `/announcements`, and give an event `allDay`
+rather than a guessed time when its flyer prints only a date.
 
 Environment variables:
 

@@ -70,6 +70,8 @@ type Props = {
   upcoming: UpcomingEvent[];
 };
 
+const MAX_SHOWN_EVENTS = 4;
+
 const monthShort = [
   'JAN',
   'FEB',
@@ -85,19 +87,66 @@ const monthShort = [
   'DEC',
 ];
 
-function formatEventLocation(event: UpcomingEvent): string {
-  const time = event.start.toLocaleTimeString('en-US', {
+// An all-day event is a floating calendar date rather than an instant, so it is
+// stored at UTC midnight and read back in UTC. Using local accessors would print
+// a different day for a visitor whose zone straddles that midnight.
+function eventMonthIndex(event: UpcomingEvent): number {
+  return event.allDay ? event.start.getUTCMonth() : event.start.getMonth();
+}
+
+function eventDayOfMonth(event: UpcomingEvent): number {
+  return event.allDay ? event.start.getUTCDate() : event.start.getDate();
+}
+
+function isSameUtcDay(a: Date, b: Date): boolean {
+  return (
+    a.getUTCFullYear() === b.getUTCFullYear() &&
+    a.getUTCMonth() === b.getUTCMonth() &&
+    a.getUTCDate() === b.getUTCDate()
+  );
+}
+
+// All-day events carry a date but no clock time, so showing one would mean
+// inventing it. Say when the event runs instead.
+function formatEventTiming(event: UpcomingEvent): string {
+  if (event.allDay) {
+    if (event.end && !isSameUtcDay(event.start, event.end)) {
+      return `Through ${event.end.toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        timeZone: 'UTC',
+      })}`;
+    }
+    return 'All day';
+  }
+
+  return event.start.toLocaleTimeString('en-US', {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
   });
-  if (event.location) return `${event.location} · ${time}`;
-  return time;
+}
+
+function formatEventLocation(event: UpcomingEvent): string {
+  const timing = formatEventTiming(event);
+  if (event.location) return `${event.location} · ${timing}`;
+  return timing;
+}
+
+// The cards are separated by the grid's own background showing through 1px gaps,
+// so a column with no card in it reads as an empty grey panel. Fit the track count
+// to the events on hand instead of assuming a full row of four.
+function eventGridLayout(count: number): string {
+  if (count >= 4) return 'sm:grid-cols-2 lg:grid-cols-4';
+  if (count === 3) return 'sm:grid-cols-3';
+  if (count === 2) return 'sm:grid-cols-2';
+  return 'max-w-sm';
 }
 
 export function ScheduleContent({ upcoming }: Props) {
   const [activeDay, setActiveDay] = useState<WeeklySchedule['day']>('Monday');
   const dayData = weeklySchedule.find((d) => d.day === activeDay) ?? weeklySchedule[0];
+  const shownEvents = upcoming.slice(0, MAX_SHOWN_EVENTS);
 
   return (
     <>
@@ -286,10 +335,10 @@ export function ScheduleContent({ upcoming }: Props) {
               </Button>
             </div>
           ) : (
-            <div className="grid gap-px bg-white/10 sm:grid-cols-2 lg:grid-cols-4">
-              {upcoming.slice(0, 4).map((e) => {
-                const m = monthShort[e.start.getMonth()];
-                const d = String(e.start.getDate()).padStart(2, '0');
+            <div className={cn('grid gap-px bg-white/10', eventGridLayout(shownEvents.length))}>
+              {shownEvents.map((e) => {
+                const m = monthShort[eventMonthIndex(e)];
+                const d = String(eventDayOfMonth(e)).padStart(2, '0');
                 return (
                   <div key={e.id} className="flex min-h-[200px] flex-col gap-4 bg-ink p-6">
                     <div className="flex items-baseline gap-2">

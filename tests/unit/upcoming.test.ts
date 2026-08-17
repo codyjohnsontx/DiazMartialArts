@@ -20,6 +20,13 @@ afterEach(() => {
 describe('getUpcomingEvents', () => {
   it('uses fallback content when no ICS URL is configured', async () => {
     vi.stubEnv('NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL', '');
+    // Mocked rather than leaning on whatever content/upcoming.ts ships today, so
+    // this pins the no-ICS path instead of drifting with the hand-maintained list.
+    vi.doMock('@/content/upcoming', () => ({
+      upcomingItems: [
+        { id: 'hand-maintained', title: 'Hand Maintained', start: '2026-05-10T18:00:00-05:00' },
+      ],
+    }));
     const fetchSpy = vi.fn();
     vi.stubGlobal('fetch', fetchSpy);
     const { getUpcomingEvents } = await loadUpcoming();
@@ -30,8 +37,33 @@ describe('getUpcomingEvents', () => {
     // No feed was even requested, so this is the no-ICS path rather than a feed
     // that returned zero events.
     expect(fetchSpy).not.toHaveBeenCalled();
-    // content/upcoming.ts intentionally ships no events, so the fallback is empty.
-    expect(result.events).toEqual([]);
+    expect(result.events.map((event) => event.id)).toEqual(['hand-maintained']);
+  });
+
+  it('keeps the ICS feed in charge whenever the URL is set', async () => {
+    // The hand-maintained list must never shadow a configured calendar.
+    vi.doMock('@/content/upcoming', () => ({
+      upcomingItems: [
+        { id: 'hand-maintained', title: 'Hand Maintained', start: '2026-05-10T18:00:00-05:00' },
+      ],
+    }));
+    process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL = 'https://calendar.example/feed.ics';
+    const ics = [
+      'BEGIN:VCALENDAR',
+      'BEGIN:VEVENT',
+      'UID:from-feed',
+      'SUMMARY:From Feed',
+      'DTSTART:20260512T180000Z',
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ].join('\r\n');
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, text: async () => ics }));
+    const { getUpcomingEvents } = await loadUpcoming();
+
+    const result = await getUpcomingEvents();
+
+    expect(result.source).toBe('ics');
+    expect(result.events.map((event) => event.id)).toEqual(['from-feed']);
   });
 
   it('maps fallback content items to dates and clips them to the 60-day window', async () => {
@@ -67,6 +99,55 @@ describe('getUpcomingEvents', () => {
       location: 'Main Mat',
       notes: 'Bring water.',
     });
+  });
+
+  it('carries the all-day flag through from fallback content', async () => {
+    vi.doMock('@/content/upcoming', () => ({
+      upcomingItems: [
+        {
+          id: 'all-day',
+          title: 'Stripe Testing',
+          start: '2026-05-10T00:00:00Z',
+          end: '2026-05-11T00:00:00Z',
+          allDay: true,
+        },
+        { id: 'timed', title: 'Seminar', start: '2026-05-12T19:00:00-05:00' },
+      ],
+    }));
+    const { getUpcomingEvents } = await loadUpcoming();
+
+    const result = await getUpcomingEvents();
+
+    expect(result.events.map((event) => event.allDay)).toEqual([true, undefined]);
+  });
+
+  it('treats a date-only ICS DTSTART as an all-day event', async () => {
+    process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL = 'https://calendar.example/feed.ics';
+    const ics = [
+      'BEGIN:VCALENDAR',
+      'BEGIN:VEVENT',
+      'UID:all-day',
+      'SUMMARY:All Day Event',
+      'DTSTART;VALUE=DATE:20260510',
+      'END:VEVENT',
+      'BEGIN:VEVENT',
+      'UID:timed',
+      'SUMMARY:Timed Event',
+      'DTSTART:20260512T180000Z',
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ].join('\r\n');
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, text: async () => ics }));
+    const { getUpcomingEvents } = await loadUpcoming();
+
+    const result = await getUpcomingEvents();
+
+    expect(result.events.map((event) => [event.id, event.allDay])).toEqual([
+      ['all-day', true],
+      ['timed', undefined],
+    ]);
+    // Anchored in UTC, not the server's zone, so the printed day never shifts.
+    expect(result.events[0].start.toISOString()).toBe('2026-05-10T00:00:00.000Z');
   });
 
   it('parses, sorts, and limits events from an ICS feed', async () => {

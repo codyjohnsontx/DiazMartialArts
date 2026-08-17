@@ -8,6 +8,11 @@ export type UpcomingEvent = {
   end?: Date;
   location?: string;
   notes?: string;
+  /**
+   * True when the source gives a date but no clock time, so callers render the
+   * date span instead of the midnight that `start` would otherwise imply.
+   */
+  allDay?: boolean;
 };
 
 const MAX_DAYS_AHEAD = 60;
@@ -31,11 +36,14 @@ function unfoldIcsLines(content: string): string[] {
 function parseIcsDate(raw: string): Date | null {
   if (!raw) return null;
 
+  // A date-only value is a floating calendar date, not an instant, so anchor it
+  // in UTC and render it in UTC. Building it in server-local time would shift the
+  // printed day for viewers in another zone.
   if (/^\d{8}$/.test(raw)) {
     const year = Number(raw.slice(0, 4));
     const month = Number(raw.slice(4, 6)) - 1;
     const day = Number(raw.slice(6, 8));
-    return new Date(year, month, day, 0, 0, 0);
+    return new Date(Date.UTC(year, month, day, 0, 0, 0));
   }
 
   const clean = raw.replace(/Z$/, '');
@@ -82,6 +90,8 @@ function parseIcs(icsText: string): UpcomingEvent[] {
         end: end || undefined,
         location: raw.LOCATION || undefined,
         notes: raw.DESCRIPTION || undefined,
+        // A date-only DTSTART (VALUE=DATE) is how ICS spells an all-day event.
+        allDay: /^\d{8}$/.test(raw.DTSTART || '') || undefined,
       });
       continue;
     }
@@ -121,6 +131,7 @@ function fallbackUpcoming(): UpcomingEvent[] {
     end: item.end ? new Date(item.end) : undefined,
     location: item.location,
     notes: item.notes,
+    allDay: item.allDay,
   }));
 
   return filterWindow(mapped);
