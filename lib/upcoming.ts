@@ -25,6 +25,32 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 export const UPCOMING_WINDOW_DAYS = 60;
 const MAX_ITEMS = 15;
 
+/**
+ * The gym's own time zone. A timed entry with no `end` runs through the end of the
+ * calendar day it starts on *here*, so the rule reads the same whether the page
+ * renders on a Vercel box in UTC or on a laptop in Chicago. All-day entries use
+ * end-of-UTC-day instead, because those are floating dates written as UTC midnight.
+ */
+const SCHOOL_TIME_ZONE = 'America/Chicago';
+
+const schoolClock = new Intl.DateTimeFormat('en-US', {
+  timeZone: SCHOOL_TIME_ZONE,
+  hourCycle: 'h23',
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+});
+
+function endOfSchoolDay(start: Date): number {
+  const parts = schoolClock.formatToParts(start);
+  const read = (type: string) => Number(parts.find((part) => part.type === type)?.value ?? 0);
+  const sinceMidnight =
+    ((read('hour') * 60 + read('minute')) * 60 + read('second')) * 1000 +
+    start.getUTCMilliseconds();
+
+  return start.getTime() + DAY_MS - sinceMidnight - 1;
+}
+
 function unfoldIcsLines(content: string): string[] {
   const lines = content.replace(/\r\n/g, '\n').split('\n');
   const unfolded: string[] = [];
@@ -102,7 +128,13 @@ function parseIcs(icsText: string): UpcomingEvent[] {
       const start = parseIcsDate(raw.DTSTART || '');
       if (!start) continue;
 
-      const end = parseIcsEnd(raw.DTEND || '', start);
+      // A date-only DTSTART (VALUE=DATE) is how ICS spells an all-day event.
+      const allDay = /^\d{8}$/.test(raw.DTSTART || '');
+      // Per RFC 5545 a DATE-TIME DTSTART with no DTEND is an event that ends where
+      // it starts, so say so here. A hand-written entry means something else by an
+      // absent end - see endsAt - and spelling the feed's meaning out at the parse
+      // site keeps the two sources from having to share one default.
+      const end = parseIcsEnd(raw.DTEND || '', start) ?? (allDay ? undefined : start);
       events.push({
         id: raw.UID || `${raw.SUMMARY || 'event'}-${start.toISOString()}`,
         title: raw.SUMMARY || 'Untitled Event',
@@ -110,8 +142,7 @@ function parseIcs(icsText: string): UpcomingEvent[] {
         end,
         location: raw.LOCATION || undefined,
         notes: raw.DESCRIPTION || undefined,
-        // A date-only DTSTART (VALUE=DATE) is how ICS spells an all-day event.
-        allDay: /^\d{8}$/.test(raw.DTSTART || '') || undefined,
+        allDay: allDay || undefined,
       });
       continue;
     }
@@ -145,14 +176,19 @@ export function toUpcomingEvent(item: UpcomingItem): UpcomingEvent {
   };
 }
 
-// An all-day event is a floating calendar date, so its `end` names the last day
-// it runs and it is still on until that UTC day is over. A timed event ends at its
-// own instant, and an event with no `end` is treated as ending where it starts.
+// One rule for when an event is over: an entry with no explicit end lasts through
+// the day it starts on. An all-day entry is a floating calendar date, so its `end`
+// names the last day it runs and it is on until that UTC day is over; a timed entry
+// ends at its own instant, or at the end of its day at the gym when a flyer printed
+// a start time and no end. Without that last case an evening event would vanish
+// from the page the moment it began.
 function endsAt(event: UpcomingEvent): number {
-  const last = event.end ?? event.start;
-  if (!event.allDay) return last.getTime();
+  if (event.allDay) {
+    const last = event.end ?? event.start;
+    return Date.UTC(last.getUTCFullYear(), last.getUTCMonth(), last.getUTCDate(), 23, 59, 59, 999);
+  }
 
-  return Date.UTC(last.getUTCFullYear(), last.getUTCMonth(), last.getUTCDate(), 23, 59, 59, 999);
+  return event.end ? event.end.getTime() : endOfSchoolDay(event.start);
 }
 
 export function hasUpcomingEventEnded(event: UpcomingEvent, now: Date = new Date()): boolean {

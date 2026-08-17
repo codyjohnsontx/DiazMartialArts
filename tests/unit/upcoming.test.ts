@@ -167,6 +167,52 @@ describe('getUpcomingEvents', () => {
     expect(result.events.map((event) => event.id)).toEqual(['running-now']);
   });
 
+  it('runs a timed fallback entry with no end through the end of its day at the gym', async () => {
+    // 7:30 PM at the gym, which is already the next day in UTC: a rule anchored in
+    // UTC would have dropped tonight's event half an hour ago, and ending it at its
+    // own start would have dropped it at 6:00 PM, while it was still running. The
+    // suite pins TZ to the gym's zone, but the rule reads the same on a UTC box.
+    vi.setSystemTime(new Date('2026-05-01T19:30:00-05:00'));
+    vi.doMock('@/content/upcoming', () => ({
+      upcomingItems: [
+        { id: 'tonight', title: 'Fite Nite', start: '2026-05-01T18:00:00-05:00' },
+        { id: 'last-night', title: 'Old Fite Nite', start: '2026-04-30T18:00:00-05:00' },
+      ],
+    }));
+    const { getUpcomingEvents } = await loadUpcoming();
+
+    const result = await getUpcomingEvents();
+
+    expect(result.events.map((event) => event.id)).toEqual(['tonight']);
+  });
+
+  it('ends a timed ICS event with no DTEND where it starts', async () => {
+    // RFC 5545 gives the feed its own meaning for an absent end, so the fallback
+    // rule above must not be applied to it.
+    vi.setSystemTime(new Date('2026-05-01T19:30:00-05:00'));
+    process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL = 'https://calendar.example/feed.ics';
+    const ics = [
+      'BEGIN:VCALENDAR',
+      'BEGIN:VEVENT',
+      'UID:started-at-six',
+      'SUMMARY:Started At Six',
+      'DTSTART:20260501T230000Z',
+      'END:VEVENT',
+      'BEGIN:VEVENT',
+      'UID:still-to-come',
+      'SUMMARY:Still To Come',
+      'DTSTART:20260510T230000Z',
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ].join('\r\n');
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, text: async () => ics }));
+    const { getUpcomingEvents } = await loadUpcoming();
+
+    const result = await getUpcomingEvents();
+
+    expect(result.events.map((event) => event.id)).toEqual(['still-to-come']);
+  });
+
   it('carries the all-day flag through from fallback content', async () => {
     vi.doMock('@/content/upcoming', () => ({
       upcomingItems: [

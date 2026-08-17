@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 
 import { ScheduleContent } from '@/components/ScheduleContent';
-import type { UpcomingEvent } from '@/lib/upcoming';
+import { type UpcomingEvent, UPCOMING_WINDOW_DAYS } from '@/lib/upcoming';
 
 const upcoming: UpcomingEvent[] = [
   {
@@ -46,6 +46,14 @@ describe('ScheduleContent', () => {
     expect(screen.getByText('Through August 27')).toBeVisible();
     // Midnight is an artefact of a date-only source, never a real class time.
     expect(screen.queryByText(/12:00 AM/)).toBeNull();
+  });
+
+  it('states the same forward window the page actually filters on', () => {
+    // Hard-coding the figure here is what let the eyebrow keep claiming 60 days
+    // while lib/upcoming.ts looked somewhere else.
+    render(<ScheduleContent upcoming={upcoming} />);
+
+    expect(screen.getByText(`Next ${UPCOMING_WINDOW_DAYS} days`)).toBeVisible();
   });
 
   it('tracks the event grid columns to the number of events', () => {

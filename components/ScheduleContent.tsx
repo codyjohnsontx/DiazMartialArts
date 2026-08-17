@@ -14,7 +14,7 @@ import {
   weeklySchedule,
 } from '@/content/schedule';
 import { parseClassTimeRange } from '@/lib/classSchedule';
-import { type UpcomingEvent } from '@/lib/upcoming';
+import { type UpcomingEvent, UPCOMING_WINDOW_DAYS } from '@/lib/upcoming';
 import { cn } from '@/lib/utils';
 
 const dayShort: Record<WeeklySchedule['day'], string> = {
@@ -316,7 +316,7 @@ export function ScheduleContent({ upcoming }: Props) {
         <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
           <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
             <div>
-              <Eyebrow variant="light">Next 60 days</Eyebrow>
+              <Eyebrow variant="light">Next {UPCOMING_WINDOW_DAYS} days</Eyebrow>
               <h2 className="display mt-3 text-3xl sm:text-[44px]">Upcoming events</h2>
             </div>
             <Button href="/announcements" variant="ghost-light">

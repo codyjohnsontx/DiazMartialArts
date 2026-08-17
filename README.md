@@ -58,27 +58,18 @@ All primary content is in `content/`:
 1. Weekly schedule table from `content/schedule.ts`
 2. Printable class schedule flyers - images and PDFs in `public/schedules/`,
    listed by `printableSchedules` in `content/schedule.ts`
-3. Upcoming events list limited to the next 60 days
+3. Upcoming events list, limited to the forward window `UPCOMING_WINDOW_DAYS`
+   defines in `lib/upcoming.ts`
 
 The table and the flyers state the same class times on the same page, so a
 revised flyer means updating both. `printableSchedules` points at the PDFs by
 their exact URL-encoded filenames, so replace those files in place rather than
 renaming them.
 
-`content/upcoming.ts` is the hand-maintained fallback list, and only genuine
-scheduled events belong in it. An entry is listed while it starts inside the
-60-day window and has not finished yet, so an event under way stays on the page
-through its last day. Nothing refreshes the list automatically: an entry
-disappears silently once the event is over, and when nothing is left inside the
-window the section renders its empty state, pointing readers back to the weekly
-schedule and a free trial rather than showing placeholders.
-
-That silent decay is what once left `/schedule` announcing no events while
-`/announcements` was full of them, so `tests/unit/upcoming-content.test.ts` fails
-as soon as any entry in the list is over. An empty list still passes - that is
-the deliberate empty state. Refresh the list from the current monthly events
-calendar on `/announcements`, and give an event `allDay` rather than a guessed
-time when its flyer prints only a date.
+Upcoming events come from `NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL` when it is set,
+and from the hand-maintained list in `content/upcoming.ts` otherwise. The comment
+at the top of that file is the authoritative guide to keeping the list current -
+read it before editing the list.
 
 Environment variables:
 

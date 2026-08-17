@@ -22,11 +22,11 @@ export type UpcomingItem = {
 // whenever it is set, and nothing here is read then.
 //
 // MAINTENANCE - nothing updates this file automatically. lib/upcoming.ts keeps
-// only entries that start within the next 60 days and have not finished yet, so an
-// entry stays listed through the last day it runs and then drops off the page
-// silently: no error, no warning. Once the last one ages out the section falls back
-// to its empty state, which is how /schedule came to tell visitors there were no
-// events while /announcements was full of them.
+// only entries that start within its forward window (UPCOMING_WINDOW_DAYS) and have
+// not finished yet, so an entry stays listed through the last day it runs and then
+// drops off the page silently: no error, no warning. Once the last one ages out the
+// section falls back to its empty state, which is how /schedule came to tell
+// visitors there were no events while /announcements was full of them.
 // tests/unit/upcoming-content.test.ts fails as soon as any entry below is over,
 // so that staleness is loud instead of silent.
 //
@@ -36,6 +36,12 @@ export type UpcomingItem = {
 // or time. If a flyer gives no time, set allDay rather than inventing one; if it
 // gives no date, leave the event out. An empty list is a supported state: the
 // section then renders a deliberate empty state pointing at the weekly schedule.
+//
+// `end` is optional and never guessed either. Leave it off and the entry runs
+// through the end of the day it starts on - all day for an allDay entry, until
+// midnight at the gym for a timed one - so an event never disappears while it is
+// happening. Set `end` only when the flyer actually prints one, and write it as
+// the last day the event runs rather than the day after.
 export const upcomingItems: UpcomingItem[] = [
   {
     // Source: the August 2026 panel of public/announcements/july-2026-events-calendar.jpg
