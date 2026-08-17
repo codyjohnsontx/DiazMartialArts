@@ -23,6 +23,15 @@ test.describe('Schedule page', () => {
   test('shows the events it ships, and the empty state only when it ships none', async ({
     page,
   }) => {
+    // This pins the hand-maintained fallback, and the server picks the ICS feed
+    // over it whenever that variable is set. The env belongs to the server process
+    // rather than this test, so skip instead of asserting against a source the
+    // page is not reading.
+    test.skip(
+      Boolean(process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL?.trim()),
+      'NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL is set, so /schedule renders the feed rather than content/upcoming.ts',
+    );
+
     // Asks lib/upcoming.ts which entries the page keeps, and sorts the way the page
     // does, so the expectation cannot disagree with what is actually rendered.
     const inWindow = upcomingItems

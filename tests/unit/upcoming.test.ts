@@ -381,3 +381,60 @@ describe('getUpcomingEvents', () => {
     expect(result.source).toBe('fallback');
   });
 });
+
+// America/Chicago days are not all 24 hours long: 2026-11-01 runs 25 hours and
+// 2026-03-08 runs 23. Closing a day out by adding a fixed day to its start lands
+// an hour off on both, which would drop an entry while it is still running - the
+// one thing the end-based boundary exists to prevent.
+describe('end of the school day across DST transitions', () => {
+  it('keeps a fall-back-day entry listed until that 25-hour day is actually over', async () => {
+    const { hasUpcomingEventEnded } = await loadUpcoming();
+    const event = {
+      id: 'fall-back',
+      title: 'Rifle Club',
+      // 12:30 AM on 2026-11-01, before the 2 AM change, with no end time.
+      start: new Date('2026-11-01T05:30:00Z'),
+    };
+
+    // 11:30 PM the same evening, still that day at the gym.
+    expect(hasUpcomingEventEnded(event, new Date('2026-11-02T05:30:00Z'))).toBe(false);
+    // 12:30 AM the next day, genuinely over.
+    expect(hasUpcomingEventEnded(event, new Date('2026-11-02T06:30:00Z'))).toBe(true);
+  });
+
+  it('expires a spring-forward-day entry when that 23-hour day ends, not an hour later', async () => {
+    const { hasUpcomingEventEnded } = await loadUpcoming();
+    const event = {
+      id: 'spring-forward',
+      title: 'Open Mat',
+      // 12:30 AM on 2026-03-08, before the 2 AM change, with no end time.
+      start: new Date('2026-03-08T06:30:00Z'),
+    };
+
+    // 11:30 PM the same evening, still that day at the gym.
+    expect(hasUpcomingEventEnded(event, new Date('2026-03-09T04:30:00Z'))).toBe(false);
+    // 12:30 AM the next day, genuinely over.
+    expect(hasUpcomingEventEnded(event, new Date('2026-03-09T05:30:00Z'))).toBe(true);
+  });
+
+  it('closes an all-day entry on the gym clock on both transition days', async () => {
+    const { hasUpcomingEventEnded } = await loadUpcoming();
+    const fallBack = {
+      id: 'all-day-fall-back',
+      title: 'Stripe Testing',
+      start: new Date('2026-11-01T00:00:00Z'),
+      allDay: true,
+    };
+    const springForward = {
+      id: 'all-day-spring-forward',
+      title: 'Stripe Testing',
+      start: new Date('2026-03-08T00:00:00Z'),
+      allDay: true,
+    };
+
+    expect(hasUpcomingEventEnded(fallBack, new Date('2026-11-02T05:30:00Z'))).toBe(false);
+    expect(hasUpcomingEventEnded(fallBack, new Date('2026-11-02T06:30:00Z'))).toBe(true);
+    expect(hasUpcomingEventEnded(springForward, new Date('2026-03-09T04:30:00Z'))).toBe(false);
+    expect(hasUpcomingEventEnded(springForward, new Date('2026-03-09T05:30:00Z'))).toBe(true);
+  });
+});

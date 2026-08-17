@@ -1,10 +1,9 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import SchedulePage from '@/app/schedule/page';
 import { ScheduleContent } from '@/components/ScheduleContent';
-import { type UpcomingEvent, UPCOMING_WINDOW_DAYS } from '@/lib/upcoming';
+import type { UpcomingEvent } from '@/lib/upcoming';
 
 const upcoming: UpcomingEvent[] = [
   {
@@ -18,6 +17,18 @@ const upcoming: UpcomingEvent[] = [
 // Deliberately not UPCOMING_WINDOW_DAYS: the component takes the figure as a prop,
 // so a value the constant could never supply is what proves it reads the prop.
 const WINDOW_DAYS = 45;
+
+// One test here renders /schedule itself, and the page reads the optional ICS
+// feed before falling back to content/upcoming.ts. Pin the feed off so this suite
+// stays offline and deterministic instead of describing whatever a configured
+// environment happens to serve.
+beforeEach(() => {
+  vi.stubEnv('NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL', '');
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
 
 describe('ScheduleContent', () => {
   it('renders Monday classes and upcoming events by default', () => {
@@ -66,9 +77,23 @@ describe('ScheduleContent', () => {
     // Renders what /schedule itself renders, so the eyebrow and the filter cannot
     // drift apart through the prop the way they used to drift through a copy of
     // the number. Fails if the page hands the component anything else.
-    render(await SchedulePage());
+    //
+    // lib/env.ts caches the public env on first read, and that read happens while
+    // the module graph is imported - long before any beforeEach. Reset the
+    // registry and import inside the test so the stubbed feed URL is the one the
+    // page actually sees, rather than whatever the ambient environment had.
+    vi.resetModules();
+    vi.stubEnv('NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL', '');
+    const fetchSpy = vi.fn();
+    vi.stubGlobal('fetch', fetchSpy);
+    const { default: FreshSchedulePage } = await import('@/app/schedule/page');
+    const { UPCOMING_WINDOW_DAYS: freshWindowDays } = await import('@/lib/upcoming');
 
-    expect(screen.getByText(`Next ${UPCOMING_WINDOW_DAYS} days`)).toBeVisible();
+    render(await FreshSchedulePage());
+
+    expect(screen.getByText(`Next ${freshWindowDays} days`)).toBeVisible();
+    // Proves the render took the offline fallback rather than reaching a feed.
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 
   it('tracks the event grid columns to the number of events', () => {

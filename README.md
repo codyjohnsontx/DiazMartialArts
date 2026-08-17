@@ -58,8 +58,8 @@ All primary content is in `content/`:
 1. Weekly schedule table from `content/schedule.ts`
 2. Printable class schedule flyers - images and PDFs in `public/schedules/`,
    listed by `printableSchedules` in `content/schedule.ts`
-3. Upcoming events list, limited to the forward window `UPCOMING_WINDOW_DAYS`
-   defines in `lib/upcoming.ts`
+3. Upcoming events list, limited to the forward window defined by
+   `UPCOMING_WINDOW_DAYS` in `lib/upcoming.ts`
 
 The table and the flyers state the same class times on the same page, so a
 revised flyer means updating both. `printableSchedules` points at the PDFs by
