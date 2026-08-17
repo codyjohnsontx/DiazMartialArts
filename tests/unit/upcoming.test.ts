@@ -143,6 +143,39 @@ describe('getUpcomingEvents', () => {
     expect(result.events.map((event) => event.id)).toEqual(['mid-span', 'final-day', 'runs-today']);
   });
 
+  it('keeps an all-day event listed until its last day is over at the gym', async () => {
+    // 9:00 PM at the gym on the event's own final day, which is already tomorrow in
+    // UTC. Closing an all-day entry out at the end of the UTC day would have pulled
+    // the card two hours ago, on an evening the event was still running - the same
+    // vanishing act windowing on the end instead of the start exists to stop.
+    vi.setSystemTime(new Date('2026-05-01T21:00:00-05:00'));
+    vi.doMock('@/content/upcoming', () => ({
+      upcomingItems: [
+        {
+          id: 'last-day-tonight',
+          title: 'Stripe Testing',
+          start: '2026-04-30T00:00:00Z',
+          end: '2026-05-01T00:00:00Z',
+          allDay: true,
+        },
+        {
+          id: 'ended-last-night',
+          title: 'Old Stripe Testing',
+          start: '2026-04-29T00:00:00Z',
+          end: '2026-04-30T00:00:00Z',
+          allDay: true,
+        },
+      ],
+    }));
+    const { getUpcomingEvents } = await loadUpcoming();
+
+    const result = await getUpcomingEvents();
+
+    // The second entry pins that the boundary moved by five hours rather than
+    // becoming open-ended: its own last day ended at the gym last night.
+    expect(result.events.map((event) => event.id)).toEqual(['last-day-tonight']);
+  });
+
   it('keeps a timed event listed until its end time passes', async () => {
     vi.doMock('@/content/upcoming', () => ({
       upcomingItems: [

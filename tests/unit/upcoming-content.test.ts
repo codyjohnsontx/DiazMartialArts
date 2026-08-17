@@ -8,6 +8,8 @@ import {
   UPCOMING_WINDOW_DAYS,
 } from '@/lib/upcoming';
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+
 // Deliberately runs against the real clock and the real shipped content, unlike
 // tests/unit/upcoming.test.ts, which freezes time to exercise lib/upcoming.ts.
 // It asks lib/upcoming.ts itself which entries reach the page, so this guard can
@@ -55,6 +57,42 @@ describe('content/upcoming.ts staleness guard', () => {
         expect(Number.isNaN(new Date(item.end).getTime()), `${item.id} end`).toBe(false);
       }
     }
+  });
+
+  // An all-day entry is a floating calendar date, not an instant: /schedule prints
+  // its day with getUTCDate and renders its span with timeZone UTC. Both of the
+  // conventions that rests on are invisible in the file itself, so pin them here
+  // rather than leaving the next hand-editor to find out from the live page.
+  it('anchors every all-day entry at exact UTC midnight', () => {
+    for (const item of upcomingItems) {
+      if (!item.allDay) continue;
+
+      for (const field of ['start', 'end'] as const) {
+        const value = item[field];
+        if (!value) continue;
+
+        expect(
+          new Date(value).getTime() % DAY_MS,
+          `${item.id} has ${field}: '${value}'. An all-day entry is a floating calendar ` +
+            "date, so write it as 'YYYY-MM-DDT00:00:00Z' - the trailing Z included, and " +
+            'no time of day. Anything else prints a different day for a visitor whose ' +
+            'zone is ahead of UTC.',
+        ).toBe(0);
+      }
+    }
+  });
+
+  it('flags every midnight-anchored entry as all-day', () => {
+    const untagged = upcomingItems.filter(
+      (item) => !item.allDay && new Date(item.start).getTime() % DAY_MS === 0,
+    );
+
+    expect(
+      untagged.map((item) => `${item.id} (${item.start})`),
+      'These entries start at exact midnight but are not marked allDay, so /schedule ' +
+        'renders them as "12:00 AM" - a class time the school never published. Add ' +
+        '`allDay: true` if the flyer printed no time, or write the real time it did.',
+    ).toEqual([]);
   });
 
   it('carries no placeholder entries', () => {

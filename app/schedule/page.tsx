@@ -21,5 +21,5 @@ export const metadata = pageMetadata({
 
 export default async function SchedulePage() {
   const { events } = await getUpcomingEvents();
-  return <ScheduleContent upcoming={events} />;
+  return <ScheduleContent upcoming={events} windowDays={UPCOMING_WINDOW_DAYS} />;
 }

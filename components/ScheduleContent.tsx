@@ -14,7 +14,7 @@ import {
   weeklySchedule,
 } from '@/content/schedule';
 import { parseClassTimeRange } from '@/lib/classSchedule';
-import { type UpcomingEvent, UPCOMING_WINDOW_DAYS } from '@/lib/upcoming';
+import type { UpcomingEvent } from '@/lib/upcoming';
 import { cn } from '@/lib/utils';
 
 const dayShort: Record<WeeklySchedule['day'], string> = {
@@ -68,6 +68,14 @@ function startTime(time: string): string {
 
 type Props = {
   upcoming: UpcomingEvent[];
+  /**
+   * The forward window the page filtered `upcoming` on, so the eyebrow states the
+   * same figure rather than a copy that can drift. Passed in rather than imported:
+   * this is a client component, and reaching into lib/upcoming.ts for one integer
+   * would drag the ICS parser and the server-side env reader into the browser
+   * bundle with it.
+   */
+  windowDays: number;
 };
 
 const MAX_SHOWN_EVENTS = 4;
@@ -143,7 +151,7 @@ function eventGridLayout(count: number): string {
   return 'max-w-sm';
 }
 
-export function ScheduleContent({ upcoming }: Props) {
+export function ScheduleContent({ upcoming, windowDays }: Props) {
   const [activeDay, setActiveDay] = useState<WeeklySchedule['day']>('Monday');
   const dayData = weeklySchedule.find((d) => d.day === activeDay) ?? weeklySchedule[0];
   const shownEvents = upcoming.slice(0, MAX_SHOWN_EVENTS);
@@ -316,7 +324,7 @@ export function ScheduleContent({ upcoming }: Props) {
         <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
           <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
             <div>
-              <Eyebrow variant="light">Next {UPCOMING_WINDOW_DAYS} days</Eyebrow>
+              <Eyebrow variant="light">Next {windowDays} days</Eyebrow>
               <h2 className="display mt-3 text-3xl sm:text-[44px]">Upcoming events</h2>
             </div>
             <Button href="/announcements" variant="ghost-light">

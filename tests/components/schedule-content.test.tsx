@@ -2,6 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 
+import SchedulePage from '@/app/schedule/page';
 import { ScheduleContent } from '@/components/ScheduleContent';
 import { type UpcomingEvent, UPCOMING_WINDOW_DAYS } from '@/lib/upcoming';
 
@@ -14,9 +15,13 @@ const upcoming: UpcomingEvent[] = [
   },
 ];
 
+// Deliberately not UPCOMING_WINDOW_DAYS: the component takes the figure as a prop,
+// so a value the constant could never supply is what proves it reads the prop.
+const WINDOW_DAYS = 45;
+
 describe('ScheduleContent', () => {
   it('renders Monday classes and upcoming events by default', () => {
-    render(<ScheduleContent upcoming={upcoming} />);
+    render(<ScheduleContent upcoming={upcoming} windowDays={WINDOW_DAYS} />);
 
     expect(screen.getByRole('heading', { name: 'Schedule' })).toBeVisible();
     expect(screen.getByRole('heading', { name: 'Weekly class schedule' })).toBeVisible();
@@ -36,6 +41,7 @@ describe('ScheduleContent', () => {
             allDay: true,
           },
         ]}
+        windowDays={WINDOW_DAYS}
       />,
     );
 
@@ -48,10 +54,19 @@ describe('ScheduleContent', () => {
     expect(screen.queryByText(/12:00 AM/)).toBeNull();
   });
 
-  it('states the same forward window the page actually filters on', () => {
-    // Hard-coding the figure here is what let the eyebrow keep claiming 60 days
+  it('states the forward window it is handed rather than a figure of its own', () => {
+    // Hard-coding the figure in the eyebrow is what let it keep claiming 60 days
     // while lib/upcoming.ts looked somewhere else.
-    render(<ScheduleContent upcoming={upcoming} />);
+    render(<ScheduleContent upcoming={upcoming} windowDays={WINDOW_DAYS} />);
+
+    expect(screen.getByText(`Next ${WINDOW_DAYS} days`)).toBeVisible();
+  });
+
+  it('is handed the same forward window the page actually filters on', async () => {
+    // Renders what /schedule itself renders, so the eyebrow and the filter cannot
+    // drift apart through the prop the way they used to drift through a copy of
+    // the number. Fails if the page hands the component anything else.
+    render(await SchedulePage());
 
     expect(screen.getByText(`Next ${UPCOMING_WINDOW_DAYS} days`)).toBeVisible();
   });
@@ -59,7 +74,7 @@ describe('ScheduleContent', () => {
   it('tracks the event grid columns to the number of events', () => {
     // The cards are divided by the grid background showing through 1px gaps, so a
     // column with no card in it renders as an empty grey panel.
-    const { container } = render(<ScheduleContent upcoming={upcoming} />);
+    const { container } = render(<ScheduleContent upcoming={upcoming} windowDays={WINDOW_DAYS} />);
 
     const grid = container.querySelector('.gap-px');
     expect(grid).not.toBeNull();
@@ -77,6 +92,7 @@ describe('ScheduleContent', () => {
             allDay: true,
           },
         ]}
+        windowDays={WINDOW_DAYS}
       />,
     );
 
@@ -84,7 +100,7 @@ describe('ScheduleContent', () => {
   });
 
   it('still shows a start time for events that have one', () => {
-    render(<ScheduleContent upcoming={upcoming} />);
+    render(<ScheduleContent upcoming={upcoming} windowDays={WINDOW_DAYS} />);
 
     // The exact clock value follows the runtime time zone; what matters is that a
     // timed event keeps showing a real time next to its location.
@@ -92,7 +108,7 @@ describe('ScheduleContent', () => {
   });
 
   it('points visitors at regular classes when no events are scheduled', () => {
-    render(<ScheduleContent upcoming={[]} />);
+    render(<ScheduleContent upcoming={[]} windowDays={WINDOW_DAYS} />);
 
     expect(screen.getByText(/No special events on the calendar right now/i)).toBeVisible();
     expect(screen.getByText(/Regular classes run six days a week/i)).toBeVisible();
@@ -109,7 +125,7 @@ describe('ScheduleContent', () => {
 
   it('switches between available day tabs', async () => {
     const user = userEvent.setup();
-    render(<ScheduleContent upcoming={upcoming} />);
+    render(<ScheduleContent upcoming={upcoming} windowDays={WINDOW_DAYS} />);
 
     await user.click(screen.getByRole('tab', { name: 'Friday schedule' }));
 
@@ -118,7 +134,7 @@ describe('ScheduleContent', () => {
 
   it('keeps closed days disabled', async () => {
     const user = userEvent.setup();
-    render(<ScheduleContent upcoming={upcoming} />);
+    render(<ScheduleContent upcoming={upcoming} windowDays={WINDOW_DAYS} />);
 
     const sunday = screen.getByRole('tab', { name: 'Sunday schedule' });
     expect(sunday).toBeDisabled();

@@ -38,10 +38,11 @@ export type UpcomingItem = {
 // section then renders a deliberate empty state pointing at the weekly schedule.
 //
 // `end` is optional and never guessed either. Leave it off and the entry runs
-// through the end of the day it starts on - all day for an allDay entry, until
-// midnight at the gym for a timed one - so an event never disappears while it is
-// happening. Set `end` only when the flyer actually prints one, and write it as
-// the last day the event runs rather than the day after.
+// through the end of the day it starts on, at midnight at the gym, so an event
+// never disappears while it is happening. Set `end` only when the flyer actually
+// prints one: an allDay entry takes the last day the event runs rather than the
+// day after, and stays listed until that day is over at the gym, while a timed
+// entry with an `end` finishes at that exact time.
 export const upcomingItems: UpcomingItem[] = [
   {
     // Source: the August 2026 panel of public/announcements/july-2026-events-calendar.jpg

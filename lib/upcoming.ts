@@ -26,10 +26,9 @@ export const UPCOMING_WINDOW_DAYS = 60;
 const MAX_ITEMS = 15;
 
 /**
- * The gym's own time zone. A timed entry with no `end` runs through the end of the
- * calendar day it starts on *here*, so the rule reads the same whether the page
- * renders on a Vercel box in UTC or on a laptop in Chicago. All-day entries use
- * end-of-UTC-day instead, because those are floating dates written as UTC midnight.
+ * The gym's own time zone. An entry that runs through the end of a day ends when
+ * that day is over *here*, so the rule reads the same whether the page renders on
+ * a Vercel box in UTC or on a laptop in Chicago.
  */
 const SCHOOL_TIME_ZONE = 'America/Chicago';
 
@@ -49,6 +48,22 @@ function endOfSchoolDay(start: Date): number {
     start.getUTCMilliseconds();
 
   return start.getTime() + DAY_MS - sinceMidnight - 1;
+}
+
+// An all-day entry is a floating calendar date stored as UTC midnight, so its day
+// is read back in UTC and then closed out on the gym's clock. Midday UTC lands
+// inside that same calendar date in the school's zone whichever side of a DST
+// change it falls on, which is what lets both kinds of entry share one rule for
+// the end of a day instead of keeping two in step.
+function endOfSchoolDayOnDateOf(floating: Date): number {
+  const midday = Date.UTC(
+    floating.getUTCFullYear(),
+    floating.getUTCMonth(),
+    floating.getUTCDate(),
+    12,
+  );
+
+  return endOfSchoolDay(new Date(midday));
 }
 
 function unfoldIcsLines(content: string): string[] {
@@ -176,16 +191,15 @@ export function toUpcomingEvent(item: UpcomingItem): UpcomingEvent {
   };
 }
 
-// One rule for when an event is over: an entry with no explicit end lasts through
-// the day it starts on. An all-day entry is a floating calendar date, so its `end`
-// names the last day it runs and it is on until that UTC day is over; a timed entry
-// ends at its own instant, or at the end of its day at the gym when a flyer printed
-// a start time and no end. Without that last case an evening event would vanish
-// from the page the moment it began.
+// One rule for when an event is over: it runs through the end of its last day at
+// the gym, unless a timed entry names an end instant of its own. An all-day entry's
+// `end` is the last calendar day it runs, and an entry with no `end` at all lasts
+// through the day it starts on - a flyer that printed a start time and no end would
+// otherwise vanish from the page the moment the event began, and an all-day one
+// would vanish during the evening of its own final day.
 function endsAt(event: UpcomingEvent): number {
   if (event.allDay) {
-    const last = event.end ?? event.start;
-    return Date.UTC(last.getUTCFullYear(), last.getUTCMonth(), last.getUTCDate(), 23, 59, 59, 999);
+    return endOfSchoolDayOnDateOf(event.end ?? event.start);
   }
 
   return event.end ? event.end.getTime() : endOfSchoolDay(event.start);
