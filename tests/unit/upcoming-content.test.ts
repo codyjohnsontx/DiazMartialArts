@@ -1,14 +1,20 @@
 import { describe, expect, it } from 'vitest';
 
 import { upcomingItems } from '@/content/upcoming';
-
-const WINDOW_DAYS = 60;
+import {
+  hasUpcomingEventEnded,
+  isWithinUpcomingWindow,
+  toUpcomingEvent,
+  UPCOMING_WINDOW_DAYS,
+} from '@/lib/upcoming';
 
 // Deliberately runs against the real clock and the real shipped content, unlike
 // tests/unit/upcoming.test.ts, which freezes time to exercise lib/upcoming.ts.
+// It asks lib/upcoming.ts itself which entries reach the page, so this guard can
+// never go red at an instant the live page still renders the event.
 //
 // content/upcoming.ts is hand-maintained and lib/upcoming.ts drops anything
-// outside a 60-day forward window, so a list that is merely out of date looks
+// outside its forward window, so a list that is merely out of date looks
 // exactly like a list that is empty on purpose: /schedule quietly renders "no
 // events" either way. That is the bug this guard exists to stop recurring.
 //
@@ -17,9 +23,8 @@ const WINDOW_DAYS = 60;
 // refreshed the file, and CI should say so instead of the public site telling
 // visitors an active gym has nothing scheduled.
 describe('content/upcoming.ts staleness guard', () => {
-  it('keeps no entry whose date has already passed', () => {
-    const now = new Date();
-    const passed = upcomingItems.filter((item) => new Date(item.end ?? item.start) < now);
+  it('keeps no entry whose event is already over', () => {
+    const passed = upcomingItems.filter((item) => hasUpcomingEventEnded(toUpcomingEvent(item)));
 
     expect(
       passed.map((item) => `${item.id} (${item.start})`),
@@ -32,18 +37,14 @@ describe('content/upcoming.ts staleness guard', () => {
   it('shows at least one event whenever it lists any', () => {
     if (upcomingItems.length === 0) return;
 
-    const now = Date.now();
-    const horizon = now + WINDOW_DAYS * 24 * 60 * 60 * 1000;
-    const visible = upcomingItems.filter((item) => {
-      const start = new Date(item.start).getTime();
-      return start >= now && start <= horizon;
-    });
+    const visible = upcomingItems.filter((item) => isWithinUpcomingWindow(toUpcomingEvent(item)));
 
     expect(
       visible.length,
-      `content/upcoming.ts lists ${upcomingItems.length} event(s) but none start within ` +
-        `the next ${WINDOW_DAYS} days, so /schedule renders its empty state anyway. Add a ` +
-        'current event, or empty the list so the empty state is the deliberate choice.',
+      `content/upcoming.ts lists ${upcomingItems.length} event(s) but /schedule shows none of ` +
+        `them: each one is either over or starts more than ${UPCOMING_WINDOW_DAYS} days out, so ` +
+        'the section renders its empty state anyway. Add a current event, or empty the list so ' +
+        'the empty state is the deliberate choice.',
     ).toBeGreaterThan(0);
   });
 

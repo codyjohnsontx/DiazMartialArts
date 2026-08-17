@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 import { upcomingItems } from '../../content/upcoming';
+import { isWithinUpcomingWindow, toUpcomingEvent } from '../../lib/upcoming';
 
 test.describe('Schedule page', () => {
   test.beforeEach(async ({ page }) => {
@@ -22,12 +23,11 @@ test.describe('Schedule page', () => {
   test('shows the events it ships, and the empty state only when it ships none', async ({
     page,
   }) => {
-    const now = Date.now();
-    const horizon = now + 60 * 24 * 60 * 60 * 1000;
-    const inWindow = upcomingItems.filter((item) => {
-      const start = new Date(item.start).getTime();
-      return start >= now && start <= horizon;
-    });
+    // Asks lib/upcoming.ts which entries the page keeps, and sorts the way the page
+    // does, so the expectation cannot disagree with what is actually rendered.
+    const inWindow = upcomingItems
+      .filter((item) => isWithinUpcomingWindow(toUpcomingEvent(item)))
+      .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
 
     const section = page
       .getByRole('heading', { name: /Upcoming events/i })

@@ -21,11 +21,12 @@ export type UpcomingItem = {
 // whenever it is set, and nothing here is read then.
 //
 // MAINTENANCE - nothing updates this file automatically. lib/upcoming.ts keeps
-// only entries starting within the next 60 days, so an entry drops off the page
-// silently the moment its date passes: no error, no warning. Once the last one
-// ages out the section falls back to its empty state, which is how /schedule came
-// to tell visitors there were no events while /announcements was full of them.
-// tests/unit/upcoming-content.test.ts fails once every entry below has passed, so
+// only entries that start within the next 60 days and have not finished yet, so an
+// entry stays listed through the last day it runs and then drops off the page
+// silently: no error, no warning. Once the last one ages out the section falls back
+// to its empty state, which is how /schedule came to tell visitors there were no
+// events while /announcements was full of them.
+// tests/unit/upcoming-content.test.ts fails once every entry below is over, so
 // that staleness is loud instead of silent.
 //
 // To update: take dates from the current monthly events calendar on

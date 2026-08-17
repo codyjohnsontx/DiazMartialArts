@@ -101,6 +101,72 @@ describe('getUpcomingEvents', () => {
     });
   });
 
+  it('keeps an all-day event listed while it is still running', async () => {
+    // Now is 2026-05-01T17:00:00Z, so every entry below has already started. An
+    // event that is under way is exactly when visitors look it up, so windowing on
+    // the start instead of the end would drop all three of the first ones.
+    vi.doMock('@/content/upcoming', () => ({
+      upcomingItems: [
+        {
+          id: 'runs-today',
+          title: 'Stripe Testing',
+          start: '2026-05-01T00:00:00Z',
+          allDay: true,
+        },
+        {
+          id: 'mid-span',
+          title: 'Camp Weekend',
+          start: '2026-04-29T00:00:00Z',
+          end: '2026-05-02T00:00:00Z',
+          allDay: true,
+        },
+        {
+          id: 'final-day',
+          title: 'Belt Testing',
+          start: '2026-04-30T00:00:00Z',
+          end: '2026-05-01T00:00:00Z',
+          allDay: true,
+        },
+        {
+          id: 'ended-yesterday',
+          title: 'Old Seminar',
+          start: '2026-04-28T00:00:00Z',
+          end: '2026-04-30T00:00:00Z',
+          allDay: true,
+        },
+      ],
+    }));
+    const { getUpcomingEvents } = await loadUpcoming();
+
+    const result = await getUpcomingEvents();
+
+    expect(result.events.map((event) => event.id)).toEqual(['mid-span', 'final-day', 'runs-today']);
+  });
+
+  it('keeps a timed event listed until its end time passes', async () => {
+    vi.doMock('@/content/upcoming', () => ({
+      upcomingItems: [
+        {
+          id: 'running-now',
+          title: 'Open Mat',
+          start: '2026-05-01T11:00:00-05:00',
+          end: '2026-05-01T13:00:00-05:00',
+        },
+        {
+          id: 'already-finished',
+          title: 'Morning Class',
+          start: '2026-05-01T06:00:00-05:00',
+          end: '2026-05-01T07:00:00-05:00',
+        },
+      ],
+    }));
+    const { getUpcomingEvents } = await loadUpcoming();
+
+    const result = await getUpcomingEvents();
+
+    expect(result.events.map((event) => event.id)).toEqual(['running-now']);
+  });
+
   it('carries the all-day flag through from fallback content', async () => {
     vi.doMock('@/content/upcoming', () => ({
       upcomingItems: [
@@ -148,6 +214,38 @@ describe('getUpcomingEvents', () => {
     ]);
     // Anchored in UTC, not the server's zone, so the printed day never shifts.
     expect(result.events[0].start.toISOString()).toBe('2026-05-10T00:00:00.000Z');
+  });
+
+  it('reads a date-only ICS DTEND as the last day the event runs', async () => {
+    process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL = 'https://calendar.example/feed.ics';
+    const ics = [
+      'BEGIN:VCALENDAR',
+      'BEGIN:VEVENT',
+      'UID:one-day',
+      'SUMMARY:One Day',
+      'DTSTART;VALUE=DATE:20260510',
+      'DTEND;VALUE=DATE:20260511',
+      'END:VEVENT',
+      'BEGIN:VEVENT',
+      'UID:two-day',
+      'SUMMARY:Two Day',
+      'DTSTART;VALUE=DATE:20260512',
+      'DTEND;VALUE=DATE:20260514',
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ].join('\r\n');
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, text: async () => ics }));
+    const { getUpcomingEvents } = await loadUpcoming();
+
+    const result = await getUpcomingEvents();
+
+    // A date-only DTEND is exclusive per RFC 5545, so a one-day event ends on the
+    // day it starts and a 12-13 event ends on the 13th. Taking it literally would
+    // have the card announce a day the school never published.
+    expect(result.events.map((event) => [event.id, event.end?.toISOString()])).toEqual([
+      ['one-day', '2026-05-10T00:00:00.000Z'],
+      ['two-day', '2026-05-13T00:00:00.000Z'],
+    ]);
   });
 
   it('parses, sorts, and limits events from an ICS feed', async () => {

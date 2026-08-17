@@ -1,4 +1,4 @@
-import { upcomingItems } from '@/content/upcoming';
+import { type UpcomingItem, upcomingItems } from '@/content/upcoming';
 import { getPublicEnv } from '@/lib/env';
 
 export type UpcomingEvent = {
@@ -15,7 +15,14 @@ export type UpcomingEvent = {
   allDay?: boolean;
 };
 
-const MAX_DAYS_AHEAD = 60;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * How far ahead /schedule looks. Exported so the content staleness guard and the
+ * end-to-end test describe the same window the page renders instead of each
+ * recomputing it and drifting.
+ */
+export const UPCOMING_WINDOW_DAYS = 60;
 const MAX_ITEMS = 15;
 
 function unfoldIcsLines(content: string): string[] {
@@ -63,6 +70,19 @@ function parseIcsDate(raw: string): Date | null {
   return new Date(year, month, day, hour, minute, second);
 }
 
+// A date-only DTEND is exclusive per RFC 5545, and Google Calendar exports a
+// one-day all-day event as DTEND = the following day. content/upcoming.ts instead
+// writes `end` as the last day the event runs, so normalise the feed to that and
+// both sources mean the same thing by the same field.
+function parseIcsEnd(raw: string, start: Date): Date | undefined {
+  const parsed = parseIcsDate(raw);
+  if (!parsed) return undefined;
+  if (!/^\d{8}$/.test(raw)) return parsed;
+
+  const lastDay = new Date(parsed.getTime() - DAY_MS);
+  return lastDay < start ? undefined : lastDay;
+}
+
 function parseIcs(icsText: string): UpcomingEvent[] {
   const lines = unfoldIcsLines(icsText);
   const events: UpcomingEvent[] = [];
@@ -82,12 +102,12 @@ function parseIcs(icsText: string): UpcomingEvent[] {
       const start = parseIcsDate(raw.DTSTART || '');
       if (!start) continue;
 
-      const end = parseIcsDate(raw.DTEND || '');
+      const end = parseIcsEnd(raw.DTEND || '', start);
       events.push({
         id: raw.UID || `${raw.SUMMARY || 'event'}-${start.toISOString()}`,
         title: raw.SUMMARY || 'Untitled Event',
         start,
-        end: end || undefined,
+        end,
         location: raw.LOCATION || undefined,
         notes: raw.DESCRIPTION || undefined,
         // A date-only DTSTART (VALUE=DATE) is how ICS spells an all-day event.
@@ -113,18 +133,8 @@ function parseIcs(icsText: string): UpcomingEvent[] {
   return events;
 }
 
-function filterWindow(events: UpcomingEvent[]): UpcomingEvent[] {
-  const now = new Date();
-  const max = new Date(now.getTime() + MAX_DAYS_AHEAD * 24 * 60 * 60 * 1000);
-
-  return events
-    .filter((event) => event.start >= now && event.start <= max)
-    .sort((a, b) => a.start.getTime() - b.start.getTime())
-    .slice(0, MAX_ITEMS);
-}
-
-function fallbackUpcoming(): UpcomingEvent[] {
-  const mapped = upcomingItems.map((item) => ({
+export function toUpcomingEvent(item: UpcomingItem): UpcomingEvent {
+  return {
     id: item.id,
     title: item.title,
     start: new Date(item.start),
@@ -132,9 +142,44 @@ function fallbackUpcoming(): UpcomingEvent[] {
     location: item.location,
     notes: item.notes,
     allDay: item.allDay,
-  }));
+  };
+}
 
-  return filterWindow(mapped);
+// An all-day event is a floating calendar date, so its `end` names the last day
+// it runs and it is still on until that UTC day is over. A timed event ends at its
+// own instant, and an event with no `end` is treated as ending where it starts.
+function endsAt(event: UpcomingEvent): number {
+  const last = event.end ?? event.start;
+  if (!event.allDay) return last.getTime();
+
+  return Date.UTC(last.getUTCFullYear(), last.getUTCMonth(), last.getUTCDate(), 23, 59, 59, 999);
+}
+
+export function hasUpcomingEventEnded(event: UpcomingEvent, now: Date = new Date()): boolean {
+  return endsAt(event) < now.getTime();
+}
+
+/**
+ * The rule /schedule renders: an event is listed while it has not finished yet and
+ * starts inside the forward window. Windowing on the end rather than the start is
+ * what keeps an event that is under way from vanishing on the very days it runs.
+ */
+export function isWithinUpcomingWindow(event: UpcomingEvent, now: Date = new Date()): boolean {
+  const horizon = now.getTime() + UPCOMING_WINDOW_DAYS * DAY_MS;
+  return !hasUpcomingEventEnded(event, now) && event.start.getTime() <= horizon;
+}
+
+function filterWindow(events: UpcomingEvent[]): UpcomingEvent[] {
+  const now = new Date();
+
+  return events
+    .filter((event) => isWithinUpcomingWindow(event, now))
+    .sort((a, b) => a.start.getTime() - b.start.getTime())
+    .slice(0, MAX_ITEMS);
+}
+
+function fallbackUpcoming(): UpcomingEvent[] {
+  return filterWindow(upcomingItems.map(toUpcomingEvent));
 }
 
 export async function getUpcomingEvents(): Promise<{
