@@ -11,7 +11,7 @@ type FieldErrors = Partial<Record<'name' | 'email' | 'message', string>>;
 const { formspreeEndpoint: endpoint } = getPublicEnv();
 
 const inputClasses =
-  'w-full border border-white/18 bg-white/5 px-3.5 py-3 text-sm text-sand placeholder:text-white/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-gold';
+  'w-full border border-white/20 bg-white/5 px-3.5 py-3 text-sm text-sand placeholder:text-white/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-gold';
 
 export function OndemandWaitlistForm() {
   const [status, setStatus] = useState<Status>('idle');

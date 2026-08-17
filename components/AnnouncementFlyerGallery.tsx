@@ -109,7 +109,7 @@ export function AnnouncementFlyerGallery({ flyers }: AnnouncementFlyerGalleryPro
                 'rounded-full px-3.5 py-2 text-xs font-bold uppercase tracking-[0.06em] transition',
                 active
                   ? 'border border-ink bg-ink text-sand'
-                  : 'border border-black/18 bg-transparent text-black/70 hover:border-black/40',
+                  : 'border border-black/20 bg-transparent text-black/70 hover:border-black/40',
               )}
             >
               {t}

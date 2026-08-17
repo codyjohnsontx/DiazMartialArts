@@ -85,13 +85,13 @@ export default function HomePage() {
             <div
               key={row.n}
               className={`grid grid-cols-[60px_1fr] gap-6 py-7 ${
-                i === 0 ? 'border-t border-black/18' : 'border-t border-black/10'
-              } ${i === why.length - 1 ? 'border-b border-black/18' : ''}`}
+                i === 0 ? 'border-t border-black/20' : 'border-t border-black/10'
+              } ${i === why.length - 1 ? 'border-b border-black/20' : ''}`}
             >
               <div className="text-[13px] font-extrabold tracking-[0.08em] text-ember">{row.n}</div>
               <div>
                 <h3 className="text-xl font-extrabold tracking-tight sm:text-[22px]">{row.t}</h3>
-                <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-black/72">{row.d}</p>
+                <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-black/70">{row.d}</p>
               </div>
             </div>
           ))}
@@ -99,7 +99,7 @@ export default function HomePage() {
       </section>
 
       {/* PROGRAMS */}
-      <section className="border-t border-black/8 bg-sand">
+      <section className="border-t border-black/10 bg-sand">
         <div className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-6 lg:px-8 lg:py-24">
           <div className="mb-12 flex flex-wrap items-end justify-between gap-8">
             <div>
@@ -135,7 +135,7 @@ export default function HomePage() {
                     </div>
                     <h3 className="mt-1.5 text-xl font-extrabold tracking-tight">{p.title}</h3>
                     <div className="mt-0.5 text-[13px] font-semibold text-bronze">{p.sub}</div>
-                    <p className="mt-3 text-sm leading-relaxed text-black/72">{p.description}</p>
+                    <p className="mt-3 text-sm leading-relaxed text-black/70">{p.description}</p>
                   </div>
                   <div className="text-2xl font-light text-black/30" aria-hidden="true">
                     →
@@ -164,7 +164,7 @@ export default function HomePage() {
               <br />
               is on us.
             </h2>
-            <p className="mt-5 max-w-xl text-base leading-relaxed text-white/72 sm:text-lg">
+            <p className="mt-5 max-w-xl text-base leading-relaxed text-white/70 sm:text-lg">
               Athletic clothes are enough. Arrive 15 minutes early. We&apos;ll handle the rest.
             </p>
           </div>

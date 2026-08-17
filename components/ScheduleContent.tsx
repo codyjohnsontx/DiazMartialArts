@@ -187,7 +187,7 @@ export function ScheduleContent({ upcoming }: Props) {
               return (
                 <details
                   key={`${dayData.day}-${i}-${c.time}-${c.program}`}
-                  className={cn('group', i > 0 && 'border-t border-black/8')}
+                  className={cn('group', i > 0 && 'border-t border-black/10')}
                 >
                   <summary className="grid cursor-pointer list-none grid-cols-[90px_1fr] items-center gap-4 px-6 py-4 sm:grid-cols-[110px_60px_1fr_140px_auto] sm:px-6">
                     <div className="text-base font-extrabold tracking-tight [font-variant-numeric:tabular-nums] sm:text-lg">
@@ -217,7 +217,7 @@ export function ScheduleContent({ upcoming }: Props) {
                       →
                     </span>
                   </summary>
-                  <p className="border-t border-black/8 bg-sand/60 px-6 py-3 text-sm leading-relaxed text-black/75">
+                  <p className="border-t border-black/10 bg-sand/60 px-6 py-3 text-sm leading-relaxed text-black/75">
                     {classDescriptions[c.program] ?? 'Class details coming soon.'}
                   </p>
                 </details>

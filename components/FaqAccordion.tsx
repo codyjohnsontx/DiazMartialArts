@@ -44,7 +44,7 @@ export function FaqAccordion({ groups }: Props) {
 
         <div className="mt-8 bg-ink p-5 text-sand">
           <Eyebrow variant="light">Need help?</Eyebrow>
-          <p className="my-3 text-sm leading-relaxed text-white/72">
+          <p className="my-3 text-sm leading-relaxed text-white/70">
             Front desk responds in under 24h.
           </p>
           <Button href="/contact" variant="ghost-light">
@@ -82,7 +82,7 @@ export function FaqAccordion({ groups }: Props) {
                       </span>
                     </button>
                     {isOpen && (
-                      <p className="max-w-3xl pb-6 text-[15px] leading-relaxed text-black/72">
+                      <p className="max-w-3xl pb-6 text-[15px] leading-relaxed text-black/70">
                         {item.answer}
                       </p>
                     )}
