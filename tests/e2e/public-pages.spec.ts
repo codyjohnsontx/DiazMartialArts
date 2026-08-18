@@ -29,12 +29,7 @@ test.describe('Announcements page details', () => {
     await expect(page.getByRole('heading', { name: 'Announcements', level: 1 })).toBeVisible();
   });
 
-  test('carries no class-schedule flyer and loads every flyer image', async ({ page }) => {
-    // Optimizing all thirteen flyers is roughly 10s of sharp work on an idle
-    // eight-core dev machine, and CI runs two projects against one four-core
-    // runner. The default 30s does not cover that.
-    test.setTimeout(120_000);
-
+  test('carries no class-schedule flyer and serves every flyer image', async ({ page }) => {
     await page.goto('/announcements');
 
     // A class timetable reads as current operating hours, so it belongs on
@@ -46,38 +41,29 @@ test.describe('Announcements page details', () => {
     const flyerCount = await flyers.count();
     expect(flyerCount).toBeGreaterThan(0);
 
-    // Every flyer but the first renders loading="lazy", so bring them into view
-    // one at a time. A single jump to the page bottom would leave whether the
-    // rest ever load up to the browser's lazy-load heuristics, which vary with
-    // viewport and connection - scrolling to each one makes the check decisive.
-    for (let i = 0; i < flyerCount; i++) {
-      await flyers.nth(i).scrollIntoViewIfNeeded();
-    }
-
-    // Then wait for the whole set to settle at once, rather than holding each
-    // flyer to its own deadline as it scrolls past. next dev serves these
-    // through an image optimizer that resolves requests one at a time, shared
-    // with whatever the other project is loading, so a single flyer can sit
-    // behind two dozen others. A per-flyer deadline is therefore a bet on queue
-    // position rather than a measure of whether the flyer loads, and that is
-    // what failed in CI. Only the total is bounded by the work to be done, so
-    // budget against the total.
-    await expect
-      .poll(
-        () =>
-          flyers.evaluateAll((imgs: HTMLImageElement[]) => imgs.filter((i) => !i.complete).length),
-        { timeout: 90_000 },
-      )
-      .toBe(0);
-
-    // Settled is not the same as loaded: a flyer whose file is missing also
-    // reports complete, with naturalWidth left at 0. Asserting that separately
-    // is what makes a genuinely broken flyer fail as soon as its request 404s,
-    // instead of sitting out the budget above, and it names the culprit.
-    const broken = await flyers.evaluateAll((imgs: HTMLImageElement[]) =>
-      imgs.filter((i) => i.naturalWidth === 0).map((i) => i.currentSrc || i.src),
+    // next/image points each flyer at the dev image optimizer, which re-encodes
+    // the source through sharp on first request: 1.4s to 1.8s apiece on an idle
+    // eight-core machine, and several times that on a two-core runner. Waiting
+    // for all thirteen to decode in the browser therefore measured that
+    // optimizer's queue - one dev server, shared with the other project's
+    // worker - and not whether a flyer was missing. In CI one request stayed
+    // outstanding past the budget and took both projects of the job down with
+    // it, while the other matrix leg passed on the same commit.
+    //
+    // Ask for each flyer's own file instead. A deleted or renamed flyer, which
+    // is the regression this guards, answers 404 either way, and the check no
+    // longer rides on lazy-load order or optimizer throughput.
+    const sources = await flyers.evaluateAll((imgs: HTMLImageElement[]) =>
+      imgs.map((img) => {
+        const url = new URL(img.src, window.location.href);
+        return url.pathname === '/_next/image' ? (url.searchParams.get('url') ?? img.src) : img.src;
+      }),
     );
-    expect(broken).toEqual([]);
+
+    for (const source of sources) {
+      const response = await page.request.get(source);
+      expect(response.status(), `${source} should be served`).toBe(200);
+    }
   });
 
   test('every category filter still lists announcements', async ({ page }) => {
