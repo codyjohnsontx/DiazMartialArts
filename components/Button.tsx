@@ -35,9 +35,13 @@ const buttonStyles = {
     'border border-black/18 bg-transparent text-ink hover:border-black/40 hover:bg-black/5 focus-visible:outline-ink',
   'ghost-light':
     'border border-white/25 bg-transparent text-sand hover:bg-white/10 focus-visible:outline-white',
-  // ghost-light reads on a solid dark panel, but its 25% border only reaches
-  // 2.1:1 against the hero's photo backdrop. Same button, border weight raised
-  // until it clears the 3:1 WCAG 1.4.11 bar (4.3:1 measured on imagery).
+  // ghost-light's 25% border is about 2.22:1 over bg-ink and about 2.1:1 over
+  // the hero's photo backdrop, so it misses the 3:1 WCAG 1.4.11 bar on both.
+  // That gap is pre-existing and is not specific to imagery, so it is not why
+  // the hero needed another variant; it is tracked separately as
+  // dma-ghost-light-border-contrast across all six ghost-light call sites. The
+  // hero needed a border that clears 3:1 against a photographic backdrop, which
+  // a 50% border does at about 4.06:1.
   'outline-light':
     'border border-white/50 bg-transparent text-sand hover:border-white hover:bg-white/10 focus-visible:outline-white',
 };
