@@ -120,8 +120,16 @@ export default function HomePage() {
           </div>
           {/* HomeUpcomingClasses is an opaque sand card whose headings carry no
               colour of their own, so they inherit. Restating ink here keeps the
-              card readable now that the section around it is dark. */}
-          <div className="relative flex items-center justify-start text-ink lg:min-h-[520px] lg:justify-center">
+              card readable now that the section around it is dark.
+              min-w-0 restores what the card's "Later" rows need to stay inside
+              it: that list is a grid, so each li is a grid item whose default
+              min-width:auto resolves to its min-content (a nowrap label plus a
+              shrink-0 time, 303px), overflowing its own 252px track. The card
+              already asks for `truncate`; without this the ellipsis never
+              engages and at 320px the hero's overflow-hidden clips the times
+              mid-character instead. Scoped to this column, and removable once
+              HomeUpcomingClasses carries its own min-w-0 (PR #24 owns it). */}
+          <div className="relative flex items-center justify-start text-ink [&_li]:min-w-0 lg:min-h-[520px] lg:justify-center">
             <HomeUpcomingClasses />
           </div>
         </div>
