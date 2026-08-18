@@ -53,6 +53,32 @@ describe('siteUrl normalisation', () => {
   it('keeps a configured base path but drops its trailing slash', async () => {
     expect((await load({ siteUrl: `${SITE}/app/` })).siteUrl).toBe(`${SITE}/app`);
   });
+
+  it('strips repeated trailing slashes, not just the final one', async () => {
+    expect((await load({ siteUrl: `${SITE}///` })).siteUrl).toBe(SITE);
+  });
+
+  it('strips repeated trailing slashes from a configured base path', async () => {
+    expect((await load({ siteUrl: `${SITE}/app///` })).siteUrl).toBe(`${SITE}/app`);
+  });
+
+  /**
+   * A query or fragment is meaningless on a site base URL and would corrupt
+   * every URL built from it, so it must be rejected outright. Trimming the
+   * serialised string instead would silently edit the query itself, turning
+   * `?source=/` into `?source=`.
+   */
+  it('rejects a query string rather than silently editing it', async () => {
+    await expect(load({ siteUrl: `${SITE}/?source=/` })).rejects.toThrow(
+      /no query string or fragment/,
+    );
+  });
+
+  it('rejects a fragment rather than silently editing it', async () => {
+    await expect(load({ siteUrl: `${SITE}/#section` })).rejects.toThrow(
+      /no query string or fragment/,
+    );
+  });
 });
 
 describe('sitemap', () => {
@@ -72,6 +98,14 @@ describe('sitemap', () => {
     expect(home).toHaveLength(1);
     expect(home[0].changeFrequency).toBe('weekly');
     expect(home[0].priority).toBe(1);
+  });
+
+  it('stays single-slash when the operator configures repeated trailing slashes', async () => {
+    const { sitemapUrls, robots } = await load({ siteUrl: `${SITE}///` });
+
+    expect(withDoubleSlash(sitemapUrls)).toEqual([]);
+    expect(sitemapUrls).toContain(`${SITE}/schedule`);
+    expect(robots.sitemap).toBe(`${SITE}/sitemap.xml`);
   });
 
   it('publishes content routes and program pages at single-slash paths', async () => {

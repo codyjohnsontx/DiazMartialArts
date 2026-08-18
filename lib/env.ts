@@ -45,13 +45,29 @@ function parseAbsoluteUrl(name: string, value: string): string {
  * non-root sitemap entry and the robots.txt sitemap line into a double slash
  * the moment NEXT_PUBLIC_SITE_URL was set. Normalising the single value here
  * keeps both idioms correct, so a new call site cannot pick the wrong one.
+ *
+ * Trailing slashes come off the parsed pathname rather than off the serialised
+ * string, because chopping one final character is not the same operation: it
+ * leaves `https://host///` still malformed, and on a value carrying a query it
+ * edits the query instead of the path (`https://host/?source=/` silently
+ * becomes `?source=`). A query or fragment is meaningless on a site base URL
+ * and would corrupt every URL built from it, so it is rejected here rather than
+ * carried along - a build that fails loudly beats a sitemap full of bad URLs.
  */
-function withoutTrailingSlash(value: string): string {
-  return value.endsWith('/') ? value.slice(0, -1) : value;
+function normaliseSiteUrl(name: string, value: string): string {
+  const url = new URL(parseAbsoluteUrl(name, value));
+
+  if (url.search || url.hash) {
+    throw new Error(
+      `[env] ${name} must be a bare site URL with no query string or fragment. Example: https://diazmartialarts.vercel.app`,
+    );
+  }
+
+  return `${url.origin}${url.pathname.replace(/\/+$/, '')}`;
 }
 
 function readSiteUrl(): string {
-  return withoutTrailingSlash(resolveSiteUrl());
+  return normaliseSiteUrl('NEXT_PUBLIC_SITE_URL', resolveSiteUrl());
 }
 
 function resolveSiteUrl(): string {

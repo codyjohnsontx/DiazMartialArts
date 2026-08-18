@@ -122,7 +122,7 @@ marking work complete or CI fails on unformatted files.
   safe. Keep the normalisation in `readSiteUrl` rather than teaching each call
   site to cope: nothing fails the build when the base is wrong, so a bad value
   only surfaces as doubled slashes in the rendered sitemap and robots URLs. The
-  `withoutTrailingSlash` docblock in `lib/env.ts` holds the rationale and
+  `normaliseSiteUrl` docblock in `lib/env.ts` holds the rationale and
   `tests/unit/siteUrl.test.ts` guards it.
 
 ## Maintaining this file
