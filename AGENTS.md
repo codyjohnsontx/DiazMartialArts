@@ -118,12 +118,14 @@ marking work complete or CI fails on unformatted files.
   off-scale value to `theme.opacity` in `tailwind.config.ts` legalises that one
   typo and leaves the next one silent.
 - `site.url` (from `readSiteUrl` in `lib/env.ts`) never carries a trailing
-  slash, so both `${site.url}/sitemap.xml` and `new URL(path, site.url)` are
-  safe. Keep the normalisation in `readSiteUrl` rather than teaching each call
-  site to cope: nothing fails the build when the base is wrong, so a bad value
-  only surfaces as doubled slashes in the rendered sitemap and robots URLs. The
-  `normaliseSiteUrl` docblock in `lib/env.ts` holds the rationale and
-  `tests/unit/siteUrl.test.ts` guards it.
+  slash, so on a bare-origin base both `${site.url}/sitemap.xml` and
+  `new URL(path, site.url)` are safe. The two idioms diverge once the base
+  carries a path, because `new URL('/programs', base)` resolves against the
+  origin and drops that path. Keep the normalisation in `readSiteUrl` rather
+  than teaching each call site to cope: nothing fails the build when the base
+  is wrong, so a bad value only surfaces as doubled slashes in the rendered
+  sitemap and robots URLs. The `normaliseSiteUrl` docblock in `lib/env.ts`
+  holds the rationale and `tests/unit/siteUrl.test.ts` guards it.
 
 ## Maintaining this file
 

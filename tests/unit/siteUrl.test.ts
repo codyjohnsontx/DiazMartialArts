@@ -79,6 +79,24 @@ describe('siteUrl normalisation', () => {
       /no query string or fragment/,
     );
   });
+
+  /**
+   * `url.origin` is the literal string `null` for every non-special scheme, so
+   * a scheme-less value that still parses - `localhost:3000` is scheme
+   * `localhost:` with path `3000` - would build the base `null3000` and only
+   * surface far away, as `new URL('null3000')` in the root layout.
+   */
+  it('rejects a value whose scheme is not http or https', async () => {
+    await expect(load({ siteUrl: 'localhost:3000' })).rejects.toThrow(
+      /NEXT_PUBLIC_SITE_URL must use http: or https:/,
+    );
+  });
+
+  it('rejects a non-http protocol', async () => {
+    await expect(load({ siteUrl: 'ftp://diaz.example' })).rejects.toThrow(
+      /NEXT_PUBLIC_SITE_URL must use http: or https:/,
+    );
+  });
 });
 
 describe('sitemap', () => {
