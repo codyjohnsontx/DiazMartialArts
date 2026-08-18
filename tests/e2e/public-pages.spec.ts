@@ -30,9 +30,9 @@ test.describe('Announcements page details', () => {
   });
 
   test('carries no class-schedule flyer and loads every flyer image', async ({ page }) => {
-    // Thirteen flyers, each allowed the wait below, need more than the 30s
-    // default so the test reports the flyer that failed rather than dying on
-    // its own clock partway down the page.
+    // Optimizing all thirteen flyers is roughly 10s of sharp work on an idle
+    // eight-core dev machine, and CI runs two projects against one four-core
+    // runner. The default 30s does not cover that.
     test.setTimeout(120_000);
 
     await page.goto('/announcements');
@@ -50,24 +50,34 @@ test.describe('Announcements page details', () => {
     // one at a time. A single jump to the page bottom would leave whether the
     // rest ever load up to the browser's lazy-load heuristics, which vary with
     // viewport and connection - scrolling to each one makes the check decisive.
-    //
-    // The wait needs its own budget rather than the 5s default. The quality gate
-    // serves these tests from `next dev`, which re-encodes a flyer the first
-    // time it is asked for, and bringing one into view also pre-triggers the
-    // next few, so several land on that encoder at once. Locally, on an idle
-    // machine, the last flyer in such a queue answered after ~9s; CI runs two
-    // workers against one dev server on a shared runner, which is slower again.
-    // At 5s this timed out on the encoder queue, not on a flyer that never
-    // loads, so it failed the gate over how busy the box was.
     for (let i = 0; i < flyerCount; i++) {
-      const flyer = flyers.nth(i);
-      await flyer.scrollIntoViewIfNeeded();
-      await expect
-        .poll(() => flyer.evaluate((img: HTMLImageElement) => img.naturalWidth), {
-          timeout: 20_000,
-        })
-        .toBeGreaterThan(0);
+      await flyers.nth(i).scrollIntoViewIfNeeded();
     }
+
+    // Then wait for the whole set to settle at once, rather than holding each
+    // flyer to its own deadline as it scrolls past. next dev serves these
+    // through an image optimizer that resolves requests one at a time, shared
+    // with whatever the other project is loading, so a single flyer can sit
+    // behind two dozen others. A per-flyer deadline is therefore a bet on queue
+    // position rather than a measure of whether the flyer loads, and that is
+    // what failed in CI. Only the total is bounded by the work to be done, so
+    // budget against the total.
+    await expect
+      .poll(
+        () =>
+          flyers.evaluateAll((imgs: HTMLImageElement[]) => imgs.filter((i) => !i.complete).length),
+        { timeout: 90_000 },
+      )
+      .toBe(0);
+
+    // Settled is not the same as loaded: a flyer whose file is missing also
+    // reports complete, with naturalWidth left at 0. Asserting that separately
+    // is what makes a genuinely broken flyer fail as soon as its request 404s,
+    // instead of sitting out the budget above, and it names the culprit.
+    const broken = await flyers.evaluateAll((imgs: HTMLImageElement[]) =>
+      imgs.filter((i) => i.naturalWidth === 0).map((i) => i.currentSrc || i.src),
+    );
+    expect(broken).toEqual([]);
   });
 
   test('every category filter still lists announcements', async ({ page }) => {
