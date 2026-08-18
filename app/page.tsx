@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
 import { Button } from '@/components/Button';
@@ -45,28 +46,94 @@ export default function HomePage() {
       <LocalBusinessSchema />
 
       {/* HERO */}
-      <section className="border-b border-black/10">
-        <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-4 py-14 sm:px-6 lg:grid-cols-[1.15fr_1fr] lg:gap-16 lg:px-8 lg:py-16">
+      <section className="relative bg-ink text-sand">
+        {/* The photo is framed through a box a quarter taller than the section
+            and anchored to its top, so the section only ever shows the top 80%
+            of the image: object-cover cannot reach past row 0.8 x 639 = 511.
+            That is what keeps the Diaz crest baked into the photo's
+            bottom-right corner (rows 531-630) out of frame at every width
+            rather than half-cut and fighting the header logo. A plain
+            object-position could not do it: from about 1280px down the section
+            is tall enough that object-cover scales to the height and the whole
+            image is in frame, so every row is reachable. The overflow-hidden
+            that holds that oversized box inside the section sits on a layer
+            wrapped around the image alone rather than on the section itself, so
+            only the photo is clipped: on the section it would also cut off the
+            upcoming-classes card, whose rows carry a class name that cannot
+            shrink and so run past both the card and a narrow viewport.
+            Within that window 55% keeps the students' faces (rows 280-360)
+            framed from 320px to 4K and 38% holds a face plus the standing coach
+            in the narrow slice a 320px hero can show. saturate is the arbitrary
+            form because 125 is off Tailwind's saturate scale and would emit no
+            rule. The source is 960x639 and the optimizer does not upscale, so
+            every requested width above 960 returns that same bitmap and at 1920
+            CSS pixels the browser stretches it about 2x; the heavy scrim is what
+            keeps that stretch from reading as blur. A sharper hero needs a
+            larger source file, not a change to sizes or quality. */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute inset-x-0 top-0 h-[125%]">
+            <Image
+              src="/bjj.jpg"
+              alt=""
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover object-[38%_55%] saturate-[1.25]"
+            />
+          </div>
+        </div>
+        {/* Scrim. `bjj.jpg` is a bright gym interior whose top third is a white
+            wall holding genuine 255,255,255 pixels, so the hero is inverted to
+            light-on-dark and the photo is carried by a scrim that never drops
+            below 82% coverage anywhere in the section. That floor is what makes
+            the contrast figures a guarantee rather than a reading off one crop:
+            even directly over a white pixel the lightest backdrop the section
+            can produce is rgb(65,59,60), clearing AA for sand (9.9:1), gold
+            (4.6:1) and white/70 (6.3:1). The floor is a bound on how much photo
+            survives, and it does not depend on layer order: what reaches the
+            eye from the photo is the product of every layer's (1 - alpha),
+            which commutes. Order does matter to hue. CSS paints the first
+            listed layer on top, so the ember radial sits above the ink and
+            tints rather than darkens, lifting the red channel; the rgb(65,59,60)
+            figure is computed with that tint applied. The stops live here rather
+            than in Tailwind gradient utilities, which only offer three fixed
+            positions, and match the inline-gradient scrim the /ondemand hero
+            already uses. */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: [
+              'radial-gradient(circle at 78% 16%, rgba(180,35,24,0.18), transparent 58%)',
+              'radial-gradient(115% 95% at 50% 62%, rgba(16,18,20,0) 42%, rgba(16,18,20,0.4) 100%)',
+              'linear-gradient(180deg, rgba(16,18,20,0.94) 0%, rgba(16,18,20,0.86) 28%, rgba(16,18,20,0.82) 64%, rgba(16,18,20,0.95) 100%)',
+            ].join(', '),
+          }}
+          aria-hidden="true"
+        />
+        <div className="relative mx-auto grid w-full max-w-6xl items-center gap-12 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-[1.15fr_1fr] lg:gap-16 lg:px-8">
           <div>
             <h1 className="display text-5xl sm:text-7xl lg:text-[96px]">
               Martial arts
               <br />
-              for real <span className="text-ember">progress.</span>
+              for real <span className="text-gold">progress.</span>
             </h1>
-            <p className="mt-6 max-w-xl text-base leading-relaxed text-black/75 sm:text-lg">
+            <p className="mt-6 max-w-xl text-base leading-relaxed text-white/70 sm:text-lg">
               Coach-led structure, a welcoming gym culture, and class options for kids, teens, and
               adults. Six days a week.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Button href={site.ctas.primary.href} size="lg">
+              <Button href={site.ctas.primary.href} variant="primary-light" size="lg">
                 {site.ctas.primary.label} →
               </Button>
-              <Button href={site.ctas.secondary.href} variant="ghost" size="lg">
+              <Button href={site.ctas.secondary.href} variant="outline-light" size="lg">
                 {site.ctas.secondary.label}
               </Button>
             </div>
           </div>
-          <div className="relative flex items-center justify-start lg:min-h-[520px] lg:justify-center">
+          {/* HomeUpcomingClasses is an opaque sand card whose headings carry no
+              colour of their own, so they inherit. Restating ink here keeps the
+              card readable now that the section around it is dark. */}
+          <div className="relative flex items-center justify-start text-ink lg:min-h-[520px] lg:justify-center">
             <HomeUpcomingClasses />
           </div>
         </div>

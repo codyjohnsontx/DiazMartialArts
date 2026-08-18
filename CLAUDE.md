@@ -105,14 +105,18 @@ marking work complete or CI fails on unformatted files.
   page component is downgraded to a client-side redirect (HTTP 200 plus a
   `NEXT_REDIRECT` marker) that crawlers and non-JS clients never follow. When a
   path needs a real HTTP redirect, declare it in `next.config.mjs` instead.
-- A colour opacity modifier (`text-white/70`) resolves against `theme.opacity`,
-  whose scale is 0, 5, 10 ... 100. An off-scale value such as `text-white/72`
-  generates no CSS rule at all, so the element silently inherits its colour
-  while the build stays green. Use a scale value, or the arbitrary form
-  (`text-white/[0.72]`). `tests/unit/tailwindOpacity.test.ts` fails on any
-  off-scale value. When the guard trips, fix the class, not the config: adding
-  the off-scale value to `theme.opacity` in `tailwind.config.ts` legalises that
-  one typo and leaves the next one silent.
+- A Tailwind utility whose value misses its theme scale generates no CSS rule
+  and no build error, so the element silently keeps its old styling. A colour
+  opacity modifier resolves against `theme.opacity`, whose scale is 0, 5, 10 ...
+  100, so `text-white/72` is inert; `saturate-125` is inert the same way because
+  the saturate scale is 0/50/100/150/200. Use a scale value or the arbitrary
+  form (`text-white/[0.72]`, `saturate-[1.25]`), and confirm a new utility
+  actually emits by grepping the generated CSS under `.next/static/css` (the
+  filename is a content hash and changes every build) or the stylesheet URL the
+  page loads. `tests/unit/tailwindOpacity.test.ts` fails on any off-scale
+  opacity value. When the guard trips, fix the class, not the config: adding the
+  off-scale value to `theme.opacity` in `tailwind.config.ts` legalises that one
+  typo and leaves the next one silent.
 
 ## Maintaining this file
 

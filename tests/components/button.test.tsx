@@ -12,6 +12,29 @@ describe('Button', () => {
     expect(link).toHaveAttribute('href', '/contact');
   });
 
+  it('gives the light variants a white focus ring for dark surfaces', () => {
+    render(
+      <>
+        <Button href="/contact" variant="primary-light">
+          Book Free Trial
+        </Button>
+        <Button href="/schedule" variant="outline-light">
+          View Schedule
+        </Button>
+      </>,
+    );
+
+    const primary = screen.getByRole('link', { name: 'Book Free Trial' });
+    expect(primary).toHaveClass('bg-ember', 'focus-visible:outline-white');
+    expect(primary).not.toHaveClass('focus-visible:outline-ember');
+
+    // 50% is the border opacity that clears 3:1 over the hero photo
+    expect(screen.getByRole('link', { name: 'View Schedule' })).toHaveClass(
+      'border-white/50',
+      'focus-visible:outline-white',
+    );
+  });
+
   it('renders a disabled button and suppresses clicks', async () => {
     const user = userEvent.setup();
     const onClick = vi.fn();
