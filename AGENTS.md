@@ -117,6 +117,15 @@ marking work complete or CI fails on unformatted files.
   opacity value. When the guard trips, fix the class, not the config: adding the
   off-scale value to `theme.opacity` in `tailwind.config.ts` legalises that one
   typo and leaves the next one silent.
+- `site.url` (from `readSiteUrl` in `lib/env.ts`) never carries a trailing
+  slash, so both `${site.url}/sitemap.xml` and `new URL(path, site.url)` are
+  safe. Keep it that way: `new URL(value).toString()` appends a slash to a bare
+  origin, and when that reached the concatenating call sites it silently
+  produced `https://host//programs` in every sitemap entry and in robots.txt.
+  Nothing failed the build - the bug only appeared once
+  `NEXT_PUBLIC_SITE_URL` was set, because the `https://${VERCEL_URL}` fallback
+  happens to carry no slash. `tests/unit/siteUrl.test.ts` guards the invariant
+  and the rendered sitemap/robots output.
 
 ## Maintaining this file
 

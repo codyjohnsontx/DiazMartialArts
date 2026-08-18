@@ -3,8 +3,10 @@ import type { MetadataRoute } from 'next';
 import { programs } from '@/content/programs';
 import { site } from '@/content/site';
 
+// `site.url` never carries a trailing slash, so the home page needs an explicit
+// '/' here to keep its sitemap entry at the canonical `https://host/`.
 const routes = [
-  '',
+  '/',
   '/programs',
   '/schedule',
   '/coaches',
@@ -19,8 +21,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const pages: MetadataRoute.Sitemap = routes.map((route) => ({
     url: `${site.url}${route}`,
     lastModified: new Date(),
-    changeFrequency: route === '' ? 'weekly' : 'monthly',
-    priority: route === '' ? 1 : 0.7,
+    changeFrequency: route === '/' ? 'weekly' : 'monthly',
+    priority: route === '/' ? 1 : 0.7,
   }));
 
   for (const p of programs) {

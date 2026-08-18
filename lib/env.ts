@@ -38,7 +38,23 @@ function parseAbsoluteUrl(name: string, value: string): string {
   }
 }
 
+/**
+ * Site URLs are composed both by concatenation (`${site.url}/sitemap.xml`) and
+ * by `new URL(path, siteUrl)`, so the base must never carry a trailing slash.
+ * `new URL(value).toString()` appends one to a bare origin, which turned every
+ * non-root sitemap entry and the robots.txt sitemap line into a double slash
+ * the moment NEXT_PUBLIC_SITE_URL was set. Normalising the single value here
+ * keeps both idioms correct, so a new call site cannot pick the wrong one.
+ */
+function withoutTrailingSlash(value: string): string {
+  return value.endsWith('/') ? value.slice(0, -1) : value;
+}
+
 function readSiteUrl(): string {
+  return withoutTrailingSlash(resolveSiteUrl());
+}
+
+function resolveSiteUrl(): string {
   const value = process.env.NEXT_PUBLIC_SITE_URL?.trim();
   if (value) return parseAbsoluteUrl('NEXT_PUBLIC_SITE_URL', value);
 
