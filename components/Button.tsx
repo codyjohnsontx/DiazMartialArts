@@ -10,7 +10,7 @@ type ButtonProps = {
   type?: 'button' | 'submit';
   onClick?: () => void;
   className?: string;
-  variant?: 'primary' | 'secondary' | 'ghost' | 'ghost-light';
+  variant?: 'primary' | 'secondary' | 'ghost' | 'ghost-light' | 'outline-light';
   size?: 'md' | 'lg';
   disabled?: boolean;
 };
@@ -22,6 +22,11 @@ const buttonStyles = {
     'border border-black/18 bg-transparent text-ink hover:border-black/40 hover:bg-black/5 focus-visible:outline-ink',
   'ghost-light':
     'border border-white/25 bg-transparent text-sand hover:bg-white/10 focus-visible:outline-white',
+  // ghost-light over a solid dark panel, but its 25% border only reaches 2.1:1
+  // against the home hero's photo backdrop. This is the same button with a
+  // border weight that clears the 3:1 WCAG 1.4.11 bar (4.1:1) on imagery.
+  'outline-light':
+    'border border-white/50 bg-transparent text-sand hover:border-white hover:bg-white/10 focus-visible:outline-white',
 };
 
 const sizeStyles = {

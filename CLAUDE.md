@@ -105,6 +105,12 @@ marking work complete or CI fails on unformatted files.
   page component is downgraded to a client-side redirect (HTTP 200 plus a
   `NEXT_REDIRECT` marker) that crawlers and non-JS clients never follow. When a
   path needs a real HTTP redirect, declare it in `next.config.mjs` instead.
+- A Tailwind utility whose value misses its theme scale generates no CSS rule
+  and no build error, so the element silently keeps its old styling. It is not
+  only opacity modifiers (`text-white/72`): `saturate-125` is inert the same way
+  because the saturate scale is 0/50/100/150/200. Use a scale value or the
+  arbitrary form (`saturate-[1.25]`), and confirm a new utility actually emits
+  by grepping the compiled `/_next/static/css/app/layout.css`.
 
 ## Maintaining this file
 
