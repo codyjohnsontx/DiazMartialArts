@@ -85,8 +85,8 @@ export default function HomePage() {
             tints rather than darkens, lifting the red channel; the rgb(65,59,60)
             figure is computed with that tint applied. The stops live here rather
             than in Tailwind gradient utilities, which only offer three fixed
-            positions, and match the inline-gradient pattern /ondemand and the
-            CTA banner already use. */}
+            positions, and match the inline-gradient scrim the /ondemand hero
+            already uses. */}
         <div
           className="absolute inset-0"
           style={{
