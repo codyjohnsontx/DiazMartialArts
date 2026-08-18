@@ -75,6 +75,53 @@ p {
   }
 }
 
+/* Scroll-driven hero parallax, added to a hero that is already correct at rest.
+   Progress 0 is the identity transform, so at the top of the page the framing
+   app/page.tsx measures out is untouched, and a browser without scroll
+   timelines simply never runs the animation and keeps that framing forever.
+
+   Travel is downward. The framing box is anchored to the section's top, so
+   sliding the photo down shows rows further UP the bitmap and pushes the crest
+   (source rows 530-628) further out of frame than it sits at rest. Upward
+   travel would instead spend the crest margin, and that margin measures only
+   3.68% of the section's height at every width from 1024px to 1324px, where
+   the box is taller than the bitmap's aspect and object-cover pins the visible
+   window to rows 0-0.8 no matter how wide the viewport gets. Downward travel
+   opens a gap of (travel x progress) at the top of the frame instead, and
+   because the travel is a small fraction of the scroll range that drives it,
+   the gap is always shorter than the distance already scrolled past and so
+   never clears the sticky header. 5% of the framing box is 6.25% of the
+   section, about 44px of drift over the first viewport of scroll.
+
+   prefers-reduced-motion is handled here rather than left to the global reduce
+   block below: that block only neutralises animation-duration, and a
+   progress-based timeline takes its position from the scroller, not from a
+   duration. Longhands rather than the `animation` shorthand, which resets
+   animation-timeline to auto and would silently turn this into a time-based
+   animation that runs once on load. */
+@keyframes hero-drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(0, 5%, 0);
+  }
+}
+
+@media (min-width: 1024px) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: scroll()) {
+    .hero-parallax {
+      animation-name: hero-drift;
+      animation-duration: auto;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: scroll(root block);
+      animation-range: 0 100vh;
+      will-change: transform;
+    }
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

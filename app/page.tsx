@@ -71,7 +71,13 @@ export default function HomePage() {
             keeps that stretch from reading as blur. A sharper hero needs a
             larger source file, not a change to sizes or quality. */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute inset-x-0 top-0 h-[125%]">
+          {/* hero-parallax drifts this box, not the image inside it, so the
+              travel is a percentage of the same 125% the framing is expressed
+              in. The class is inert below 1024px, under a coarse pointer,
+              under reduced motion, and in any browser without scroll
+              timelines; see app/globals.css for why the travel runs downward
+              and why it cannot reach the crest. */}
+          <div className="hero-parallax absolute inset-x-0 top-0 h-[125%]">
             <Image
               src="/bjj.jpg"
               alt=""

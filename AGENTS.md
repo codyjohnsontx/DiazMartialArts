@@ -117,6 +117,13 @@ marking work complete or CI fails on unformatted files.
   opacity value. When the guard trips, fix the class, not the config: adding the
   off-scale value to `theme.opacity` in `tailwind.config.ts` legalises that one
   typo and leaves the next one silent.
+- The `prefers-reduced-motion: reduce` block in `app/globals.css` does not stop
+  a scroll-driven animation. It only neutralises `animation-duration`, and an
+  `animation-timeline` animation takes its position from the scroller, so
+  forcing the duration to 0.01ms merely compresses the whole motion into the
+  start of the scroll range - more abrupt, not stiller. Every scroll-driven
+  animation therefore needs its own `prefers-reduced-motion: no-preference`
+  guard; the hero parallax in `app/globals.css` is the worked example.
 
 ## Maintaining this file
 
