@@ -26,9 +26,14 @@ const primarySurface = 'bg-ember text-white shadow-soft hover:bg-[#941f15]';
 // class ordering rather than anything this file declares.
 const buttonStyles = {
   primary: `${primarySurface} focus-visible:outline-ember`,
-  // Ember on ember-on-dark: the focus ring reaches only 1.7:1 against the home
-  // hero's photo backdrop, under the 3:1 WCAG 1.4.11 bar for a focus
-  // indicator. White reaches 10.9:1 on the same backdrop.
+  // Ember on ember-on-dark: the focus ring misses the 3:1 WCAG 1.4.11 bar for a
+  // focus indicator on dark surfaces generally, not only over imagery. It
+  // reaches about 1.66:1 against the home hero's photo backdrop and about
+  // 2.86:1 against bg-ink, where white reaches 10.9:1 instead. The default
+  // `primary` keeps the ember ring, so app/page.tsx's CTA banner sits on the
+  // bg-ink side of that same gap. That instance is pre-existing and is left
+  // alone deliberately because the change that added this variant was scoped to
+  // the hero.
   'primary-light': `${primarySurface} focus-visible:outline-white`,
   secondary: 'bg-ink text-white hover:bg-black focus-visible:outline-ink shadow-soft',
   ghost:

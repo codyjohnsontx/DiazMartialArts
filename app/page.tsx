@@ -64,7 +64,11 @@ export default function HomePage() {
             framed from 320px to 4K and 38% holds a face plus the standing coach
             in the narrow slice a 320px hero can show. saturate is the arbitrary
             form because 125 is off Tailwind's saturate scale and would emit no
-            rule. */}
+            rule. The source is 960x639 and the optimizer does not upscale, so
+            every requested width above 960 returns that same bitmap and at 1920
+            CSS pixels the browser stretches it about 2x; the heavy scrim is what
+            keeps that stretch from reading as blur. A sharper hero needs a
+            larger source file, not a change to sizes or quality. */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute inset-x-0 top-0 h-[125%]">
             <Image

@@ -30,13 +30,26 @@ test.describe('Home page', () => {
     expect(naturalWidth).toBeGreaterThan(0);
   });
 
-  test('hero stays light-on-dark over the photo and does not overflow', async ({ page }) => {
+  test('hero inverts to light-on-dark and clips the photo on the image layer', async ({ page }) => {
     const hero = page.locator('section:has(h1)').first();
+    const clipLayer = hero.locator('> div').first();
 
     // the copy is only legible over the photo because the section is inverted
     await expect(hero).toHaveCSS('background-color', 'rgb(16, 18, 20)');
     await expect(page.locator('h1')).toHaveCSS('color', 'rgb(247, 243, 237)');
-    expect(await hero.evaluate((el) => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(0);
+
+    // the oversized image box is held inside a layer of its own, so the section
+    // clips nothing and the photo is the only thing cropped
+    await expect(hero).toHaveCSS('overflow', 'visible');
+    await expect(clipLayer).toHaveCSS('overflow', 'hidden');
+    const clip = await clipLayer.evaluate((el) => ({
+      scrollHeight: el.scrollHeight,
+      clientHeight: el.clientHeight,
+      scrollWidth: el.scrollWidth,
+      clientWidth: el.clientWidth,
+    }));
+    expect(clip.scrollHeight).toBeGreaterThan(clip.clientHeight);
+    expect(clip.scrollWidth).toBe(clip.clientWidth);
   });
 
   test('coming-up classes widget visible with schedule link', async ({ page }) => {
