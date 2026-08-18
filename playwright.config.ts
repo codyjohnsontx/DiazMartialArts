@@ -21,6 +21,8 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',
   },
+  // CI installs only the Chromium browser (see .github/workflows/quality.yml), so a
+  // project on another engine needs that install widened or it fails there at launch.
   projects: [
     {
       name: 'Desktop Chrome',
