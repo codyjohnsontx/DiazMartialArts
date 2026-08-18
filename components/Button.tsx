@@ -29,7 +29,8 @@ const buttonStyles = {
   // Ember on ember-on-dark: the focus ring misses the 3:1 WCAG 1.4.11 bar for a
   // focus indicator on dark surfaces generally, not only over imagery. It
   // reaches about 1.66:1 against the home hero's photo backdrop and about
-  // 2.86:1 against bg-ink, where white reaches 10.9:1 instead. The default
+  // 2.86:1 against bg-ink; a white ring clears the bar on both, at about
+  // 10.9:1 over that photo backdrop and about 18.8:1 over bg-ink. The default
   // `primary` keeps the ember ring, so app/page.tsx's CTA banner sits on the
   // bg-ink side of that same gap. That instance is pre-existing and is left
   // alone deliberately because the change that added this variant was scoped to

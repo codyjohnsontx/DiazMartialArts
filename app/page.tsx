@@ -59,7 +59,8 @@ export default function HomePage() {
             that holds that oversized box inside the section sits on a layer
             wrapped around the image alone rather than on the section itself, so
             only the photo is clipped: on the section it would also cut off the
-            upcoming-classes card wherever that card is wider than the viewport.
+            upcoming-classes card, whose rows carry a class name that cannot
+            shrink and so run past both the card and a narrow viewport.
             Within that window 55% keeps the students' faces (rows 280-360)
             framed from 320px to 4K and 38% holds a face plus the standing coach
             in the narrow slice a 320px hero can show. saturate is the arbitrary
