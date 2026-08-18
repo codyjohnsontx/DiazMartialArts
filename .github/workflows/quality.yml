@@ -69,14 +69,19 @@ jobs:
       # attributable. System libraries live outside the cached browser
       # directory, so this cannot be skipped on a cache hit.
       - name: Install Playwright system dependencies
-        run: npx playwright install-deps
+        run: npx playwright install-deps chromium
         timeout-minutes: 5
 
+      # Chromium only: every project in playwright.config.ts is Chromium-backed,
+      # so an unqualified install would also download Firefox and WebKit that
+      # nothing launches. This resolves to chromium, its headless shell and
+      # ffmpeg. Adding a project on another engine will fail loudly at launch.
+      #
       # Runs on a cache hit too: it then only verifies the browsers are present
       # and re-downloads anything the cache was missing. Skipping it on a hit
       # would let the suite run against a half-restored browser directory.
       - name: Install Playwright browsers
-        run: npx playwright install
+        run: npx playwright install chromium
         timeout-minutes: 5
 
       - name: Run quality gate
