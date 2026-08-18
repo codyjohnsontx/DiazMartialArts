@@ -119,13 +119,11 @@ marking work complete or CI fails on unformatted files.
   typo and leaves the next one silent.
 - `site.url` (from `readSiteUrl` in `lib/env.ts`) never carries a trailing
   slash, so both `${site.url}/sitemap.xml` and `new URL(path, site.url)` are
-  safe. Keep it that way: `new URL(value).toString()` appends a slash to a bare
-  origin, and when that reached the concatenating call sites it silently
-  produced `https://host//programs` in every non-root sitemap entry and in
-  robots.txt. Nothing failed the build - the bug only appeared once
-  `NEXT_PUBLIC_SITE_URL` was set, because the `https://${VERCEL_URL}` fallback
-  happens to carry no slash. `tests/unit/siteUrl.test.ts` guards the invariant
-  and the rendered sitemap/robots output.
+  safe. Keep the normalisation in `readSiteUrl` rather than teaching each call
+  site to cope: nothing fails the build when the base is wrong, so a bad value
+  only surfaces as doubled slashes in the rendered sitemap and robots URLs. The
+  `withoutTrailingSlash` docblock in `lib/env.ts` holds the rationale and
+  `tests/unit/siteUrl.test.ts` guards it.
 
 ## Maintaining this file
 
