@@ -77,11 +77,16 @@ export default function HomePage() {
             the contrast figures a guarantee rather than a reading off one crop:
             even directly over a white pixel the lightest backdrop the section
             can produce is rgb(65,59,60), clearing AA for sand (9.9:1), gold
-            (4.6:1) and white/70 (6.3:1). Every gradient above that floor only
-            subtracts light, so no stop can weaken it. The stops live here
-            rather than in Tailwind gradient utilities, which only offer three
-            fixed positions, and match the inline-gradient pattern /ondemand and
-            the CTA banner already use. */}
+            (4.6:1) and white/70 (6.3:1). The floor is a bound on how much photo
+            survives, and it does not depend on layer order: what reaches the
+            eye from the photo is the product of every layer's (1 - alpha),
+            which commutes. Order does matter to hue. CSS paints the first
+            listed layer on top, so the ember radial sits above the ink and
+            tints rather than darkens, lifting the red channel; the rgb(65,59,60)
+            figure is computed with that tint applied. The stops live here rather
+            than in Tailwind gradient utilities, which only offer three fixed
+            positions, and match the inline-gradient pattern /ondemand and the
+            CTA banner already use. */}
         <div
           className="absolute inset-0"
           style={{
@@ -105,7 +110,7 @@ export default function HomePage() {
               adults. Six days a week.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Button href={site.ctas.primary.href} size="lg">
+              <Button href={site.ctas.primary.href} variant="primary-light" size="lg">
                 {site.ctas.primary.label} →
               </Button>
               <Button href={site.ctas.secondary.href} variant="outline-light" size="lg">

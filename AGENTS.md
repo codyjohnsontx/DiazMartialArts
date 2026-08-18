@@ -110,7 +110,8 @@ marking work complete or CI fails on unformatted files.
   only opacity modifiers (`text-white/72`): `saturate-125` is inert the same way
   because the saturate scale is 0/50/100/150/200. Use a scale value or the
   arbitrary form (`saturate-[1.25]`), and confirm a new utility actually emits
-  by grepping the compiled `/_next/static/css/app/layout.css`.
+  by grepping the generated CSS under `.next/static/css` (the filename is a
+  content hash and changes every build) or the stylesheet URL the page loads.
 
 ## Maintaining this file
 

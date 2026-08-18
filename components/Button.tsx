@@ -10,21 +10,34 @@ type ButtonProps = {
   type?: 'button' | 'submit';
   onClick?: () => void;
   className?: string;
-  variant?: 'primary' | 'secondary' | 'ghost' | 'ghost-light' | 'outline-light';
+  variant?: 'primary' | 'secondary' | 'ghost' | 'primary-light' | 'ghost-light' | 'outline-light';
   size?: 'md' | 'lg';
   disabled?: boolean;
 };
 
+// The ember fill is shared so the two primaries cannot drift apart; only the
+// focus ring differs between them.
+const primarySurface = 'bg-ember text-white shadow-soft hover:bg-[#941f15]';
+
+// The `-light` variants are the dark-surface halves of their siblings. Both
+// exist because the ratio that carries the control on a light page collapses on
+// a dark one, and `cn` is a plain join with no tailwind-merge, so overriding a
+// variant through `className` would leave the winner up to Tailwind's internal
+// class ordering rather than anything this file declares.
 const buttonStyles = {
-  primary: 'bg-ember text-white hover:bg-[#941f15] focus-visible:outline-ember shadow-soft',
+  primary: `${primarySurface} focus-visible:outline-ember`,
+  // Ember on ember-on-dark: the focus ring reaches only 1.7:1 against the home
+  // hero's photo backdrop, under the 3:1 WCAG 1.4.11 bar for a focus
+  // indicator. White reaches 10.9:1 on the same backdrop.
+  'primary-light': `${primarySurface} focus-visible:outline-white`,
   secondary: 'bg-ink text-white hover:bg-black focus-visible:outline-ink shadow-soft',
   ghost:
     'border border-black/18 bg-transparent text-ink hover:border-black/40 hover:bg-black/5 focus-visible:outline-ink',
   'ghost-light':
     'border border-white/25 bg-transparent text-sand hover:bg-white/10 focus-visible:outline-white',
-  // ghost-light over a solid dark panel, but its 25% border only reaches 2.1:1
-  // against the home hero's photo backdrop. This is the same button with a
-  // border weight that clears the 3:1 WCAG 1.4.11 bar (4.1:1) on imagery.
+  // ghost-light reads on a solid dark panel, but its 25% border only reaches
+  // 2.1:1 against the hero's photo backdrop. Same button, border weight raised
+  // until it clears the 3:1 WCAG 1.4.11 bar (4.3:1 measured on imagery).
   'outline-light':
     'border border-white/50 bg-transparent text-sand hover:border-white hover:bg-white/10 focus-visible:outline-white',
 };
