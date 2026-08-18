@@ -124,8 +124,12 @@ marking work complete or CI fails on unformatted files.
   origin and drops that path. Keep the normalisation in `readSiteUrl` rather
   than teaching each call site to cope: nothing fails the build when the base
   is wrong, so a bad value only surfaces as doubled slashes in the rendered
-  sitemap and robots URLs. The `normaliseSiteUrl` docblock in `lib/env.ts`
-  holds the rationale and `tests/unit/siteUrl.test.ts` guards it.
+  sitemap and robots URLs. Only an operator-set NEXT_PUBLIC_SITE_URL is
+  validated (http/https, no query or fragment); the derived bases are just
+  slash-stripped, because `readSiteUrl` also runs in the client bundle through
+  `components/Header.tsx` and must not throw on a base no visitor can correct.
+  The `normaliseConfiguredSiteUrl` docblock in `lib/env.ts` holds the rationale
+  and `tests/unit/siteUrl.test.ts` guards it.
 
 ## Maintaining this file
 

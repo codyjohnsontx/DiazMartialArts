@@ -39,6 +39,7 @@ function withDoubleSlash(urls: string[]): string[] {
 
 afterEach(() => {
   process.env = originalEnv;
+  vi.unstubAllGlobals();
 });
 
 describe('siteUrl normalisation', () => {
@@ -152,5 +153,34 @@ describe('deployment URL fallback', () => {
     expect(sitemapUrls).toContain(`${DEPLOYMENT}/`);
     expect(sitemapUrls).toContain(`${DEPLOYMENT}/schedule`);
     expect(robots.sitemap).toBe(`${DEPLOYMENT}/sitemap.xml`);
+  });
+
+  it('strips a trailing slash off the deployment URL as well', async () => {
+    expect((await load({ vercelUrl: 'diaz-abc123.vercel.app/' })).siteUrl).toBe(DEPLOYMENT);
+  });
+});
+
+/**
+ * A `window` object puts readSiteUrl on the branch the client bundle takes:
+ * components/Header.tsx reads getPublicEnv() at module scope in a 'use client'
+ * component the root layout renders on every page.
+ */
+describe('browser origin fallback', () => {
+  it('derives the base from the page origin, without its trailing slash', async () => {
+    vi.stubGlobal('window', { location: { origin: `${SITE}/` } });
+
+    expect((await load()).siteUrl).toBe(SITE);
+  });
+
+  /**
+   * An opaque origin - a sandboxed iframe without allow-same-origin, or a
+   * `file://` page - makes `window.location.origin` the literal string 'null'.
+   * The operator cannot correct that and no visitor can either, so it degrades
+   * to broken JSON-LD URLs rather than throwing and blanking every page.
+   */
+  it('does not throw on an opaque origin', async () => {
+    vi.stubGlobal('window', { location: { origin: 'null' } });
+
+    await expect(load()).resolves.toMatchObject({ siteUrl: 'null' });
   });
 });

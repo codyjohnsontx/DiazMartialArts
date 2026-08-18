@@ -55,64 +55,63 @@ function parseAbsoluteUrl(name: string, value: string): URL {
  * becomes `?source=`). A query or fragment is meaningless on a site base URL
  * and would corrupt every URL built from it, so it is rejected here rather than
  * carried along - a build that fails loudly beats a sitemap full of bad URLs.
- *
- * The scheme is checked for the same reason: `url.origin` serialises to the
+ * The scheme is rejected for the same reason: `url.origin` serialises to the
  * literal string `null` for every non-special scheme, so `localhost:3000`
  * (scheme `localhost:`, path `3000`) would otherwise yield a `null3000` base.
+ *
+ * Only an operator-set NEXT_PUBLIC_SITE_URL is held to any of that. It is the
+ * one branch a human types, so a bad value is a misconfiguration worth failing
+ * the build over. The bases `resolveDerivedSiteUrl` computes get the
+ * trailing-slash strip alone, because `readSiteUrl` also runs in the client
+ * bundle - `components/Header.tsx` reads `getPublicEnv()` at module scope in a
+ * component the root layout renders - and `window.location.origin` is the
+ * literal string `null` on an opaque origin (sandboxed iframe, `file://`).
+ * Rejecting that would take down the client render of every page over a base
+ * no visitor can correct.
  */
-function normaliseSiteUrl(source: string, url: URL): string {
+function normaliseConfiguredSiteUrl(value: string): string {
+  const url = parseAbsoluteUrl('NEXT_PUBLIC_SITE_URL', value);
+
   if (url.protocol !== 'http:' && url.protocol !== 'https:') {
     throw new Error(
-      `[env] The site URL from ${source} must use http: or https:. Example: https://diazmartialarts.vercel.app`,
+      '[env] NEXT_PUBLIC_SITE_URL must use http: or https:. Example: https://diazmartialarts.vercel.app',
     );
   }
 
   if (url.search || url.hash) {
     throw new Error(
-      `[env] The site URL from ${source} must be bare, with no query string or fragment. Example: https://diazmartialarts.vercel.app`,
+      '[env] NEXT_PUBLIC_SITE_URL must be a bare site URL with no query string or fragment. Example: https://diazmartialarts.vercel.app',
     );
   }
 
-  return `${url.origin}${url.pathname.replace(/\/+$/, '')}`;
+  return `${url.origin}${stripTrailingSlashes(url.pathname)}`;
+}
+
+function stripTrailingSlashes(value: string): string {
+  return value.replace(/\/+$/, '');
 }
 
 function readSiteUrl(): string {
-  const { source, url } = resolveSiteUrl();
-  return normaliseSiteUrl(source, url);
+  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (configured) return normaliseConfiguredSiteUrl(configured);
+
+  return stripTrailingSlashes(resolveDerivedSiteUrl());
 }
 
-/**
- * Reports which source supplied the value alongside it, so a rejection names
- * the thing the operator actually has to change: only the first branch reads
- * NEXT_PUBLIC_SITE_URL.
- */
-function resolveSiteUrl(): { source: string; url: URL } {
-  const value = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-  if (value) {
-    return {
-      source: 'NEXT_PUBLIC_SITE_URL',
-      url: parseAbsoluteUrl('NEXT_PUBLIC_SITE_URL', value),
-    };
-  }
-
+function resolveDerivedSiteUrl(): string {
   if (process.env.NODE_ENV !== 'production') {
-    return { source: 'the local development default', url: new URL(DEFAULT_LOCAL_SITE_URL) };
+    return DEFAULT_LOCAL_SITE_URL;
   }
 
   // Server-side: Vercel sets VERCEL_URL automatically on all deployments (without protocol).
   if (typeof window === 'undefined') {
     const vercelUrl = process.env.VERCEL_URL?.trim();
-    if (vercelUrl) {
-      return { source: 'VERCEL_URL', url: parseAbsoluteUrl('VERCEL_URL', `https://${vercelUrl}`) };
-    }
+    if (vercelUrl) return `https://${vercelUrl}`;
   }
 
   // Client-side browser: derive origin from the current page.
   if (typeof window !== 'undefined') {
-    return {
-      source: 'window.location.origin',
-      url: parseAbsoluteUrl('window.location.origin', window.location.origin),
-    };
+    return window.location.origin;
   }
 
   throw new Error(
