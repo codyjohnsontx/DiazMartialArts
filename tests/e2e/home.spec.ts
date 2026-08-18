@@ -55,13 +55,30 @@ test.describe('Home page', () => {
   test('hero parallax rule emits and stays wired to the framing box', async ({
     page,
   }, testInfo) => {
-    test.skip(testInfo.project.name === 'Mobile', 'The parallax is scoped to wide viewports.');
-
     // a Tailwind-adjacent class that stops emitting leaves the hero looking
-    // correct at rest, so nothing else in this suite would notice it going
+    // correct at rest, so nothing else in this suite would notice it going.
+    // The Mobile project asserts the other side: the scoping guard is what
+    // keeps the narrow hero exactly as it shipped, so it is worth a check too
     await expect(page.locator('section:has(h1) .hero-parallax')).toHaveCSS(
       'animation-name',
-      'hero-drift',
+      testInfo.project.name === 'Mobile' ? 'none' : 'hero-drift',
+    );
+  });
+
+  test('hero parallax does not run under reduced motion', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === 'Mobile', 'Already static at this width.');
+
+    // Parallax is a vestibular trigger, and the global reduce block in
+    // app/globals.css only neutralises animation-duration, which does not stop
+    // a scroll-driven animation. The hero carries its own no-preference guard,
+    // and losing it would be invisible to every other test here. The media is
+    // emulated on the page rather than through test.use, which does not reach
+    // the page from a nested describe in this config.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+
+    await expect(page.locator('section:has(h1) .hero-parallax')).toHaveCSS(
+      'animation-name',
+      'none',
     );
   });
 

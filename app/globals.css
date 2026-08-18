@@ -102,14 +102,12 @@ p {
    11.41:1, gold 5.40:1 to 5.31:1, white/70 7.14:1 to 7.06:1. What carries the
    AA guarantee is not that direction but the scrim's 82% coverage floor, which
    this change does not touch and which bounds any photo pixel, including a
-   pure 255,255,255 one, to rgb(69,61,62): sand 9.55:1, gold 4.44:1, white/70
-   6.14:1. Gold reads under 4.5:1 and still clears AA because it is used only
-   on the 96px h1 span, which is large text and so needs 3:1. That floor
-   corrects the rgb(65,59,60) inherited from PR #25; app/page.tsx carries the
-   method and the worst case where text actually sits. Travel cannot move it,
-   because it is a property of the scrim rather than of the photo, so size
-   travel against the floor rather than against which way the backdrop happens
-   to move.
+   pure 255,255,255 one. The scrim comment in app/page.tsx owns that floor -
+   its figures, how they are measured, and the worst cases where text actually
+   sits - so read them there rather than keeping a second copy in step with it.
+   Travel cannot move the floor, because it is a property of the scrim rather
+   than of the photo, so size travel against the floor rather than against
+   which way the backdrop happens to move.
 
    prefers-reduced-motion is handled here rather than left to the global reduce
    block below: that block only neutralises animation-duration, and a
