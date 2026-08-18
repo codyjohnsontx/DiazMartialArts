@@ -105,6 +105,14 @@ marking work complete or CI fails on unformatted files.
   page component is downgraded to a client-side redirect (HTTP 200 plus a
   `NEXT_REDIRECT` marker) that crawlers and non-JS clients never follow. When a
   path needs a real HTTP redirect, declare it in `next.config.mjs` instead.
+- A colour opacity modifier (`text-white/70`) resolves against `theme.opacity`,
+  whose scale is 0, 5, 10 ... 100. An off-scale value such as `text-white/72`
+  generates no CSS rule at all, so the element silently inherits its colour
+  while the build stays green. Use a scale value, or the arbitrary form
+  (`text-white/[0.72]`). `tests/unit/tailwindOpacity.test.ts` fails on any
+  off-scale value. When the guard trips, fix the class, not the config: adding
+  the off-scale value to `theme.opacity` in `tailwind.config.ts` legalises that
+  one typo and leaves the next one silent.
 
 ## Maintaining this file
 

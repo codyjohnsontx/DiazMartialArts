@@ -36,7 +36,7 @@ function FieldLabel({ children, htmlFor }: { children: React.ReactNode; htmlFor?
 }
 
 const inputClass =
-  'w-full border border-black/18 bg-[#FAFAFA] px-3.5 py-3 text-sm text-ink placeholder:text-black/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ember';
+  'w-full border border-black/20 bg-[#FAFAFA] px-3.5 py-3 text-sm text-ink placeholder:text-black/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ember';
 
 export function ContactForm() {
   const [status, setStatus] = useState<Status>('idle');
@@ -242,7 +242,7 @@ export function ContactForm() {
                     'rounded-full px-3.5 py-2 text-xs font-bold tracking-[0.04em] transition',
                     active
                       ? 'border border-ink bg-ink text-sand'
-                      : 'border border-black/18 bg-transparent text-ink hover:border-black/40',
+                      : 'border border-black/20 bg-transparent text-ink hover:border-black/40',
                   )}
                 >
                   {c}

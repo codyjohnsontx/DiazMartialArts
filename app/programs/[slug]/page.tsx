@@ -109,7 +109,7 @@ export default function ProgramPage({ params }: { params: { slug: string } }) {
                 {entry.classes.map((c, ci) => (
                   <div
                     key={`${entry.day}-${ci}`}
-                    className="grid grid-cols-[100px_1fr] items-baseline gap-4 border-t border-black/8 px-6 py-3 sm:grid-cols-[110px_1fr_auto]"
+                    className="grid grid-cols-[100px_1fr] items-baseline gap-4 border-t border-black/10 px-6 py-3 sm:grid-cols-[110px_1fr_auto]"
                   >
                     <div className="text-sm font-extrabold tracking-tight [font-variant-numeric:tabular-nums]">
                       {c.time.split('-')[0].trim()}

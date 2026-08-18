@@ -51,7 +51,7 @@ export default function ContactPage() {
                 {site.hours.map((h) => (
                   <div
                     key={h}
-                    className="text-[13px] text-black/72 [font-variant-numeric:tabular-nums]"
+                    className="text-[13px] text-black/70 [font-variant-numeric:tabular-nums]"
                   >
                     {h}
                   </div>
@@ -72,7 +72,7 @@ export default function ContactPage() {
 
             <div className="bg-ink p-7 text-sand">
               <Eyebrow variant="light">Already a member?</Eyebrow>
-              <p className="my-3 text-sm leading-relaxed text-white/72">
+              <p className="my-3 text-sm leading-relaxed text-white/70">
                 Member accounts and video access live in Diaz on Demand. Head there for access or
                 launch updates.
               </p>

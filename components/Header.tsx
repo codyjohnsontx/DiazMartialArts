@@ -75,7 +75,7 @@ export function Header() {
                   'whitespace-nowrap pb-1 text-[13px] font-semibold tracking-[0.02em] transition',
                   active
                     ? 'border-b-2 border-ember text-ink'
-                    : 'border-b-2 border-transparent text-black/72 hover:text-ink',
+                    : 'border-b-2 border-transparent text-black/70 hover:text-ink',
                 )}
               >
                 {item.label}
