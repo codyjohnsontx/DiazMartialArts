@@ -92,19 +92,33 @@ export default function HomePage() {
             wall holding genuine 255,255,255 pixels, so the hero is inverted to
             light-on-dark and the photo is carried by a scrim that never drops
             below 82% coverage anywhere in the section. That floor is what makes
-            the contrast figures a guarantee rather than a reading off one crop:
-            even directly over a white pixel the lightest backdrop the section
-            can produce is rgb(65,59,60), clearing AA for sand (9.9:1), gold
-            (4.6:1) and white/70 (6.3:1). The floor is a bound on how much photo
+            the contrast figures a guarantee rather than a reading off one crop.
+            It is measured by painting the photo pure white (image hidden,
+            framing box background #fff) and sampling the whole section, so the
+            scrim shows its own floor independent of the photo: the lightest
+            backdrop the section can produce anywhere is rgb(69,61,62), to
+            within the unit the browser's gradient dithering moves it, giving
+            sand 9.55:1, gold 4.44:1 and white/70 6.14:1. That corrects the
+            optimistic rgb(65,59,60) this comment carried from PR #25, which the
+            hero parallax then inherited; the figure was revised deliberately
+            rather than drifting. Gold reads under 4.5:1 and still clears AA
+            because gold is used only on the 96px h1 span, which is large text
+            and so needs 3:1. The lightest point is in the section's lower right
+            under the ember radial, where nothing renders anyway: at 1440px the
+            copy stops at x=724 and the right-hand column holds an opaque card.
+            Inside the rects where text does sit the worst cases are h1
+            rgb(65,62,62) (sand 9.58:1, gold 4.46:1), subtext rgb(58,58,59)
+            (white/70 6.51:1) and buttons rgb(48,47,49) (white/70 7.40:1), so
+            nothing renders below AA. The floor is a bound on how much photo
             survives, and it does not depend on layer order: what reaches the
             eye from the photo is the product of every layer's (1 - alpha),
             which commutes. Order does matter to hue. CSS paints the first
             listed layer on top, so the ember radial sits above the ink and
-            tints rather than darkens, lifting the red channel; the rgb(65,59,60)
-            figure is computed with that tint applied. The stops live here rather
-            than in Tailwind gradient utilities, which only offer three fixed
-            positions, and match the inline-gradient scrim the /ondemand hero
-            already uses. */}
+            tints rather than darkens, lifting the red channel well above the
+            naive 82%-over-white value of 59; every figure here is measured with
+            that tint applied. The stops live here rather than in Tailwind
+            gradient utilities, which only offer three fixed positions, and
+            match the inline-gradient scrim the /ondemand hero already uses. */}
         <div
           className="absolute inset-0"
           style={{
