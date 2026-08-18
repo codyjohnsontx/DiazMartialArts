@@ -69,7 +69,7 @@ export default async function OndemandRoutePage() {
                 <br />
                 <span className="text-ember">On Demand.</span>
               </h1>
-              <p className="mt-6 max-w-xl text-base leading-relaxed text-white/72 sm:text-lg">
+              <p className="mt-6 max-w-xl text-base leading-relaxed text-white/70 sm:text-lg">
                 A structured video library for students training outside class. Coach-led
                 curriculum, progress tracking, and the same standards we run on the mat.
               </p>
@@ -115,7 +115,7 @@ export default async function OndemandRoutePage() {
                     </div>
                     <div>
                       <h3 className="text-xl font-extrabold tracking-tight">{f.t}</h3>
-                      <p className="mt-1.5 text-[14.5px] leading-relaxed text-black/72">{f.d}</p>
+                      <p className="mt-1.5 text-[14.5px] leading-relaxed text-black/70">{f.d}</p>
                     </div>
                   </div>
                 ))}
@@ -125,7 +125,7 @@ export default async function OndemandRoutePage() {
             <div id="waitlist" className="self-start bg-ink p-8 text-sand sm:p-9">
               <Eyebrow variant="light">Waitlist</Eyebrow>
               <h3 className="display mt-3 text-2xl sm:text-3xl">Be first in line.</h3>
-              <p className="mb-5 mt-2 text-sm leading-relaxed text-white/72">
+              <p className="mb-5 mt-2 text-sm leading-relaxed text-white/70">
                 We&apos;ll email you when access opens, plus a 30-day intro at launch.
               </p>
               <OndemandWaitlistForm />
@@ -138,7 +138,7 @@ export default async function OndemandRoutePage() {
         </section>
 
         {/* SAMPLE LIBRARY */}
-        <section id="samples" className="border-t border-black/8 bg-sand">
+        <section id="samples" className="border-t border-black/10 bg-sand">
           <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
             <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
               <h2 className="display text-2xl sm:text-3xl">Sample lessons · BJJ track</h2>

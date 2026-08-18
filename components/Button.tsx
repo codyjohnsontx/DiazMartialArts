@@ -38,7 +38,7 @@ const buttonStyles = {
   'primary-light': `${primarySurface} focus-visible:outline-white`,
   secondary: 'bg-ink text-white hover:bg-black focus-visible:outline-ink shadow-soft',
   ghost:
-    'border border-black/18 bg-transparent text-ink hover:border-black/40 hover:bg-black/5 focus-visible:outline-ink',
+    'border border-black/20 bg-transparent text-ink hover:border-black/40 hover:bg-black/5 focus-visible:outline-ink',
   'ghost-light':
     'border border-white/25 bg-transparent text-sand hover:bg-white/10 focus-visible:outline-white',
   // ghost-light's 25% border is about 2.22:1 over bg-ink and about 2.1:1 over

@@ -1,4 +1,4 @@
-import { upcomingItems } from '@/content/upcoming';
+import { type UpcomingItem, upcomingItems } from '@/content/upcoming';
 import { getPublicEnv } from '@/lib/env';
 
 export type UpcomingEvent = {
@@ -8,10 +8,98 @@ export type UpcomingEvent = {
   end?: Date;
   location?: string;
   notes?: string;
+  /**
+   * True when the source gives a date but no clock time, so callers render the
+   * date span instead of the midnight that `start` would otherwise imply.
+   */
+  allDay?: boolean;
 };
 
-const MAX_DAYS_AHEAD = 60;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * How far ahead /schedule looks. Exported so everything that states the figure -
+ * the page's metadata description, the "Next N days" eyebrow it hands the
+ * component, and the content staleness guard - reads this one number instead of
+ * each hand-copying it and drifting.
+ */
+export const UPCOMING_WINDOW_DAYS = 60;
 const MAX_ITEMS = 15;
+
+/**
+ * The gym's own time zone. An entry that runs through the end of a day ends when
+ * that day is over *here*, so the rule reads the same whether the page renders on
+ * a Vercel box in UTC or on a laptop in Chicago.
+ */
+const SCHOOL_TIME_ZONE = 'America/Chicago';
+
+const schoolClock = new Intl.DateTimeFormat('en-US', {
+  timeZone: SCHOOL_TIME_ZONE,
+  hourCycle: 'h23',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+});
+
+function readSchoolClock(instant: number) {
+  const parts = schoolClock.formatToParts(new Date(instant));
+  const read = (type: string) => Number(parts.find((part) => part.type === type)?.value ?? 0);
+
+  return {
+    year: read('year'),
+    month: read('month'),
+    day: read('day'),
+    hour: read('hour'),
+    minute: read('minute'),
+    second: read('second'),
+  };
+}
+
+// How far the gym's clock sits from UTC at a given instant, read off the zone
+// itself rather than hard-coded, so it follows the zone's own rules.
+function schoolOffsetAt(instant: number): number {
+  const at = readSchoolClock(instant);
+
+  return (
+    Date.UTC(at.year, at.month - 1, at.day, at.hour, at.minute, at.second) -
+    Math.floor(instant / 1000) * 1000
+  );
+}
+
+// The instant a calendar date begins at the gym. Solving for the offset a second
+// time settles the days that change offset partway through, which is why this
+// cannot just add a fixed day: 2026-11-01 lasts 25 hours here and 2026-03-08
+// lasts 23, so a fixed step ends an entry an hour early or an hour late.
+function schoolDayStart(year: number, month: number, day: number): number {
+  const wall = Date.UTC(year, month - 1, day);
+
+  return wall - schoolOffsetAt(wall - schoolOffsetAt(wall));
+}
+
+function endOfSchoolDay(start: Date): number {
+  const at = readSchoolClock(start.getTime());
+
+  return schoolDayStart(at.year, at.month, at.day + 1) - 1;
+}
+
+// An all-day entry is a floating calendar date stored as UTC midnight, so its day
+// is read back in UTC and then closed out on the gym's clock. Midday UTC lands
+// inside that same calendar date in the school's zone whichever side of a DST
+// change it falls on, which is what lets both kinds of entry share one rule for
+// the end of a day instead of keeping two in step.
+function endOfSchoolDayOnDateOf(floating: Date): number {
+  const midday = Date.UTC(
+    floating.getUTCFullYear(),
+    floating.getUTCMonth(),
+    floating.getUTCDate(),
+    12,
+  );
+
+  return endOfSchoolDay(new Date(midday));
+}
 
 function unfoldIcsLines(content: string): string[] {
   const lines = content.replace(/\r\n/g, '\n').split('\n');
@@ -31,11 +119,14 @@ function unfoldIcsLines(content: string): string[] {
 function parseIcsDate(raw: string): Date | null {
   if (!raw) return null;
 
+  // A date-only value is a floating calendar date, not an instant, so anchor it
+  // in UTC and render it in UTC. Building it in server-local time would shift the
+  // printed day for viewers in another zone.
   if (/^\d{8}$/.test(raw)) {
     const year = Number(raw.slice(0, 4));
     const month = Number(raw.slice(4, 6)) - 1;
     const day = Number(raw.slice(6, 8));
-    return new Date(year, month, day, 0, 0, 0);
+    return new Date(Date.UTC(year, month, day, 0, 0, 0));
   }
 
   const clean = raw.replace(/Z$/, '');
@@ -53,6 +144,19 @@ function parseIcsDate(raw: string): Date | null {
   }
 
   return new Date(year, month, day, hour, minute, second);
+}
+
+// A date-only DTEND is exclusive per RFC 5545, and Google Calendar exports a
+// one-day all-day event as DTEND = the following day. content/upcoming.ts instead
+// writes `end` as the last day the event runs, so normalise the feed to that and
+// both sources mean the same thing by the same field.
+function parseIcsEnd(raw: string, start: Date): Date | undefined {
+  const parsed = parseIcsDate(raw);
+  if (!parsed) return undefined;
+  if (!/^\d{8}$/.test(raw)) return parsed;
+
+  const lastDay = new Date(parsed.getTime() - DAY_MS);
+  return lastDay < start ? undefined : lastDay;
 }
 
 function parseIcs(icsText: string): UpcomingEvent[] {
@@ -74,14 +178,21 @@ function parseIcs(icsText: string): UpcomingEvent[] {
       const start = parseIcsDate(raw.DTSTART || '');
       if (!start) continue;
 
-      const end = parseIcsDate(raw.DTEND || '');
+      // A date-only DTSTART (VALUE=DATE) is how ICS spells an all-day event.
+      const allDay = /^\d{8}$/.test(raw.DTSTART || '');
+      // Per RFC 5545 a DATE-TIME DTSTART with no DTEND is an event that ends where
+      // it starts, so say so here. A hand-written entry means something else by an
+      // absent end - see endsAt - and spelling the feed's meaning out at the parse
+      // site keeps the two sources from having to share one default.
+      const end = parseIcsEnd(raw.DTEND || '', start) ?? (allDay ? undefined : start);
       events.push({
         id: raw.UID || `${raw.SUMMARY || 'event'}-${start.toISOString()}`,
         title: raw.SUMMARY || 'Untitled Event',
         start,
-        end: end || undefined,
+        end,
         location: raw.LOCATION || undefined,
         notes: raw.DESCRIPTION || undefined,
+        allDay: allDay || undefined,
       });
       continue;
     }
@@ -103,27 +214,57 @@ function parseIcs(icsText: string): UpcomingEvent[] {
   return events;
 }
 
-function filterWindow(events: UpcomingEvent[]): UpcomingEvent[] {
-  const now = new Date();
-  const max = new Date(now.getTime() + MAX_DAYS_AHEAD * 24 * 60 * 60 * 1000);
-
-  return events
-    .filter((event) => event.start >= now && event.start <= max)
-    .sort((a, b) => a.start.getTime() - b.start.getTime())
-    .slice(0, MAX_ITEMS);
-}
-
-function fallbackUpcoming(): UpcomingEvent[] {
-  const mapped = upcomingItems.map((item) => ({
+export function toUpcomingEvent(item: UpcomingItem): UpcomingEvent {
+  return {
     id: item.id,
     title: item.title,
     start: new Date(item.start),
     end: item.end ? new Date(item.end) : undefined,
     location: item.location,
     notes: item.notes,
-  }));
+    allDay: item.allDay,
+  };
+}
 
-  return filterWindow(mapped);
+// One rule for when an event is over: it runs through the end of its last day at
+// the gym, unless a timed entry names an end instant of its own. An all-day entry's
+// `end` is the last calendar day it runs, and an entry with no `end` at all lasts
+// through the day it starts on - a flyer that printed a start time and no end would
+// otherwise vanish from the page the moment the event began, and an all-day one
+// would vanish during the evening of its own final day.
+function endsAt(event: UpcomingEvent): number {
+  if (event.allDay) {
+    return endOfSchoolDayOnDateOf(event.end ?? event.start);
+  }
+
+  return event.end ? event.end.getTime() : endOfSchoolDay(event.start);
+}
+
+export function hasUpcomingEventEnded(event: UpcomingEvent, now: Date = new Date()): boolean {
+  return endsAt(event) < now.getTime();
+}
+
+/**
+ * The rule /schedule renders: an event is listed while it has not finished yet and
+ * starts inside the forward window. Windowing on the end rather than the start is
+ * what keeps an event that is under way from vanishing on the very days it runs.
+ */
+export function isWithinUpcomingWindow(event: UpcomingEvent, now: Date = new Date()): boolean {
+  const horizon = now.getTime() + UPCOMING_WINDOW_DAYS * DAY_MS;
+  return !hasUpcomingEventEnded(event, now) && event.start.getTime() <= horizon;
+}
+
+function filterWindow(events: UpcomingEvent[]): UpcomingEvent[] {
+  const now = new Date();
+
+  return events
+    .filter((event) => isWithinUpcomingWindow(event, now))
+    .sort((a, b) => a.start.getTime() - b.start.getTime())
+    .slice(0, MAX_ITEMS);
+}
+
+function fallbackUpcoming(): UpcomingEvent[] {
+  return filterWindow(upcomingItems.map(toUpcomingEvent));
 }
 
 export async function getUpcomingEvents(): Promise<{

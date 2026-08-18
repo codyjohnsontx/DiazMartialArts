@@ -1,6 +1,6 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ScheduleContent } from '@/components/ScheduleContent';
 import type { UpcomingEvent } from '@/lib/upcoming';
@@ -14,9 +14,25 @@ const upcoming: UpcomingEvent[] = [
   },
 ];
 
+// Deliberately not UPCOMING_WINDOW_DAYS: the component takes the figure as a prop,
+// so a value the constant could never supply is what proves it reads the prop.
+const WINDOW_DAYS = 45;
+
+// One test here renders /schedule itself, and the page reads the optional ICS
+// feed before falling back to content/upcoming.ts. Pin the feed off so this suite
+// stays offline and deterministic instead of describing whatever a configured
+// environment happens to serve.
+beforeEach(() => {
+  vi.stubEnv('NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL', '');
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
+
 describe('ScheduleContent', () => {
   it('renders Monday classes and upcoming events by default', () => {
-    render(<ScheduleContent upcoming={upcoming} />);
+    render(<ScheduleContent upcoming={upcoming} windowDays={WINDOW_DAYS} />);
 
     expect(screen.getByRole('heading', { name: 'Schedule' })).toBeVisible();
     expect(screen.getByRole('heading', { name: 'Weekly class schedule' })).toBeVisible();
@@ -24,8 +40,100 @@ describe('ScheduleContent', () => {
     expect(screen.getAllByText('Brazilian Jiu Jitsu (Gi/Gi-less)').length).toBeGreaterThan(0);
   });
 
+  it('shows the date span for an all-day event rather than a made-up time', () => {
+    render(
+      <ScheduleContent
+        upcoming={[
+          {
+            id: 'stripe-testing',
+            title: 'Stripe Testing (White Stripe)',
+            start: new Date('2026-08-26T00:00:00Z'),
+            end: new Date('2026-08-27T00:00:00Z'),
+            allDay: true,
+          },
+        ]}
+        windowDays={WINDOW_DAYS}
+      />,
+    );
+
+    expect(screen.getByText('Stripe Testing (White Stripe)')).toBeVisible();
+    // Read in UTC, so this holds in every time zone CI or a visitor might use.
+    expect(screen.getByText('AUG')).toBeVisible();
+    expect(screen.getByText('26')).toBeVisible();
+    expect(screen.getByText('Through August 27')).toBeVisible();
+    // Midnight is an artefact of a date-only source, never a real class time.
+    expect(screen.queryByText(/12:00 AM/)).toBeNull();
+  });
+
+  it('states the forward window it is handed rather than a figure of its own', () => {
+    // Hard-coding the figure in the eyebrow is what let it keep claiming 60 days
+    // while lib/upcoming.ts looked somewhere else.
+    render(<ScheduleContent upcoming={upcoming} windowDays={WINDOW_DAYS} />);
+
+    expect(screen.getByText(`Next ${WINDOW_DAYS} days`)).toBeVisible();
+  });
+
+  it('is handed the same forward window the page actually filters on', async () => {
+    // Renders what /schedule itself renders, so the eyebrow and the filter cannot
+    // drift apart through the prop the way they used to drift through a copy of
+    // the number. Fails if the page hands the component anything else.
+    //
+    // lib/env.ts caches the public env on first read, and that read happens while
+    // the module graph is imported - long before any beforeEach. Reset the
+    // registry and import inside the test so the stubbed feed URL is the one the
+    // page actually sees, rather than whatever the ambient environment had.
+    vi.resetModules();
+    vi.stubEnv('NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL', '');
+    const fetchSpy = vi.fn();
+    vi.stubGlobal('fetch', fetchSpy);
+    const { default: FreshSchedulePage } = await import('@/app/schedule/page');
+    const { UPCOMING_WINDOW_DAYS: freshWindowDays } = await import('@/lib/upcoming');
+
+    render(await FreshSchedulePage());
+
+    expect(screen.getByText(`Next ${freshWindowDays} days`)).toBeVisible();
+    // Proves the render took the offline fallback rather than reaching a feed.
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it('tracks the event grid columns to the number of events', () => {
+    // The cards are divided by the grid background showing through 1px gaps, so a
+    // column with no card in it renders as an empty grey panel.
+    const { container } = render(<ScheduleContent upcoming={upcoming} windowDays={WINDOW_DAYS} />);
+
+    const grid = container.querySelector('.gap-px');
+    expect(grid).not.toBeNull();
+    expect(grid?.className).not.toMatch(/grid-cols-2|grid-cols-4/);
+  });
+
+  it('labels a single-day all-day event without inventing a time', () => {
+    render(
+      <ScheduleContent
+        upcoming={[
+          {
+            id: 'one-day',
+            title: 'Clean Up Day',
+            start: new Date('2026-08-26T00:00:00Z'),
+            allDay: true,
+          },
+        ]}
+        windowDays={WINDOW_DAYS}
+      />,
+    );
+
+    expect(screen.getByText('All day')).toBeVisible();
+  });
+
+  it('still shows a start time for events that have one', () => {
+    render(<ScheduleContent upcoming={upcoming} windowDays={WINDOW_DAYS} />);
+
+    // The exact clock value follows the runtime time zone; what matters is that a
+    // timed event keeps showing a real time next to its location.
+    expect(screen.getByText(/^Main Mat · \d{1,2}:\d{2} (AM|PM)$/)).toBeVisible();
+  });
+
   it('points visitors at regular classes when no events are scheduled', () => {
-    render(<ScheduleContent upcoming={[]} />);
+    render(<ScheduleContent upcoming={[]} windowDays={WINDOW_DAYS} />);
 
     expect(screen.getByText(/No special events on the calendar right now/i)).toBeVisible();
     expect(screen.getByText(/Regular classes run six days a week/i)).toBeVisible();
@@ -42,7 +150,7 @@ describe('ScheduleContent', () => {
 
   it('switches between available day tabs', async () => {
     const user = userEvent.setup();
-    render(<ScheduleContent upcoming={upcoming} />);
+    render(<ScheduleContent upcoming={upcoming} windowDays={WINDOW_DAYS} />);
 
     await user.click(screen.getByRole('tab', { name: 'Friday schedule' }));
 
@@ -51,7 +159,7 @@ describe('ScheduleContent', () => {
 
   it('keeps closed days disabled', async () => {
     const user = userEvent.setup();
-    render(<ScheduleContent upcoming={upcoming} />);
+    render(<ScheduleContent upcoming={upcoming} windowDays={WINDOW_DAYS} />);
 
     const sunday = screen.getByRole('tab', { name: 'Sunday schedule' });
     expect(sunday).toBeDisabled();

@@ -99,7 +99,7 @@ export function ProgramsContent() {
                     'rounded-full px-3.5 py-2 text-xs font-bold uppercase tracking-[0.06em] transition',
                     active
                       ? 'border border-ink bg-ink text-sand'
-                      : 'border border-black/18 bg-transparent text-black/70 hover:border-black/40',
+                      : 'border border-black/20 bg-transparent text-black/70 hover:border-black/40',
                   )}
                 >
                   {t}
@@ -134,7 +134,7 @@ export function ProgramsContent() {
                   {p.title}
                 </h3>
                 <div className="text-[13px] font-semibold text-bronze">{p.sub}</div>
-                <p className="my-4 flex-1 text-sm leading-relaxed text-black/72">{p.description}</p>
+                <p className="my-4 flex-1 text-sm leading-relaxed text-black/70">{p.description}</p>
                 <div className="flex gap-4 border-t border-black/10 pt-3 text-xs font-semibold">
                   <span>
                     <span className="text-black/50">Ages</span> · {p.age}
@@ -159,7 +159,7 @@ export function ProgramsContent() {
                   {s.n}
                 </div>
                 <h3 className="mt-2 text-lg font-extrabold">{s.t}</h3>
-                <p className="mt-1.5 text-[13.5px] leading-relaxed text-black/72">{s.d}</p>
+                <p className="mt-1.5 text-[13.5px] leading-relaxed text-black/70">{s.d}</p>
               </div>
             ))}
           </div>

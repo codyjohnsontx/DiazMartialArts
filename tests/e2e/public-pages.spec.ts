@@ -30,6 +30,11 @@ test.describe('Announcements page details', () => {
   });
 
   test('carries no class-schedule flyer and loads every flyer image', async ({ page }) => {
+    // Thirteen flyers, each allowed the wait below, need more than the 30s
+    // default so the test reports the flyer that failed rather than dying on
+    // its own clock partway down the page.
+    test.setTimeout(120_000);
+
     await page.goto('/announcements');
 
     // A class timetable reads as current operating hours, so it belongs on
@@ -45,11 +50,22 @@ test.describe('Announcements page details', () => {
     // one at a time. A single jump to the page bottom would leave whether the
     // rest ever load up to the browser's lazy-load heuristics, which vary with
     // viewport and connection - scrolling to each one makes the check decisive.
+    //
+    // The wait needs its own budget rather than the 5s default. The quality gate
+    // serves these tests from `next dev`, which re-encodes a flyer the first
+    // time it is asked for, and bringing one into view also pre-triggers the
+    // next few, so several land on that encoder at once. Locally, on an idle
+    // machine, the last flyer in such a queue answered after ~9s; CI runs two
+    // workers against one dev server on a shared runner, which is slower again.
+    // At 5s this timed out on the encoder queue, not on a flyer that never
+    // loads, so it failed the gate over how busy the box was.
     for (let i = 0; i < flyerCount; i++) {
       const flyer = flyers.nth(i);
       await flyer.scrollIntoViewIfNeeded();
       await expect
-        .poll(() => flyer.evaluate((img: HTMLImageElement) => img.naturalWidth))
+        .poll(() => flyer.evaluate((img: HTMLImageElement) => img.naturalWidth), {
+          timeout: 20_000,
+        })
         .toBeGreaterThan(0);
     }
   });

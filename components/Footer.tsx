@@ -34,7 +34,7 @@ function FooterCol({ title, links }: { title: string; links: { href: string; lab
           <li key={l.href}>
             <Link
               href={l.href}
-              className="text-[13px] text-white/72 transition hover:text-sand focus-visible:outline-ember"
+              className="text-[13px] text-white/70 transition hover:text-sand focus-visible:outline-ember"
             >
               {l.label}
             </Link>
@@ -90,12 +90,12 @@ export function Footer() {
                 </div>
               </div>
             </div>
-            <p className="mt-4 text-[13px] leading-[1.7] text-white/72">
+            <p className="mt-4 text-[13px] leading-[1.7] text-white/70">
               {site.address.street}
               <br />
               {site.address.city}, {site.address.state} {site.address.zip}
             </p>
-            <p className="mt-3 text-[13px] leading-[1.7] text-white/72">
+            <p className="mt-3 text-[13px] leading-[1.7] text-white/70">
               <a href={site.phoneHref} className="hover:text-sand">
                 {site.phone}
               </a>
@@ -115,7 +115,7 @@ export function Footer() {
               {site.hours.map((h) => (
                 <li
                   key={h}
-                  className="text-[13px] text-white/72 [font-variant-numeric:tabular-nums]"
+                  className="text-[13px] text-white/70 [font-variant-numeric:tabular-nums]"
                 >
                   {h}
                 </li>
@@ -134,7 +134,7 @@ export function Footer() {
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={s.full}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/18 text-sand transition hover:bg-white/10 focus-visible:outline-ember"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 text-sand transition hover:bg-white/10 focus-visible:outline-ember"
                     >
                       <SocialIcon name={s.full} />
                     </a>

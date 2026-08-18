@@ -10,8 +10,12 @@ type FieldErrors = Partial<Record<'name' | 'email' | 'message', string>>;
 
 const { formspreeEndpoint: endpoint } = getPublicEnv();
 
+// The border departs from the /18 -> /20 mapping used everywhere else in this sweep: on the
+// rgb(16,18,20) ink panel the boundary composites to rgb(64,65,67), so /20 measures 1.84:1
+// against WCAG 1.4.11's 3:1 for input boundaries, while /40 measures 3.83:1. The inert /18
+// generated no CSS and rendered as preflight gray-200 at 15.16:1, so /20 would have regressed.
 const inputClasses =
-  'w-full border border-white/18 bg-white/5 px-3.5 py-3 text-sm text-sand placeholder:text-white/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-gold';
+  'w-full border border-white/40 bg-white/5 px-3.5 py-3 text-sm text-sand placeholder:text-white/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-gold';
 
 export function OndemandWaitlistForm() {
   const [status, setStatus] = useState<Status>('idle');

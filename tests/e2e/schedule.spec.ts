@@ -1,5 +1,8 @@
 import { expect, test } from '@playwright/test';
 
+import { upcomingItems } from '../../content/upcoming';
+import { isWithinUpcomingWindow, toUpcomingEvent } from '../../lib/upcoming';
+
 test.describe('Schedule page', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/schedule');
@@ -12,5 +15,42 @@ test.describe('Schedule page', () => {
 
   test('renders the upcoming events section', async ({ page }) => {
     await expect(page.getByRole('heading', { name: /Upcoming events/i })).toBeVisible();
+  });
+
+  // The live defect this covers: the section showed its empty state while the
+  // school had events on. Reading the shipped list keeps the check honest as the
+  // calendar changes, instead of hard-coding an event that expires.
+  test('shows the events it ships, and the empty state only when it ships none', async ({
+    page,
+  }) => {
+    // This pins the hand-maintained fallback, and the server picks the ICS feed
+    // over it whenever that variable is set. The env belongs to the server process
+    // rather than this test, so skip instead of asserting against a source the
+    // page is not reading.
+    test.skip(
+      Boolean(process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL?.trim()),
+      'NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL is set, so /schedule renders the feed rather than content/upcoming.ts',
+    );
+
+    // Asks lib/upcoming.ts which entries the page keeps, and sorts the way the page
+    // does, so the expectation cannot disagree with what is actually rendered.
+    const inWindow = upcomingItems
+      .filter((item) => isWithinUpcomingWindow(toUpcomingEvent(item)))
+      .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+
+    const section = page
+      .getByRole('heading', { name: /Upcoming events/i })
+      .locator('xpath=ancestor::section[1]');
+    const emptyState = section.getByText(/No special events on the calendar right now/i);
+
+    if (inWindow.length === 0) {
+      await expect(emptyState).toBeVisible();
+      return;
+    }
+
+    await expect(emptyState).toHaveCount(0);
+    for (const item of inWindow.slice(0, 4)) {
+      await expect(section.getByText(item.title, { exact: true })).toBeVisible();
+    }
   });
 });

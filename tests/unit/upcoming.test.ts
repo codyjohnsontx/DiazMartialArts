@@ -20,6 +20,13 @@ afterEach(() => {
 describe('getUpcomingEvents', () => {
   it('uses fallback content when no ICS URL is configured', async () => {
     vi.stubEnv('NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL', '');
+    // Mocked rather than leaning on whatever content/upcoming.ts ships today, so
+    // this pins the no-ICS path instead of drifting with the hand-maintained list.
+    vi.doMock('@/content/upcoming', () => ({
+      upcomingItems: [
+        { id: 'hand-maintained', title: 'Hand Maintained', start: '2026-05-10T18:00:00-05:00' },
+      ],
+    }));
     const fetchSpy = vi.fn();
     vi.stubGlobal('fetch', fetchSpy);
     const { getUpcomingEvents } = await loadUpcoming();
@@ -30,8 +37,33 @@ describe('getUpcomingEvents', () => {
     // No feed was even requested, so this is the no-ICS path rather than a feed
     // that returned zero events.
     expect(fetchSpy).not.toHaveBeenCalled();
-    // content/upcoming.ts intentionally ships no events, so the fallback is empty.
-    expect(result.events).toEqual([]);
+    expect(result.events.map((event) => event.id)).toEqual(['hand-maintained']);
+  });
+
+  it('keeps the ICS feed in charge whenever the URL is set', async () => {
+    // The hand-maintained list must never shadow a configured calendar.
+    vi.doMock('@/content/upcoming', () => ({
+      upcomingItems: [
+        { id: 'hand-maintained', title: 'Hand Maintained', start: '2026-05-10T18:00:00-05:00' },
+      ],
+    }));
+    process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL = 'https://calendar.example/feed.ics';
+    const ics = [
+      'BEGIN:VCALENDAR',
+      'BEGIN:VEVENT',
+      'UID:from-feed',
+      'SUMMARY:From Feed',
+      'DTSTART:20260512T180000Z',
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ].join('\r\n');
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, text: async () => ics }));
+    const { getUpcomingEvents } = await loadUpcoming();
+
+    const result = await getUpcomingEvents();
+
+    expect(result.source).toBe('ics');
+    expect(result.events.map((event) => event.id)).toEqual(['from-feed']);
   });
 
   it('maps fallback content items to dates and clips them to the 60-day window', async () => {
@@ -67,6 +99,232 @@ describe('getUpcomingEvents', () => {
       location: 'Main Mat',
       notes: 'Bring water.',
     });
+  });
+
+  it('keeps an all-day event listed while it is still running', async () => {
+    // Now is 2026-05-01T17:00:00Z, so every entry below has already started. An
+    // event that is under way is exactly when visitors look it up, so windowing on
+    // the start instead of the end would drop all three of the first ones.
+    vi.doMock('@/content/upcoming', () => ({
+      upcomingItems: [
+        {
+          id: 'runs-today',
+          title: 'Stripe Testing',
+          start: '2026-05-01T00:00:00Z',
+          allDay: true,
+        },
+        {
+          id: 'mid-span',
+          title: 'Camp Weekend',
+          start: '2026-04-29T00:00:00Z',
+          end: '2026-05-02T00:00:00Z',
+          allDay: true,
+        },
+        {
+          id: 'final-day',
+          title: 'Belt Testing',
+          start: '2026-04-30T00:00:00Z',
+          end: '2026-05-01T00:00:00Z',
+          allDay: true,
+        },
+        {
+          id: 'ended-yesterday',
+          title: 'Old Seminar',
+          start: '2026-04-28T00:00:00Z',
+          end: '2026-04-30T00:00:00Z',
+          allDay: true,
+        },
+      ],
+    }));
+    const { getUpcomingEvents } = await loadUpcoming();
+
+    const result = await getUpcomingEvents();
+
+    expect(result.events.map((event) => event.id)).toEqual(['mid-span', 'final-day', 'runs-today']);
+  });
+
+  it('keeps an all-day event listed until its last day is over at the gym', async () => {
+    // 9:00 PM at the gym on the event's own final day, which is already tomorrow in
+    // UTC. Closing an all-day entry out at the end of the UTC day would have pulled
+    // the card two hours ago, on an evening the event was still running - the same
+    // vanishing act windowing on the end instead of the start exists to stop.
+    vi.setSystemTime(new Date('2026-05-01T21:00:00-05:00'));
+    vi.doMock('@/content/upcoming', () => ({
+      upcomingItems: [
+        {
+          id: 'last-day-tonight',
+          title: 'Stripe Testing',
+          start: '2026-04-30T00:00:00Z',
+          end: '2026-05-01T00:00:00Z',
+          allDay: true,
+        },
+        {
+          id: 'ended-last-night',
+          title: 'Old Stripe Testing',
+          start: '2026-04-29T00:00:00Z',
+          end: '2026-04-30T00:00:00Z',
+          allDay: true,
+        },
+      ],
+    }));
+    const { getUpcomingEvents } = await loadUpcoming();
+
+    const result = await getUpcomingEvents();
+
+    // The second entry pins that the boundary moved by five hours rather than
+    // becoming open-ended: its own last day ended at the gym last night.
+    expect(result.events.map((event) => event.id)).toEqual(['last-day-tonight']);
+  });
+
+  it('keeps a timed event listed until its end time passes', async () => {
+    vi.doMock('@/content/upcoming', () => ({
+      upcomingItems: [
+        {
+          id: 'running-now',
+          title: 'Open Mat',
+          start: '2026-05-01T11:00:00-05:00',
+          end: '2026-05-01T13:00:00-05:00',
+        },
+        {
+          id: 'already-finished',
+          title: 'Morning Class',
+          start: '2026-05-01T06:00:00-05:00',
+          end: '2026-05-01T07:00:00-05:00',
+        },
+      ],
+    }));
+    const { getUpcomingEvents } = await loadUpcoming();
+
+    const result = await getUpcomingEvents();
+
+    expect(result.events.map((event) => event.id)).toEqual(['running-now']);
+  });
+
+  it('runs a timed fallback entry with no end through the end of its day at the gym', async () => {
+    // 7:30 PM at the gym, which is already the next day in UTC: a rule anchored in
+    // UTC would have dropped tonight's event half an hour ago, and ending it at its
+    // own start would have dropped it at 6:00 PM, while it was still running. The
+    // suite pins TZ to the gym's zone, but the rule reads the same on a UTC box.
+    vi.setSystemTime(new Date('2026-05-01T19:30:00-05:00'));
+    vi.doMock('@/content/upcoming', () => ({
+      upcomingItems: [
+        { id: 'tonight', title: 'Fite Nite', start: '2026-05-01T18:00:00-05:00' },
+        { id: 'last-night', title: 'Old Fite Nite', start: '2026-04-30T18:00:00-05:00' },
+      ],
+    }));
+    const { getUpcomingEvents } = await loadUpcoming();
+
+    const result = await getUpcomingEvents();
+
+    expect(result.events.map((event) => event.id)).toEqual(['tonight']);
+  });
+
+  it('ends a timed ICS event with no DTEND where it starts', async () => {
+    // RFC 5545 gives the feed its own meaning for an absent end, so the fallback
+    // rule above must not be applied to it.
+    vi.setSystemTime(new Date('2026-05-01T19:30:00-05:00'));
+    process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL = 'https://calendar.example/feed.ics';
+    const ics = [
+      'BEGIN:VCALENDAR',
+      'BEGIN:VEVENT',
+      'UID:started-at-six',
+      'SUMMARY:Started At Six',
+      'DTSTART:20260501T230000Z',
+      'END:VEVENT',
+      'BEGIN:VEVENT',
+      'UID:still-to-come',
+      'SUMMARY:Still To Come',
+      'DTSTART:20260510T230000Z',
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ].join('\r\n');
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, text: async () => ics }));
+    const { getUpcomingEvents } = await loadUpcoming();
+
+    const result = await getUpcomingEvents();
+
+    expect(result.events.map((event) => event.id)).toEqual(['still-to-come']);
+  });
+
+  it('carries the all-day flag through from fallback content', async () => {
+    vi.doMock('@/content/upcoming', () => ({
+      upcomingItems: [
+        {
+          id: 'all-day',
+          title: 'Stripe Testing',
+          start: '2026-05-10T00:00:00Z',
+          end: '2026-05-11T00:00:00Z',
+          allDay: true,
+        },
+        { id: 'timed', title: 'Seminar', start: '2026-05-12T19:00:00-05:00' },
+      ],
+    }));
+    const { getUpcomingEvents } = await loadUpcoming();
+
+    const result = await getUpcomingEvents();
+
+    expect(result.events.map((event) => event.allDay)).toEqual([true, undefined]);
+  });
+
+  it('treats a date-only ICS DTSTART as an all-day event', async () => {
+    process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL = 'https://calendar.example/feed.ics';
+    const ics = [
+      'BEGIN:VCALENDAR',
+      'BEGIN:VEVENT',
+      'UID:all-day',
+      'SUMMARY:All Day Event',
+      'DTSTART;VALUE=DATE:20260510',
+      'END:VEVENT',
+      'BEGIN:VEVENT',
+      'UID:timed',
+      'SUMMARY:Timed Event',
+      'DTSTART:20260512T180000Z',
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ].join('\r\n');
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, text: async () => ics }));
+    const { getUpcomingEvents } = await loadUpcoming();
+
+    const result = await getUpcomingEvents();
+
+    expect(result.events.map((event) => [event.id, event.allDay])).toEqual([
+      ['all-day', true],
+      ['timed', undefined],
+    ]);
+    // Anchored in UTC, not the server's zone, so the printed day never shifts.
+    expect(result.events[0].start.toISOString()).toBe('2026-05-10T00:00:00.000Z');
+  });
+
+  it('reads a date-only ICS DTEND as the last day the event runs', async () => {
+    process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL = 'https://calendar.example/feed.ics';
+    const ics = [
+      'BEGIN:VCALENDAR',
+      'BEGIN:VEVENT',
+      'UID:one-day',
+      'SUMMARY:One Day',
+      'DTSTART;VALUE=DATE:20260510',
+      'DTEND;VALUE=DATE:20260511',
+      'END:VEVENT',
+      'BEGIN:VEVENT',
+      'UID:two-day',
+      'SUMMARY:Two Day',
+      'DTSTART;VALUE=DATE:20260512',
+      'DTEND;VALUE=DATE:20260514',
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ].join('\r\n');
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, text: async () => ics }));
+    const { getUpcomingEvents } = await loadUpcoming();
+
+    const result = await getUpcomingEvents();
+
+    // A date-only DTEND is exclusive per RFC 5545, so a one-day event ends on the
+    // day it starts and a 12-13 event ends on the 13th. Taking it literally would
+    // have the card announce a day the school never published.
+    expect(result.events.map((event) => [event.id, event.end?.toISOString()])).toEqual([
+      ['one-day', '2026-05-10T00:00:00.000Z'],
+      ['two-day', '2026-05-13T00:00:00.000Z'],
+    ]);
   });
 
   it('parses, sorts, and limits events from an ICS feed', async () => {
@@ -121,5 +379,62 @@ describe('getUpcomingEvents', () => {
     const result = await getUpcomingEvents();
 
     expect(result.source).toBe('fallback');
+  });
+});
+
+// America/Chicago days are not all 24 hours long: 2026-11-01 runs 25 hours and
+// 2026-03-08 runs 23. Closing a day out by adding a fixed day to its start lands
+// an hour off on both, which would drop an entry while it is still running - the
+// one thing the end-based boundary exists to prevent.
+describe('end of the school day across DST transitions', () => {
+  it('keeps a fall-back-day entry listed until that 25-hour day is actually over', async () => {
+    const { hasUpcomingEventEnded } = await loadUpcoming();
+    const event = {
+      id: 'fall-back',
+      title: 'Rifle Club',
+      // 12:30 AM on 2026-11-01, before the 2 AM change, with no end time.
+      start: new Date('2026-11-01T05:30:00Z'),
+    };
+
+    // 11:30 PM the same evening, still that day at the gym.
+    expect(hasUpcomingEventEnded(event, new Date('2026-11-02T05:30:00Z'))).toBe(false);
+    // 12:30 AM the next day, genuinely over.
+    expect(hasUpcomingEventEnded(event, new Date('2026-11-02T06:30:00Z'))).toBe(true);
+  });
+
+  it('expires a spring-forward-day entry when that 23-hour day ends, not an hour later', async () => {
+    const { hasUpcomingEventEnded } = await loadUpcoming();
+    const event = {
+      id: 'spring-forward',
+      title: 'Open Mat',
+      // 12:30 AM on 2026-03-08, before the 2 AM change, with no end time.
+      start: new Date('2026-03-08T06:30:00Z'),
+    };
+
+    // 11:30 PM the same evening, still that day at the gym.
+    expect(hasUpcomingEventEnded(event, new Date('2026-03-09T04:30:00Z'))).toBe(false);
+    // 12:30 AM the next day, genuinely over.
+    expect(hasUpcomingEventEnded(event, new Date('2026-03-09T05:30:00Z'))).toBe(true);
+  });
+
+  it('closes an all-day entry on the gym clock on both transition days', async () => {
+    const { hasUpcomingEventEnded } = await loadUpcoming();
+    const fallBack = {
+      id: 'all-day-fall-back',
+      title: 'Stripe Testing',
+      start: new Date('2026-11-01T00:00:00Z'),
+      allDay: true,
+    };
+    const springForward = {
+      id: 'all-day-spring-forward',
+      title: 'Stripe Testing',
+      start: new Date('2026-03-08T00:00:00Z'),
+      allDay: true,
+    };
+
+    expect(hasUpcomingEventEnded(fallBack, new Date('2026-11-02T05:30:00Z'))).toBe(false);
+    expect(hasUpcomingEventEnded(fallBack, new Date('2026-11-02T06:30:00Z'))).toBe(true);
+    expect(hasUpcomingEventEnded(springForward, new Date('2026-03-09T04:30:00Z'))).toBe(false);
+    expect(hasUpcomingEventEnded(springForward, new Date('2026-03-09T05:30:00Z'))).toBe(true);
   });
 });
