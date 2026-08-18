@@ -29,7 +29,12 @@ test.describe('Announcements page details', () => {
     await expect(page.getByRole('heading', { name: 'Announcements', level: 1 })).toBeVisible();
   });
 
-  test('carries no class-schedule flyer and serves every flyer image', async ({ page }) => {
+  test('carries no class-schedule flyer and loads every flyer image', async ({ page }) => {
+    // Thirteen flyers, each allowed the wait below, need more than the 30s
+    // default so the test reports the flyer that failed rather than dying on
+    // its own clock partway down the page.
+    test.setTimeout(120_000);
+
     await page.goto('/announcements');
 
     // A class timetable reads as current operating hours, so it belongs on
@@ -41,28 +46,27 @@ test.describe('Announcements page details', () => {
     const flyerCount = await flyers.count();
     expect(flyerCount).toBeGreaterThan(0);
 
-    // next/image points each flyer at the dev image optimizer, which re-encodes
-    // the source through sharp on first request: 1.4s to 1.8s apiece on an idle
-    // eight-core machine, and several times that on a two-core runner. Waiting
-    // for all thirteen to decode in the browser therefore measured that
-    // optimizer's queue - one dev server, shared with the other project's
-    // worker - and not whether a flyer was missing. In CI one request stayed
-    // outstanding past the budget and took both projects of the job down with
-    // it, while the other matrix leg passed on the same commit.
+    // Every flyer but the first renders loading="lazy", so bring them into view
+    // one at a time. A single jump to the page bottom would leave whether the
+    // rest ever load up to the browser's lazy-load heuristics, which vary with
+    // viewport and connection - scrolling to each one makes the check decisive.
     //
-    // Ask for each flyer's own file instead. A deleted or renamed flyer, which
-    // is the regression this guards, answers 404 either way, and the check no
-    // longer rides on lazy-load order or optimizer throughput.
-    const sources = await flyers.evaluateAll((imgs: HTMLImageElement[]) =>
-      imgs.map((img) => {
-        const url = new URL(img.src, window.location.href);
-        return url.pathname === '/_next/image' ? (url.searchParams.get('url') ?? img.src) : img.src;
-      }),
-    );
-
-    for (const source of sources) {
-      const response = await page.request.get(source);
-      expect(response.status(), `${source} should be served`).toBe(200);
+    // The wait needs its own budget rather than the 5s default. The quality gate
+    // serves these tests from `next dev`, which re-encodes a flyer the first
+    // time it is asked for, and bringing one into view also pre-triggers the
+    // next few, so several land on that encoder at once. Locally, on an idle
+    // machine, the last flyer in such a queue answered after ~9s; CI runs two
+    // workers against one dev server on a shared runner, which is slower again.
+    // At 5s this timed out on the encoder queue, not on a flyer that never
+    // loads, so it failed the gate over how busy the box was.
+    for (let i = 0; i < flyerCount; i++) {
+      const flyer = flyers.nth(i);
+      await flyer.scrollIntoViewIfNeeded();
+      await expect
+        .poll(() => flyer.evaluate((img: HTMLImageElement) => img.naturalWidth), {
+          timeout: 20_000,
+        })
+        .toBeGreaterThan(0);
     }
   });
 
