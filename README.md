@@ -58,17 +58,18 @@ All primary content is in `content/`:
 1. Weekly schedule table from `content/schedule.ts`
 2. Printable class schedule flyers - images and PDFs in `public/schedules/`,
    listed by `printableSchedules` in `content/schedule.ts`
-3. Upcoming events list limited to the next 60 days
+3. Upcoming events list, limited to the forward window defined by
+   `UPCOMING_WINDOW_DAYS` in `lib/upcoming.ts`
 
 The table and the flyers state the same class times on the same page, so a
 revised flyer means updating both. `printableSchedules` points at the PDFs by
 their exact URL-encoded filenames, so replace those files in place rather than
 renaming them.
 
-`content/upcoming.ts` ships empty on purpose; only genuine scheduled events belong
-in it. When nothing falls inside the 60-day window the upcoming events section
-renders its empty state, which points readers back to the weekly schedule and a
-free trial rather than showing placeholder events.
+Upcoming events come from `NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL` when it is set,
+and from the hand-maintained list in `content/upcoming.ts` otherwise. The comment
+at the top of that file is the authoritative guide to keeping the list current -
+read it before editing the list.
 
 Environment variables:
 

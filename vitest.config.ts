@@ -10,6 +10,10 @@ export default defineConfig({
     include: ['tests/unit/**/*.test.ts', 'tests/components/**/*.test.tsx'],
     environment: 'jsdom',
     globals: true,
+    // The gym's own zone, and behind UTC like every US zone. Dates rendered from
+    // local accessors agree with UTC ones in a CI box running UTC, so without
+    // this the suite would pass on exactly the bugs it exists to catch.
+    env: { TZ: 'America/Chicago' },
     setupFiles: ['tests/setup/vitest.setup.ts'],
     coverage: {
       provider: 'v8',
