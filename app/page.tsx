@@ -46,7 +46,7 @@ export default function HomePage() {
       <LocalBusinessSchema />
 
       {/* HERO */}
-      <section className="relative overflow-hidden bg-ink text-sand">
+      <section className="relative bg-ink text-sand">
         {/* The photo is framed through a box a quarter taller than the section
             and anchored to its top, so the section only ever shows the top 80%
             of the image: object-cover cannot reach past row 0.8 x 639 = 511.
@@ -55,20 +55,27 @@ export default function HomePage() {
             rather than half-cut and fighting the header logo. A plain
             object-position could not do it: from about 1280px down the section
             is tall enough that object-cover scales to the height and the whole
-            image is in frame, so every row is reachable. Within that window
-            55% keeps the students' faces (rows 280-360) framed from 320px to
-            4K and 38% holds a face plus the standing coach in the narrow slice
-            a 320px hero can show. saturate is the arbitrary form because 125 is
-            off Tailwind's saturate scale and would emit no rule. */}
-        <div className="absolute inset-x-0 top-0 h-[125%]">
-          <Image
-            src="/bjj.jpg"
-            alt=""
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover object-[38%_55%] saturate-[1.25]"
-          />
+            image is in frame, so every row is reachable. The overflow-hidden
+            that holds that oversized box inside the section sits on a layer
+            wrapped around the image alone rather than on the section itself, so
+            only the photo is clipped: on the section it would also cut off the
+            upcoming-classes card wherever that card is wider than the viewport.
+            Within that window 55% keeps the students' faces (rows 280-360)
+            framed from 320px to 4K and 38% holds a face plus the standing coach
+            in the narrow slice a 320px hero can show. saturate is the arbitrary
+            form because 125 is off Tailwind's saturate scale and would emit no
+            rule. */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute inset-x-0 top-0 h-[125%]">
+            <Image
+              src="/bjj.jpg"
+              alt=""
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover object-[38%_55%] saturate-[1.25]"
+            />
+          </div>
         </div>
         {/* Scrim. `bjj.jpg` is a bright gym interior whose top third is a white
             wall holding genuine 255,255,255 pixels, so the hero is inverted to
@@ -120,16 +127,8 @@ export default function HomePage() {
           </div>
           {/* HomeUpcomingClasses is an opaque sand card whose headings carry no
               colour of their own, so they inherit. Restating ink here keeps the
-              card readable now that the section around it is dark.
-              min-w-0 restores what the card's "Later" rows need to stay inside
-              it: that list is a grid, so each li is a grid item whose default
-              min-width:auto resolves to its min-content (a nowrap label plus a
-              shrink-0 time, 303px), overflowing its own 252px track. The card
-              already asks for `truncate`; without this the ellipsis never
-              engages and at 320px the hero's overflow-hidden clips the times
-              mid-character instead. Scoped to this column, and removable once
-              HomeUpcomingClasses carries its own min-w-0 (PR #24 owns it). */}
-          <div className="relative flex items-center justify-start text-ink [&_li]:min-w-0 lg:min-h-[520px] lg:justify-center">
+              card readable now that the section around it is dark. */}
+          <div className="relative flex items-center justify-start text-ink lg:min-h-[520px] lg:justify-center">
             <HomeUpcomingClasses />
           </div>
         </div>
