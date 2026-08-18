@@ -52,6 +52,19 @@ test.describe('Home page', () => {
     expect(clip.scrollWidth).toBe(clip.clientWidth);
   });
 
+  test('hero parallax rule emits and stays wired to the framing box', async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name === 'Mobile', 'The parallax is scoped to wide viewports.');
+
+    // a Tailwind-adjacent class that stops emitting leaves the hero looking
+    // correct at rest, so nothing else in this suite would notice it going
+    await expect(page.locator('section:has(h1) .hero-parallax')).toHaveCSS(
+      'animation-name',
+      'hero-drift',
+    );
+  });
+
   test('coming-up classes widget visible with schedule link', async ({ page }) => {
     await expect(page.getByText(/Coming up/i).first()).toBeVisible();
     await expect(page.getByText(/Starts in|Starting now/i).first()).toBeVisible();

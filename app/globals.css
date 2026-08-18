@@ -82,7 +82,7 @@ p {
 
    Travel is downward. The framing box is anchored to the section's top, so
    sliding the photo down shows rows further UP the bitmap and pushes the crest
-   (source rows 530-628) further out of frame than it sits at rest. Upward
+   (source rows 531-630) further out of frame than it sits at rest. Upward
    travel would instead spend the crest margin, and that margin measures only
    3.68% of the section's height at every width from 1024px to 1324px, where
    the box is taller than the bitmap's aspect and object-cover pins the visible
@@ -92,6 +92,19 @@ p {
    the gap is always shorter than the distance already scrolled past and so
    never clears the sticky header. 5% of the framing box is 6.25% of the
    section, about 44px of drift over the first viewport of scroll.
+
+   Contrast moves the opposite way from the crest margin: showing rows further
+   up the bitmap slides the photo's bright top third under the headline, so the
+   backdrop lightens as travel proceeds and the worst case sits at full travel
+   rather than at rest. Measured at 1440px the 99th-percentile backdrop under
+   the headline goes from rgb(53,49,51) at rest to rgb(58,49,50) at full
+   travel, and contrast falls monotonically across the range: sand 11.59:1 to
+   11.41:1, gold 5.40:1 to 5.31:1, white/70 7.14:1 to 7.06:1. What carries the
+   AA guarantee is not that direction but the scrim's 82% coverage floor, which
+   this change does not touch and which bounds any photo pixel, including a
+   pure 255,255,255 one, to rgb(65,59,60): sand 9.92:1, gold 4.61:1, white/70
+   6.31:1. Travel cannot reach past that bound, so size travel against the
+   floor rather than against which way the backdrop happens to move.
 
    prefers-reduced-motion is handled here rather than left to the global reduce
    block below: that block only neutralises animation-duration, and a
