@@ -87,24 +87,31 @@ p {
    3.68% of the section's height at every width from 1024px to 1324px, where
    the box is taller than the bitmap's aspect and object-cover pins the visible
    window to rows 0-0.8 no matter how wide the viewport gets. Downward travel
-   opens a gap of (travel x progress) at the top of the frame instead, and
-   because the travel is a small fraction of the scroll range that drives it,
-   the gap is always shorter than the distance already scrolled past and so
-   never clears the sticky header. 5% of the framing box is 6.25% of the
-   section, about 44px of drift over the first viewport of scroll.
+   opens a bare strip of (travel x progress) at the top of the frame instead.
+   What bounds that strip is the animation range, not the travel being small:
+   its bottom edge sits at 77 + S x (travel/range - 1) for scroll position S,
+   so it stays behind the sticky header for every S as long as travel does not
+   exceed the range. At a range of 100vh the ceiling is therefore a whole
+   window height of travel, and a strip first appears just past it, at every
+   width from 1024 to 2560. 20% of the framing box is 25% of the section,
+   about 176px of drift over the first viewport of scroll - a fifth of that
+   ceiling on a 900px-tall window - which lags the copy by roughly 19.6px per
+   100px scrolled.
 
    Contrast moves the opposite way from the crest margin: showing rows further
    up the bitmap slides the photo's bright top third under the headline, so the
    backdrop lightens as travel proceeds and the worst case sits at full travel
    rather than at rest. Measured at 1440px the 99th-percentile backdrop under
-   the headline goes from rgb(53,49,51) at rest to rgb(58,49,50) at full
+   the headline goes from rgb(53,49,51) at rest to rgb(55,54,56) at full
    travel, and contrast falls monotonically across the range: sand 11.59:1 to
-   11.41:1, gold 5.40:1 to 5.31:1, white/70 7.14:1 to 7.06:1. What carries the
-   AA guarantee is not that direction but the scrim's 82% coverage floor, which
-   this change does not touch and which bounds any photo pixel, including a
-   pure 255,255,255 one. The scrim comment in app/page.tsx owns that floor -
-   its figures, how they are measured, and the worst cases where text actually
-   sits - so read them there rather than keeping a second copy in step with it.
+   10.87:1, gold 5.40:1 to 5.06:1, white/70 7.14:1 to 6.82:1. The tightest of
+   those is gold, at 5.06:1 against the 3:1 its 96px h1 span needs. What
+   carries the AA guarantee is not that direction but the scrim's 82% coverage
+   floor, which this change does not touch and which bounds any photo pixel,
+   including a pure 255,255,255 one. The scrim comment in app/page.tsx owns
+   that floor - its figures, how they are measured, and the worst cases where
+   text actually sits - so read them there rather than keeping a second copy in
+   step with it.
    Travel cannot move the floor, because it is a property of the scrim rather
    than of the photo, so size travel against the floor rather than against
    which way the backdrop happens to move.
@@ -120,7 +127,7 @@ p {
     transform: translate3d(0, 0, 0);
   }
   to {
-    transform: translate3d(0, 5%, 0);
+    transform: translate3d(0, 20%, 0);
   }
 }
 
