@@ -180,7 +180,7 @@ Use two review passes for design updates:
    - `/pricing`
    - `/schedule`
    - `/contact`
-   - `/sign-in` redirects to the member app
+   - `/sign-in` redirects to `/ondemand`
    - `/ondemand`
 7. Promote only after preview validation passes.
 
