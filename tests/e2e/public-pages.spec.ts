@@ -72,13 +72,16 @@ test.describe('Announcements page details', () => {
     }
   });
 
-  test('the category filters partition the feed and own their empty state', async ({ page }) => {
-    // This used to assert every category lists something. That held only while
-    // the feed happened to span all four, and it stopped being true the first
-    // time the flyers were replaced with a set that did not - the feed is
-    // whatever the gym is currently running, and no category is guaranteed a
-    // member. What the filter owes a visitor regardless of the content is
-    // asserted instead, and more strictly than before.
+  test('every category filter it offers selects part of the feed', async ({ page }) => {
+    // This used to assert every one of four named categories lists something.
+    // That held only while the feed happened to span all four, and the feed is
+    // whatever the gym is currently running. The row now renders a button only
+    // for a category the feed carries, so what is checked here is that promise:
+    // nothing it advertises is a dead end, against the real page and the real
+    // content. The guarantees that need a feed spanning several categories -
+    // that picking one excludes the others, and that an empty selection says so
+    // - are pinned in tests/components/announcement-flyer-gallery.test.tsx,
+    // where the feed is a fixture rather than whatever is running this month.
     await page.goto('/announcements');
 
     const articles = page.locator('main article');
@@ -96,7 +99,6 @@ test.describe('Announcements page details', () => {
     await expect(emptyState).toHaveCount(0);
 
     let selected = 0;
-    const dead: string[] = [];
     for (const category of categories) {
       const button = page.getByRole('button', { name: new RegExp(`^${category}$`, 'i') });
       await button.click();
@@ -105,33 +107,28 @@ test.describe('Announcements page details', () => {
       // landed. These specs run against `next dev`, where hydration can trail
       // the load event; a click that arrives before it is swallowed, and the
       // unfiltered count read in its place would surface much later as a bogus
-      // partition mismatch instead of the timing miss it actually was.
+      // count mismatch instead of the timing miss it actually was.
       await expect(button).toHaveAttribute('aria-pressed', 'true');
 
       const count = await articles.count();
       selected += count;
-      if (count === 0) dead.push(category);
 
-      // The empty state is the only thing a visitor gets for a category with no
-      // flyers, so it has to track the count in both directions: present when
-      // the filter selects nothing, absent the moment it selects something.
-      if (count === 0) {
-        await expect(emptyState).toBeVisible();
-      } else {
-        await expect(emptyState).toHaveCount(0);
-      }
+      // The row advertises this category, so it has to lead somewhere, and the
+      // empty state has to stay away. Only that direction is observable from
+      // this page: no button is rendered for a category with no flyers, so the
+      // empty state cannot be reached here at all.
+      expect(count, `the "${category}" filter is a dead end`).toBeGreaterThan(0);
+      await expect(emptyState).toHaveCount(0);
     }
 
-    // Each flyer carries exactly one category, so the filtered views partition
-    // the feed. This is what proves a filter actually excludes: were clicking
-    // one a no-op, every view would show the whole feed and the total would
-    // overshoot. It bites hardest when the feed spans several categories, which
-    // is exactly when a broken filter would be least visible.
+    // Each flyer carries exactly one category, so the filtered views should
+    // partition the feed. Weaker than it looks, and deliberately kept anyway:
+    // the walk covers only the categories currently present, so on a
+    // single-category feed this compares the feed to itself and a filter that
+    // stopped excluding would still pass. It catches an over-counting filter
+    // the moment the gym runs more than one kind of announcement, and the
+    // component test carries the exclusion guarantee in the meantime.
     expect(selected).toBe(allCount);
-
-    // The row is derived from the categories present, so a button that selects
-    // nothing means it is advertising a category the feed does not carry.
-    expect(dead).toEqual([]);
   });
 });
 
