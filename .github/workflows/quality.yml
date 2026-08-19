@@ -65,12 +65,27 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-browsers-${{ runner.os }}-${{ steps.playwright.outputs.version }}
 
-      # Split out from the browser download so a stall in either one is
-      # attributable. System libraries live outside the cached browser
-      # directory, so this cannot be skipped on a cache hit.
-      - name: Install Playwright system dependencies
-        run: npx playwright install-deps chromium
-        timeout-minutes: 5
+      # There is deliberately no `playwright install-deps` step, because on this
+      # runner it installs no library Chromium actually needs. Playwright splits
+      # its Ubuntu package map into a `chromium` group (21 shared libraries) and
+      # a `tools` group (xvfb and fonts); apt reported all 21 of the former
+      # "already the newest version" on the ubuntu-latest image, so the
+      # command's entire effect was 21.1 MB of font packages from the latter -
+      # CJK, Thai and X11 bitmap fonts for scripts this English-only site never
+      # renders. No test rasterises a glyph: the suite asserts on the DOM and
+      # has no screenshot comparisons, and the Latin text and lone U+1F4DE emoji
+      # in the content are covered by fonts-liberation, DejaVu and
+      # fonts-noto-color-emoji, all preinstalled regardless of this step.
+      #
+      # What it did buy was a coin flip in the critical path. In run
+      # 32206562036 the two matrix legs drew different Ubuntu mirrors: the same
+      # apt work took 19s on one leg and, at 112 kB/s, blew a five-minute bound
+      # on the other, failing the job before a single test ran.
+      #
+      # Should a future runner image drop one of those 21 libraries, Chromium
+      # fails at launch and Playwright's error names both the library and the
+      # `install-deps` command that restores it - a loud, deterministic failure
+      # rather than a slow one decided by which mirror the runner drew.
 
       # Chromium only: every project in playwright.config.ts is Chromium-backed,
       # so an unqualified install would also download Firefox and WebKit that
