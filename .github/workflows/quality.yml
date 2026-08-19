@@ -65,12 +65,30 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-browsers-${{ runner.os }}-${{ steps.playwright.outputs.version }}
 
-      # Split out from the browser download so a stall in either one is
-      # attributable. System libraries live outside the cached browser
-      # directory, so this cannot be skipped on a cache hit.
-      - name: Install Playwright system dependencies
-        run: npx playwright install-deps chromium
-        timeout-minutes: 5
+      # There is deliberately no `install-deps` step. It opens with an
+      # unconditional `apt-get update`, so every run staked both matrix legs on
+      # the Ubuntu mirrors, and that is exactly how they died on 2026-08-19: the
+      # Azure mirror stopped answering, apt spent the step's whole budget
+      # retrying it, and the gate never ran.
+      #
+      # It was not buying the libraries it looks like it buys. In the last run
+      # that got through it (32185249296), all 21 packages Playwright lists for
+      # Chromium - libnss3, libgbm1, libasound2t64, the rest - plus xvfb were
+      # already the newest version, because the hosted image preinstalls Chrome,
+      # Chromium, Edge and Firefox, which depend on them. The only thing it
+      # installed was 21 MB of fonts from Playwright's `tools` group: CJK, Thai,
+      # Cyrillic and Unifont fallbacks. Nothing here asserts on a glyph: the
+      # suite compares no screenshots, only DOM text and accessible names, and
+      # the images it does capture are failure artefacts. So dropping the fonts
+      # cannot change a test result, and it cannot change what a visitor sees
+      # either, since production type resolves on the visitor's own device.
+      #
+      # Trade-off worth knowing before re-adding it: without those fallbacks a
+      # bare font set renders the UI's ▸ ★ ☰ ✕ as tofu, so a future visual test
+      # should pin the fonts it needs itself rather than restore a step whose
+      # cost is a mirror round trip on every run. A library genuinely going
+      # missing still fails loudly - Playwright checks at launch and names both
+      # the missing libraries and the command to install them.
 
       # Chromium only: every project in playwright.config.ts is Chromium-backed,
       # so an unqualified install would also download Firefox and WebKit that
