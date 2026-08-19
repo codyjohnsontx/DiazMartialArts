@@ -65,30 +65,27 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-browsers-${{ runner.os }}-${{ steps.playwright.outputs.version }}
 
-      # There is deliberately no `install-deps` step. It opens with an
-      # unconditional `apt-get update`, so every run staked both matrix legs on
-      # the Ubuntu mirrors, and that is exactly how they died on 2026-08-19: the
-      # Azure mirror stopped answering, apt spent the step's whole budget
-      # retrying it, and the gate never ran.
+      # There is deliberately no `playwright install-deps` step, because on this
+      # runner it installs no library Chromium actually needs. Playwright splits
+      # its Ubuntu package map into a `chromium` group (21 shared libraries) and
+      # a `tools` group (xvfb and fonts); apt reported all 21 of the former
+      # "already the newest version" on the ubuntu-latest image, so the
+      # command's entire effect was 21.1 MB of font packages from the latter -
+      # CJK, Thai and X11 bitmap fonts for scripts this English-only site never
+      # renders. No test rasterises a glyph: the suite asserts on the DOM and
+      # has no screenshot comparisons, and the Latin text and lone U+1F4DE emoji
+      # in the content are covered by fonts-liberation, DejaVu and
+      # fonts-noto-color-emoji, all preinstalled regardless of this step.
       #
-      # It was not buying the libraries it looks like it buys. In the last run
-      # that got through it (32185249296), all 21 packages Playwright lists for
-      # Chromium - libnss3, libgbm1, libasound2t64, the rest - plus xvfb were
-      # already the newest version, because the hosted image preinstalls Chrome,
-      # Chromium, Edge and Firefox, which depend on them. The only thing it
-      # installed was 21 MB of fonts from Playwright's `tools` group: CJK, Thai,
-      # Cyrillic and Unifont fallbacks. Nothing here asserts on a glyph: the
-      # suite compares no screenshots, only DOM text and accessible names, and
-      # the images it does capture are failure artefacts. So dropping the fonts
-      # cannot change a test result, and it cannot change what a visitor sees
-      # either, since production type resolves on the visitor's own device.
+      # What it did buy was a coin flip in the critical path. In run
+      # 32206562036 the two matrix legs drew different Ubuntu mirrors: the same
+      # apt work took 19s on one leg and, at 112 kB/s, blew a five-minute bound
+      # on the other, failing the job before a single test ran.
       #
-      # Trade-off worth knowing before re-adding it: without those fallbacks a
-      # bare font set renders the UI's ▸ ★ ☰ ✕ as tofu, so a future visual test
-      # should pin the fonts it needs itself rather than restore a step whose
-      # cost is a mirror round trip on every run. A library genuinely going
-      # missing still fails loudly - Playwright checks at launch and names both
-      # the missing libraries and the command to install them.
+      # Should a future runner image drop one of those 21 libraries, Chromium
+      # fails at launch and Playwright's error names both the library and the
+      # `install-deps` command that restores it - a loud, deterministic failure
+      # rather than a slow one decided by which mirror the runner drew.
 
       # Chromium only: every project in playwright.config.ts is Chromium-backed,
       # so an unqualified install would also download Firefox and WebKit that
