@@ -52,17 +52,42 @@ test.describe('Home page', () => {
     expect(clip.scrollWidth).toBe(clip.clientWidth);
   });
 
-  test('hero parallax rule emits and stays wired to the framing box', async ({
-    page,
-  }, testInfo) => {
-    // a Tailwind-adjacent class that stops emitting leaves the hero looking
-    // correct at rest, so nothing else in this suite would notice it going.
+  test('hero parallax actually moves the framing box on scroll', async ({ page }, testInfo) => {
+    const box = page.locator('section:has(h1) .hero-parallax');
+
     // The Mobile project asserts the other side: the scoping guard is what
     // keeps the narrow hero exactly as it shipped, so it is worth a check too
-    await expect(page.locator('section:has(h1) .hero-parallax')).toHaveCSS(
-      'animation-name',
-      testInfo.project.name === 'Mobile' ? 'none' : 'hero-drift',
-    );
+    if (testInfo.project.name === 'Mobile') {
+      await expect(box).toHaveCSS('animation-name', 'none');
+      return;
+    }
+
+    // Asserting animation-name alone proves the rule is wired, not that
+    // scrolling moves anything: it still passes with animation-timeline
+    // dropped, with a time-based timeline, or with the keyframes inverted, all
+    // of which leave the hero looking correct at rest. So drive the real
+    // scroller and watch the framing box travel instead.
+    const translateY = () =>
+      box.evaluate((el) => {
+        const t = getComputedStyle(el).transform;
+        return t === 'none' ? 0 : new DOMMatrixReadOnly(t).f;
+      });
+
+    const atRest = await translateY();
+    expect(atRest).toBe(0);
+
+    await page.evaluate(() => window.scrollTo(0, window.innerHeight));
+
+    // a scroll-driven animation settles on a later frame, so poll rather than
+    // read once
+    await expect.poll(translateY).toBeGreaterThan(atRest);
+    expect(await translateY()).toBeGreaterThan(0);
+
+    // Scrolling back must take the travel with it. A time-based timeline also
+    // "increases" while the test waits, so without this it could pass on
+    // elapsed time alone; only a scroll-driven one returns to rest.
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await expect.poll(translateY).toBe(0);
   });
 
   test('hero parallax does not run under reduced motion', async ({ page }, testInfo) => {
