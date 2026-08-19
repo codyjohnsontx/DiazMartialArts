@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-import { MARKETING_NAV_LINKS, ONDEMAND_URL, PUBLIC_PAGES } from '../fixtures/site';
+import { MARKETING_NAV_LINKS, NAV_LINKS, PUBLIC_PAGES } from '../fixtures/site';
 
 const publicPaths = PUBLIC_PAGES.map((p) => p.path);
 
@@ -28,24 +28,28 @@ test.describe('Navigation', () => {
     });
   }
 
-  test('header Member Login points straight at the configured member app', async ({
+  /**
+   * The header carries the nav links and one call to action, and nothing else.
+   * It used to carry a "Member Login" control too, shown only when
+   * NEXT_PUBLIC_ONDEMAND_URL named a deployed member app; that control is gone,
+   * so this asserts the shape unconditionally rather than only on the
+   * unconfigured matrix leg the old pair of tests split between them. On Demand
+   * stays as an ordinary nav link, which is now the site's only member entry
+   * point.
+   */
+  test('desktop header shows the nav links and one Book Free Trial call to action', async ({
     page,
   }, testInfo) => {
     test.skip(testInfo.project.name === 'Mobile', 'Desktop nav is hidden on mobile viewports.');
-    test.skip(!ONDEMAND_URL, 'NEXT_PUBLIC_ONDEMAND_URL is unset or still the placeholder.');
     await page.goto('/');
-    await expect(page.getByRole('link', { name: 'Member Login' }).first()).toHaveAttribute(
-      'href',
-      ONDEMAND_URL!,
-    );
-  });
 
-  test('header omits Member Login when no member app is configured', async ({ page }) => {
-    test.skip(Boolean(ONDEMAND_URL), 'NEXT_PUBLIC_ONDEMAND_URL points at a member app.');
-    await page.goto('/');
+    const nav = page.getByRole('navigation', { name: 'Primary' });
+    await expect(nav.getByRole('link')).toHaveText(NAV_LINKS.map((link) => link.label));
+
+    const header = page.getByRole('banner');
+    await expect(header.getByRole('link', { name: 'Book Free Trial' })).toHaveCount(1);
+    await expect(header.getByRole('link', { name: 'Book Free Trial' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Member Login' })).toHaveCount(0);
-    // The public call to action must survive either way.
-    await expect(page.getByRole('link', { name: 'Book Free Trial' }).first()).toBeVisible();
   });
 
   test('footer Privacy link → /privacy', async ({ page }) => {

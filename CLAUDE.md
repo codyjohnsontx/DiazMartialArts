@@ -127,7 +127,8 @@ marking work complete or CI fails on unformatted files.
   sitemap and robots URLs. Only an operator-set NEXT_PUBLIC_SITE_URL is
   validated (http/https, no query or fragment); the derived bases are just
   slash-stripped, because `readSiteUrl` also runs in the client bundle through
-  `components/Header.tsx` and must not throw on a base no visitor can correct.
+  `components/ContactForm.tsx` and `components/OndemandWaitlistForm.tsx`, and
+  must not throw on a base no visitor can correct.
   The `normaliseConfiguredSiteUrl` docblock in `lib/env.ts` holds the rationale
   and `tests/unit/siteUrl.test.ts` guards it.
 - `next/image` optimises on request in `next dev` and `next start` alike -

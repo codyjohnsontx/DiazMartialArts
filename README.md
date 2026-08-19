@@ -97,14 +97,17 @@ dependency. The two run on different domains, so a session here would not carry
 over to the member app anyway.
 
 `NEXT_PUBLIC_ONDEMAND_URL` is the single source of that destination; nothing
-hardcodes it. The header "Member Login" control is a plain outbound link to it.
+hardcodes it. `/ondemand` is the site's only member entry point: the header nav
+and the contact page link to that local route, never straight to the member app,
+so the hand-off is resolved in one place. The header and contact page also
+carried a separate "Member Login" button that linked out to the member app
+directly. It was removed once that app's hostname proved unresolvable, rather
+than left behind to reappear the next time the variable was set.
 
 That app is not deployed yet, so `.env.example` ships a placeholder on the
-reserved `.invalid` TLD. While the variable is unset or still the placeholder the
-site hides its member entry points rather than linking somewhere dead:
-
-- the header and contact page drop the "Member Login" control
-- `/ondemand` shows the coming soon page instead of forwarding
+reserved `.invalid` TLD. While the variable is unset or still the placeholder,
+`/ondemand` shows the coming soon page instead of forwarding, so the route never
+dead-ends on a host that does not exist.
 
 Replace the placeholder with the real URL once the app is deployed.
 

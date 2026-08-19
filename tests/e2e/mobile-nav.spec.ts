@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-import { NAV_LINKS, ONDEMAND_URL } from '../fixtures/site';
+import { NAV_LINKS } from '../fixtures/site';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -46,20 +46,22 @@ test.describe('Mobile navigation', () => {
     await expect(toggle).toHaveAttribute('aria-expanded', 'false');
   });
 
-  test('mobile menu Member Login points at the configured member app', async ({ page }) => {
-    test.skip(!ONDEMAND_URL, 'NEXT_PUBLIC_ONDEMAND_URL is unset or still the placeholder.');
-    await page.getByRole('button', { name: 'Toggle menu' }).click();
-    await expect(
-      page.locator('#mobile-nav').getByRole('link', { name: 'Member Login' }),
-    ).toHaveAttribute('href', ONDEMAND_URL!);
-  });
-
-  test('mobile menu omits Member Login when no member app is configured', async ({ page }) => {
-    test.skip(Boolean(ONDEMAND_URL), 'NEXT_PUBLIC_ONDEMAND_URL points at a member app.');
+  /**
+   * The mobile menu used to carry a "Member Login" control alongside the call to
+   * action, shown only when NEXT_PUBLIC_ONDEMAND_URL named a deployed member
+   * app. That control is gone, so this asserts the shape unconditionally rather
+   * than only on the unconfigured matrix leg the old pair of tests split between
+   * them. On Demand stays in the link list above, which is now the site's only
+   * member entry point.
+   */
+  test('mobile menu ends in one Book Free Trial call to action and no Member Login', async ({
+    page,
+  }) => {
     await page.getByRole('button', { name: 'Toggle menu' }).click();
     const mobileNav = page.locator('#mobile-nav');
-    await expect(mobileNav.getByRole('link', { name: 'Member Login' })).toHaveCount(0);
+    await expect(mobileNav.getByRole('link', { name: 'Book Free Trial' })).toHaveCount(1);
     await expect(mobileNav.getByRole('link', { name: 'Book Free Trial' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Member Login' })).toHaveCount(0);
   });
 
   test('pressing Escape closes the menu', async ({ page }) => {
