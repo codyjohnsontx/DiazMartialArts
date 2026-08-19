@@ -113,10 +113,13 @@ Replace the placeholder with the real URL once the app is deployed.
 
 Routes:
 
-- `/ondemand` forwards every visitor to the Diaz on Demand app, or renders the
-  coming-soon page when `ONDEMAND_COMING_SOON=true`. The forward is a real HTTP
-  redirect declared in `next.config.mjs`, not a page-level `redirect()` — see the
-  streaming caveat in `CLAUDE.md`.
+- `/ondemand` forwards every visitor to the Diaz on Demand app, and renders the
+  coming-soon page instead whenever there is nowhere to forward them. Two
+  separate conditions produce that page: `NEXT_PUBLIC_ONDEMAND_URL` being unset
+  or still the `.invalid` placeholder, which is what production runs today, or
+  `ONDEMAND_COMING_SOON=true`, which holds the page even once a real URL is
+  configured. The forward is a real HTTP redirect declared in `next.config.mjs`,
+  not a page-level `redirect()` - see the streaming caveat in `CLAUDE.md`.
 - `/sign-in` and `/sign-up` are redirects to `/ondemand`, kept only so older
   links and bookmarks do not 404.
 

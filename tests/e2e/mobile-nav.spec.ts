@@ -30,11 +30,22 @@ test.describe('Mobile navigation', () => {
     await expect(toggle).toHaveAttribute('aria-expanded', 'true');
   });
 
-  test('mobile nav contains all primary links including On Demand', async ({ page }) => {
+  /**
+   * Destinations, not just labels. The click-through test below covers one
+   * marketing link; On Demand cannot be clicked through, because on the
+   * configured matrix leg /ondemand is an HTTP redirect off-site. With the
+   * member-app button gone this href is the whole remaining member entry
+   * contract, so a repointed link has to fail here.
+   */
+  test('mobile nav contains all primary links including On Demand, each pointing at its route', async ({
+    page,
+  }) => {
     await page.getByRole('button', { name: 'Toggle menu' }).click();
     const mobileNav = page.locator('#mobile-nav');
-    for (const { label } of NAV_LINKS) {
-      await expect(mobileNav.getByRole('link', { name: label })).toBeVisible();
+    for (const { href, label } of NAV_LINKS) {
+      const link = mobileNav.getByRole('link', { name: label });
+      await expect(link).toBeVisible();
+      await expect(link).toHaveAttribute('href', href);
     }
   });
 
@@ -59,8 +70,10 @@ test.describe('Mobile navigation', () => {
   }) => {
     await page.getByRole('button', { name: 'Toggle menu' }).click();
     const mobileNav = page.locator('#mobile-nav');
-    await expect(mobileNav.getByRole('link', { name: 'Book Free Trial' })).toHaveCount(1);
-    await expect(mobileNav.getByRole('link', { name: 'Book Free Trial' })).toBeVisible();
+    const cta = mobileNav.getByRole('link', { name: 'Book Free Trial' });
+    await expect(cta).toHaveCount(1);
+    await expect(cta).toBeVisible();
+    await expect(cta).toHaveAttribute('href', '/contact');
     await expect(page.getByRole('link', { name: 'Member Login' })).toHaveCount(0);
   });
 
