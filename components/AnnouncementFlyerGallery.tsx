@@ -15,6 +15,12 @@ export type AnnouncementFlyer = {
   tag: string;
   date: string;
   category: FlyerCategory;
+  /**
+   * The flyer file's true intrinsic pixel size, not a layout hint: next/image
+   * reserves the box from these, so a wrong pair ships a layout shift.
+   * `tests/e2e/public-pages.spec.ts` reads each flyer's own header bytes and
+   * fails, naming the file, when the two disagree.
+   */
   width: number;
   height: number;
 };
