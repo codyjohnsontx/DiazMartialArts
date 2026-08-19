@@ -53,12 +53,13 @@ test.describe('Announcements page details', () => {
     // `sharp` package installed the optimizer falls back to a WebAssembly
     // encoder whose worker pool is `min(cpus - 1, 6)` wide, so on a small CI
     // runner the whole page's variants encode more or less one at a time.
-    // Measured cold, serialized, over the fourteen variants this page asks for:
-    // ~12s on an idle developer machine and ~27s with the CPU contended. A
-    // flyer scrolled into view queues behind whatever is already encoding, so
-    // any fixed decode deadline is really an assertion about how busy the box
-    // is. Two such deadlines were raised here before; a third would not have
-    // converged either.
+    // Measured cold and serialized over the fourteen variants this page asked
+    // for when it carried thirteen flyers: ~12s on an idle developer machine
+    // and ~27s with the CPU contended, and the feed is content, so its length
+    // moves. A flyer scrolled into view queues behind whatever is already
+    // encoding, so any fixed decode deadline is really an assertion about how
+    // busy the box is. Two such deadlines were raised here before; a third
+    // would not have converged either.
     //
     // So assert what the page is actually responsible for instead: that the
     // featured flyer loads eagerly and the rest lazily, and that every flyer

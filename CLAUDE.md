@@ -134,13 +134,12 @@ marking work complete or CI fails on unformatted files.
   `next build` does not pre-generate those variants - and with the optional
   `sharp` package absent the optimiser falls back to a WebAssembly encoder whose
   worker pool is only `min(cpus - 1, 6)` wide, so a small CI runner encodes a
-  page's variants roughly one at a time. Cold and serialised, the fourteen
-  variants /announcements asks for take ~12s on an idle developer machine and
-  ~27s with the CPU contended. An end-to-end test that waits for an image to
-  decode therefore asserts how busy the box is: deadlines of 5s, 20s and 90s
-  each failed in CI, every time on all three attempts. Assert instead that the
-  referenced file is served and is a readable image - see the note in
-  `tests/e2e/public-pages.spec.ts` and the header reader in
+  page's variants roughly one at a time - tens of seconds cold for a feed of a
+  dozen flyers. An end-to-end test that waits for an image to decode therefore
+  asserts how busy the box is: deadlines of 5s, 20s and 90s each failed in CI,
+  every time on all three attempts. Assert instead that the referenced file is
+  served and is a readable image - the note in `tests/e2e/public-pages.spec.ts`
+  owns the measurement and the reasoning, and the header reader is
   `tests/fixtures/imageSize.ts`. Note also that Playwright discards the
   webServer's output, so the dev server's own errors never reach the CI log.
 
