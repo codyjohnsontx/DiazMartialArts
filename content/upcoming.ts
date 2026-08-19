@@ -45,8 +45,11 @@ export type UpcomingItem = {
 // entry with an `end` finishes at that exact time.
 export const upcomingItems: UpcomingItem[] = [
   {
-    // Source: the August 2026 panel of public/announcements/july-2026-events-calendar.jpg
-    // ("26-27 Stripe Testing (White Stripe)"). That panel gives no time of day.
+    // Source: the August 2026 panel of the July 2026 events calendar flyer
+    // ("26-27 Stripe Testing (White Stripe)"), which gave no time of day. That
+    // flyer has since been retired from /announcements along with the rest of
+    // the June and July set; the event it printed still runs, so the entry
+    // stays until the date passes.
     id: 'stripe-testing-white-stripe-2026-08',
     title: 'Stripe Testing (White Stripe)',
     start: '2026-08-26T00:00:00Z',

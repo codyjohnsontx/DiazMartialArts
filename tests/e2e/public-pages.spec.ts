@@ -30,9 +30,11 @@ test.describe('Announcements page details', () => {
   });
 
   test('carries no class-schedule flyer and loads every flyer image', async ({ page }) => {
-    // Thirteen flyers, each allowed the wait below, need more than the 30s
-    // default so the test reports the flyer that failed rather than dying on
-    // its own clock partway down the page.
+    // The flyers are allowed the wait below one after another, so the test
+    // needs more than the 30s default to report the flyer that failed rather
+    // than dying on its own clock partway down the page. Budgeted from the
+    // per-flyer wait rather than a flyer count, so adding one to the feed does
+    // not quietly reintroduce that failure mode.
     test.setTimeout(120_000);
 
     await page.goto('/announcements');
@@ -70,21 +72,43 @@ test.describe('Announcements page details', () => {
     }
   });
 
-  test('every category filter still lists announcements', async ({ page }) => {
+  test('the category filters partition the feed and own their empty state', async ({ page }) => {
+    // This used to assert every category lists something. That held only while
+    // the feed happened to span all four, and it stopped being true the first
+    // time the flyers were replaced with a set that did not - the feed is
+    // whatever the gym is currently running, and no category is guaranteed a
+    // member. What the filter owes a visitor regardless of the content is
+    // asserted instead, and more strictly than before.
     await page.goto('/announcements');
 
+    const articles = page.locator('main article');
+    const emptyState = page.getByText(/No announcements in this category/i);
+
+    const allCount = await articles.count();
+    expect(allCount).toBeGreaterThan(0);
+    await expect(emptyState).toHaveCount(0);
+
+    let selected = 0;
     for (const category of ['Events', 'Promos', 'Testings', 'Closures']) {
       await page.getByRole('button', { name: new RegExp(`^${category}$`, 'i') }).click();
-      await expect(page.locator('main article')).not.toHaveCount(0);
-      await expect(page.getByText(/No announcements in this category/i)).toHaveCount(0);
+      const count = await articles.count();
+      selected += count;
 
-      // The two assertions above would also hold if clicking a filter did
-      // nothing, so prove the filter actually excludes. A monthly calendar is
-      // an Event and will never be a Promo, however the feed grows later.
-      if (category === 'Promos') {
-        await expect(page.getByRole('heading', { name: 'June Events Calendar' })).toHaveCount(0);
+      // The empty state is the only thing a visitor gets for a category with no
+      // flyers, so it has to track the count in both directions: present when
+      // the filter selects nothing, absent the moment it selects something.
+      if (count === 0) {
+        await expect(emptyState).toBeVisible();
+      } else {
+        await expect(emptyState).toHaveCount(0);
       }
     }
+
+    // Each flyer carries exactly one category, so the four filtered views
+    // partition the feed. This is what proves a filter actually excludes: were
+    // clicking one a no-op, every view would show the whole feed and the total
+    // would overshoot.
+    expect(selected).toBe(allCount);
   });
 });
 
