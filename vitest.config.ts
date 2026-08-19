@@ -20,6 +20,7 @@ export default defineConfig({
       reporter: ['text', 'html'],
       include: [
         'lib/**/*.ts',
+        'components/AnnouncementFlyerGallery.tsx',
         'components/Button.tsx',
         'components/ContactForm.tsx',
         'components/FaqAccordion.tsx',
