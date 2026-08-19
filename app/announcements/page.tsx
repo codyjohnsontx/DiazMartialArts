@@ -12,7 +12,7 @@ import { pageMetadata } from '@/lib/seo';
 const flyers: AnnouncementFlyer[] = [
   {
     id: 'back-to-school-special',
-    src: '/announcements/backToSchool.jpeg',
+    src: '/announcements/back-to-school-special.jpeg',
     alt: 'Back to School special: $60 to start a child at Diaz Martial Arts, including uniform and belt. Lil Dragons Karate for ages 4 to 6, Karate Kids for ages 7 to 11. The flyer prints no end date.',
     title: 'Back to School Special',
     tag: 'Kids',
@@ -23,7 +23,7 @@ const flyers: AnnouncementFlyer[] = [
   },
   {
     id: 'jiu-jitsu-special',
-    src: '/announcements/jitsSpecial.jpeg',
+    src: '/announcements/jiu-jitsu-special.jpeg',
     alt: 'Jiu Jitsu special: $130 to get started at Diaz Martial Arts, including a jiu jitsu gi and two private lessons. Call 512-392-4763 to make an appointment. The flyer prints no end date.',
     title: 'Jiu Jitsu Special',
     tag: 'BJJ',
@@ -34,7 +34,7 @@ const flyers: AnnouncementFlyer[] = [
   },
   {
     id: 'muay-thai-special',
-    src: '/announcements/muayThaiSpecial.jpeg',
+    src: '/announcements/muay-thai-special.jpeg',
     alt: 'Muay Thai special: $60 to get started at Diaz Martial Arts, including 16 ounce gloves and two private lessons. Call 512-392-4763 to make an appointment. The flyer prints no end date.',
     title: 'Muay Thai Special',
     tag: 'Muay Thai',

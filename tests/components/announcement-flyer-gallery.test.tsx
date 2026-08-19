@@ -61,7 +61,7 @@ const flyers: AnnouncementFlyer[] = [
 
 function filterRow() {
   return screen
-    .getAllByRole('button')
+    .queryAllByRole('button')
     .filter((button) => button.hasAttribute('aria-pressed'))
     .map((button) => button.textContent);
 }
@@ -131,10 +131,23 @@ describe('AnnouncementFlyerGallery', () => {
     expect(screen.queryByRole('heading', { name: 'Holiday Closure' })).not.toBeInTheDocument();
   });
 
-  it('offers nothing but All, and says so, when the feed is empty', () => {
+  it('offers no filter row at all when the feed carries a single category', () => {
+    const promos = flyers.filter((f) => f.category === 'Promos');
+    render(<AnnouncementFlyerGallery flyers={promos} />);
+
+    // Every button such a row could offer - All, and the one category - selects
+    // the whole feed, so the row would advertise a choice that changes nothing.
+    expect(filterRow()).toEqual([]);
+    for (const flyer of promos) {
+      expect(screen.getByRole('heading', { name: flyer.title })).toBeVisible();
+    }
+    expect(screen.queryByText(/No announcements in this category/i)).not.toBeInTheDocument();
+  });
+
+  it('offers no filter row, and says so, when the feed is empty', () => {
     render(<AnnouncementFlyerGallery flyers={[]} />);
 
-    expect(filterRow()).toEqual(['All']);
+    expect(filterRow()).toEqual([]);
     expect(screen.getByText(/No announcements in this category/i)).toBeVisible();
   });
 
@@ -147,5 +160,35 @@ describe('AnnouncementFlyerGallery', () => {
     const dialog = screen.getByRole('dialog');
     expect(dialog).toHaveAttribute('aria-label', 'Open Mat Night');
     expect(within(dialog).getByAltText(flyers[1].alt)).toBeVisible();
+  });
+
+  // The two halves below have to hold together. An `aria-label` wins the
+  // accessible name outright and assistive technology presents a button as a
+  // single node, so the alt on the nested image is not announced: naming the
+  // control after the flyer without describing it elsewhere silently drops the
+  // offer - the price, what it includes, the ages, the phone number - from the
+  // card, and these flyers ARE the announcement.
+  it('keeps the enlarge control short-named while still describing the offer', () => {
+    render(<AnnouncementFlyerGallery flyers={flyers} />);
+
+    for (const flyer of flyers) {
+      const enlarge = screen.getByRole('button', { name: `Enlarge ${flyer.title}` });
+      expect(enlarge).toHaveAccessibleName(`Enlarge ${flyer.title}`);
+      expect(enlarge).toHaveAccessibleDescription(flyer.alt);
+    }
+  });
+
+  it('leaves the description visually hidden rather than out of the accessibility tree', () => {
+    render(<AnnouncementFlyerGallery flyers={flyers} />);
+
+    const description = document.getElementById(`${flyers[0].id}-description`);
+
+    expect(description).not.toBeNull();
+    expect(description).toHaveTextContent(flyers[0].alt);
+    // `sr-only` clips the node without leaving the accessibility tree; `hidden`,
+    // `display: none` and `aria-hidden` would each announce nothing at all.
+    expect(description).toHaveClass('sr-only');
+    expect(description).not.toHaveAttribute('aria-hidden');
+    expect(description).toBeVisible();
   });
 });

@@ -32,7 +32,8 @@ type AnnouncementFlyerGalleryProps = {
 // The order the filter row shows categories in, independent of the order the
 // feed happens to list them. Only the ones the feed actually carries are
 // rendered, so the row never advertises a button whose only content is the
-// empty state.
+// empty state, and a feed that carries a single category renders no row at all
+// - every button there would select the whole feed.
 const categoryOrder: FlyerCategory[] = ['Events', 'Promos', 'Testings', 'Closures'];
 
 export function AnnouncementFlyerGallery({ flyers }: AnnouncementFlyerGalleryProps) {
@@ -111,27 +112,29 @@ export function AnnouncementFlyerGallery({ flyers }: AnnouncementFlyerGalleryPro
   return (
     <>
       {/* FILTERS */}
-      <div className="mb-8 flex flex-wrap gap-2">
-        {filters.map((t) => {
-          const active = filter === t;
-          return (
-            <button
-              key={t}
-              type="button"
-              aria-pressed={active}
-              onClick={() => setFilter(t)}
-              className={cn(
-                'rounded-full px-3.5 py-2 text-xs font-bold uppercase tracking-[0.06em] transition',
-                active
-                  ? 'border border-ink bg-ink text-sand'
-                  : 'border border-black/20 bg-transparent text-black/70 hover:border-black/40',
-              )}
-            >
-              {t}
-            </button>
-          );
-        })}
-      </div>
+      {filters.length > 2 && (
+        <div className="mb-8 flex flex-wrap gap-2">
+          {filters.map((t) => {
+            const active = filter === t;
+            return (
+              <button
+                key={t}
+                type="button"
+                aria-pressed={active}
+                onClick={() => setFilter(t)}
+                className={cn(
+                  'rounded-full px-3.5 py-2 text-xs font-bold uppercase tracking-[0.06em] transition',
+                  active
+                    ? 'border border-ink bg-ink text-sand'
+                    : 'border border-black/20 bg-transparent text-black/70 hover:border-black/40',
+                )}
+              >
+                {t}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* GRID */}
       <div className="grid gap-8 md:grid-cols-2">
@@ -148,6 +151,7 @@ export function AnnouncementFlyerGallery({ flyers }: AnnouncementFlyerGalleryPro
               <button
                 type="button"
                 aria-label={`Enlarge ${flyer.title}`}
+                aria-describedby={`${flyer.id}-description`}
                 onClick={() => openFlyer(flyer.id)}
                 className="group relative block w-full cursor-zoom-in overflow-hidden bg-white"
               >
@@ -176,6 +180,9 @@ export function AnnouncementFlyerGallery({ flyers }: AnnouncementFlyerGalleryPro
                   {flyer.tag}
                 </span>
               </button>
+              <p id={`${flyer.id}-description`} className="sr-only">
+                {flyer.alt}
+              </p>
               <div className="border-t border-black/10 p-4">
                 <h3
                   className={cn(
