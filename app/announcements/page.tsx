@@ -65,7 +65,7 @@ export default function AnnouncementsPage() {
       <section className="border-b border-black/10">
         <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
           <div>
-            <Eyebrow>Events calendar</Eyebrow>
+            <Eyebrow>What&apos;s happening</Eyebrow>
             <h1 className="display mt-5 text-5xl sm:text-7xl lg:text-[80px]">Announcements</h1>
           </div>
         </div>

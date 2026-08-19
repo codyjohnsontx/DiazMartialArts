@@ -23,7 +23,11 @@ type AnnouncementFlyerGalleryProps = {
   flyers: AnnouncementFlyer[];
 };
 
-const filters: ('All' | FlyerCategory)[] = ['All', 'Events', 'Promos', 'Testings', 'Closures'];
+// The order the filter row shows categories in, independent of the order the
+// feed happens to list them. Only the ones the feed actually carries are
+// rendered, so the row never advertises a button whose only content is the
+// empty state.
+const categoryOrder: FlyerCategory[] = ['Events', 'Promos', 'Testings', 'Closures'];
 
 export function AnnouncementFlyerGallery({ flyers }: AnnouncementFlyerGalleryProps) {
   const [filter, setFilter] = useState<'All' | FlyerCategory>('All');
@@ -31,6 +35,11 @@ export function AnnouncementFlyerGallery({ flyers }: AnnouncementFlyerGalleryPro
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
+
+  const filters = useMemo<('All' | FlyerCategory)[]>(
+    () => ['All', ...categoryOrder.filter((c) => flyers.some((f) => f.category === c))],
+    [flyers],
+  );
 
   const visible = useMemo(
     () => (filter === 'All' ? flyers : flyers.filter((f) => f.category === filter)),
@@ -132,7 +141,7 @@ export function AnnouncementFlyerGallery({ flyers }: AnnouncementFlyerGalleryPro
             >
               <button
                 type="button"
-                aria-label={`Enlarge ${flyer.alt}`}
+                aria-label={`Enlarge ${flyer.title}`}
                 onClick={() => openFlyer(flyer.id)}
                 className="group relative block w-full cursor-zoom-in overflow-hidden bg-white"
               >
@@ -197,7 +206,7 @@ export function AnnouncementFlyerGallery({ flyers }: AnnouncementFlyerGalleryPro
           ref={dialogRef}
           role="dialog"
           aria-modal="true"
-          aria-label={activeFlyer.alt}
+          aria-label={activeFlyer.title}
           tabIndex={0}
           className="fixed inset-0 z-[100] flex cursor-zoom-out items-center justify-center bg-black/85 p-4 sm:p-8"
           onClick={closeFlyer}

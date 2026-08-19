@@ -84,15 +84,33 @@ test.describe('Announcements page details', () => {
     const articles = page.locator('main article');
     const emptyState = page.getByText(/No announcements in this category/i);
 
+    // The row lists only the categories the feed carries, so walk what is
+    // rendered rather than a fixed set of names that need not all be there.
+    const filterButtons = page.locator('main button[aria-pressed]');
+    await expect(filterButtons.first()).toHaveText(/^All$/i);
+    const categories = (await filterButtons.allTextContents()).slice(1).map((t) => t.trim());
+    expect(categories.length).toBeGreaterThan(0);
+
     const allCount = await articles.count();
     expect(allCount).toBeGreaterThan(0);
     await expect(emptyState).toHaveCount(0);
 
     let selected = 0;
-    for (const category of ['Events', 'Promos', 'Testings', 'Closures']) {
-      await page.getByRole('button', { name: new RegExp(`^${category}$`, 'i') }).click();
+    const dead: string[] = [];
+    for (const category of categories) {
+      const button = page.getByRole('button', { name: new RegExp(`^${category}$`, 'i') });
+      await button.click();
+
+      // count() does not retry, so read it only once the click has demonstrably
+      // landed. These specs run against `next dev`, where hydration can trail
+      // the load event; a click that arrives before it is swallowed, and the
+      // unfiltered count read in its place would surface much later as a bogus
+      // partition mismatch instead of the timing miss it actually was.
+      await expect(button).toHaveAttribute('aria-pressed', 'true');
+
       const count = await articles.count();
       selected += count;
+      if (count === 0) dead.push(category);
 
       // The empty state is the only thing a visitor gets for a category with no
       // flyers, so it has to track the count in both directions: present when
@@ -104,11 +122,16 @@ test.describe('Announcements page details', () => {
       }
     }
 
-    // Each flyer carries exactly one category, so the four filtered views
-    // partition the feed. This is what proves a filter actually excludes: were
-    // clicking one a no-op, every view would show the whole feed and the total
-    // would overshoot.
+    // Each flyer carries exactly one category, so the filtered views partition
+    // the feed. This is what proves a filter actually excludes: were clicking
+    // one a no-op, every view would show the whole feed and the total would
+    // overshoot. It bites hardest when the feed spans several categories, which
+    // is exactly when a broken filter would be least visible.
     expect(selected).toBe(allCount);
+
+    // The row is derived from the categories present, so a button that selects
+    // nothing means it is advertising a category the feed does not carry.
+    expect(dead).toEqual([]);
   });
 });
 

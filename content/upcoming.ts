@@ -30,12 +30,15 @@ export type UpcomingItem = {
 // tests/unit/upcoming-content.test.ts fails as soon as any entry below is over,
 // so that staleness is loud instead of silent.
 //
-// To update: take dates from the current monthly events calendar on
-// /announcements (app/announcements/page.tsx, images in public/announcements/).
-// Genuine scheduled events only - never a placeholder, and never a guessed date
-// or time. If a flyer gives no time, set allDay rather than inventing one; if it
-// gives no date, leave the event out. An empty list is a supported state: the
-// section then renders a deliberate empty state pointing at the weekly schedule.
+// To update: there is no settled source for the next batch. This list was filled
+// from the monthly events calendar flyer on /announcements; that calendar is no
+// longer published there, and what replaces it as the source of dates is still an
+// open question. Until it is answered, take a date only from something that
+// actually prints it - genuine scheduled events only, never a placeholder, and
+// never a guessed date or time. If the source gives no time, set allDay rather
+// than inventing one; if it gives no date, leave the event out. An empty list is a
+// supported state: the section then renders a deliberate empty state pointing at
+// the weekly schedule, and that is the right answer while nothing is confirmed.
 //
 // `end` is optional and never guessed either. Leave it off and the entry runs
 // through the end of the day it starts on, at midnight at the gym, so an event

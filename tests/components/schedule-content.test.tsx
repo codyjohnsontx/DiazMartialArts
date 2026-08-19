@@ -142,7 +142,7 @@ describe('ScheduleContent', () => {
       'href',
       '/contact',
     );
-    expect(screen.getByRole('link', { name: /Open monthly calendar/i })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /Open announcements/i })).toHaveAttribute(
       'href',
       '/announcements',
     );
