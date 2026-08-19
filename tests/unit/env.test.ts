@@ -69,7 +69,7 @@ describe('getAppEnv', () => {
     const { getAppEnv } = await loadEnv();
 
     expect(getAppEnv()).toMatchObject({
-      siteUrl: 'https://diaz.example/',
+      siteUrl: 'https://diaz.example',
       ondemandUrl: 'https://vod.example.com/',
       ondemandComingSoon: true,
     });

@@ -35,7 +35,9 @@ Site runs at `http://localhost:3000`.
 
 Environment validation notes:
 
-- `NEXT_PUBLIC_SITE_URL` must be a full absolute URL in Preview/Production.
+- `NEXT_PUBLIC_SITE_URL` must be a full absolute URL in Preview/Production, using
+  `http:` or `https:` and carrying no query string or fragment. Trailing slashes
+  are stripped, so the URLs the site builds never double up.
 - `NEXT_PUBLIC_ONDEMAND_URL`, if set, must also be a full absolute URL.
 - Invalid site/on-demand URL env vars fail early with explicit messages.
 - No environment variable is required to boot the public site locally.
