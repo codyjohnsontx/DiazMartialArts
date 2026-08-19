@@ -117,6 +117,19 @@ marking work complete or CI fails on unformatted files.
   opacity value. When the guard trips, fix the class, not the config: adding the
   off-scale value to `theme.opacity` in `tailwind.config.ts` legalises that one
   typo and leaves the next one silent.
+- `site.url` (from `readSiteUrl` in `lib/env.ts`) never carries a trailing
+  slash, so on a bare-origin base both `${site.url}/sitemap.xml` and
+  `new URL(path, site.url)` are safe. The two idioms diverge once the base
+  carries a path, because `new URL('/programs', base)` resolves against the
+  origin and drops that path. Keep the normalisation in `readSiteUrl` rather
+  than teaching each call site to cope: nothing fails the build when the base
+  is wrong, so a bad value only surfaces as doubled slashes in the rendered
+  sitemap and robots URLs. Only an operator-set NEXT_PUBLIC_SITE_URL is
+  validated (http/https, no query or fragment); the derived bases are just
+  slash-stripped, because `readSiteUrl` also runs in the client bundle through
+  `components/Header.tsx` and must not throw on a base no visitor can correct.
+  The `normaliseConfiguredSiteUrl` docblock in `lib/env.ts` holds the rationale
+  and `tests/unit/siteUrl.test.ts` guards it.
 - The `prefers-reduced-motion: reduce` block in `app/globals.css` does not stop
   a scroll-driven animation. It only neutralises `animation-duration`, and an
   `animation-timeline` animation takes its position from the scroller, so
