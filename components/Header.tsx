@@ -4,17 +4,10 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { getPublicEnv } from '@/lib/env';
 import { cn } from '@/lib/utils';
 
 import { Button } from './Button';
 import { Crest } from './Crest';
-
-// Members live in the separate Diaz on Demand app on another domain, so this is a
-// plain outbound link rather than a session-aware control. Until that app has a
-// URL the control is omitted entirely: a visible login that leads nowhere is
-// worse than no login at all.
-const { ondemandUrl } = getPublicEnv();
 
 const navItems = [
   { href: '/programs', label: 'Programs' },
@@ -85,11 +78,6 @@ export function Header() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
-          {ondemandUrl && (
-            <Button href={ondemandUrl} variant="ghost">
-              Member Login
-            </Button>
-          )}
           <Button href="/contact">Book Free Trial</Button>
         </div>
 
@@ -131,16 +119,6 @@ export function Header() {
             </Link>
           ))}
           <div className="mt-2 grid gap-2">
-            {ondemandUrl && (
-              <Button
-                href={ondemandUrl}
-                className="w-full"
-                variant="ghost"
-                onClick={() => setOpen(false)}
-              >
-                Member Login
-              </Button>
-            )}
             <Button href="/contact" className="w-full" onClick={() => setOpen(false)}>
               Book Free Trial
             </Button>

@@ -97,23 +97,29 @@ dependency. The two run on different domains, so a session here would not carry
 over to the member app anyway.
 
 `NEXT_PUBLIC_ONDEMAND_URL` is the single source of that destination; nothing
-hardcodes it. The header "Member Login" control is a plain outbound link to it.
+hardcodes it. `/ondemand` is the site's only member entry point: the header nav
+and the contact page link to that local route, never straight to the member app,
+so the hand-off is resolved in one place. The header and contact page also
+carried a separate "Member Login" button that linked out to the member app
+directly. It was removed once that app's hostname proved unresolvable, rather
+than left behind to reappear the next time the variable was set.
 
 That app is not deployed yet, so `.env.example` ships a placeholder on the
-reserved `.invalid` TLD. While the variable is unset or still the placeholder the
-site hides its member entry points rather than linking somewhere dead:
-
-- the header and contact page drop the "Member Login" control
-- `/ondemand` shows the coming soon page instead of forwarding
+reserved `.invalid` TLD. While the variable is unset or still the placeholder,
+`/ondemand` shows the coming soon page instead of forwarding, so the route never
+dead-ends on a host that does not exist.
 
 Replace the placeholder with the real URL once the app is deployed.
 
 Routes:
 
-- `/ondemand` forwards every visitor to the Diaz on Demand app, or renders the
-  coming-soon page when `ONDEMAND_COMING_SOON=true`. The forward is a real HTTP
-  redirect declared in `next.config.mjs`, not a page-level `redirect()` — see the
-  streaming caveat in `CLAUDE.md`.
+- `/ondemand` forwards every visitor to the Diaz on Demand app, and renders the
+  coming-soon page instead whenever there is nowhere to forward them. Two
+  separate conditions produce that page: `NEXT_PUBLIC_ONDEMAND_URL` being unset
+  or still the `.invalid` placeholder, which is what production runs today, or
+  `ONDEMAND_COMING_SOON=true`, which holds the page even once a real URL is
+  configured. The forward is a real HTTP redirect declared in `next.config.mjs`,
+  not a page-level `redirect()` - see the streaming caveat in `CLAUDE.md`.
 - `/sign-in` and `/sign-up` are redirects to `/ondemand`, kept only so older
   links and bookmarks do not 404.
 
@@ -177,7 +183,7 @@ Use two review passes for design updates:
    - `/pricing`
    - `/schedule`
    - `/contact`
-   - `/sign-in` redirects to the member app
+   - `/sign-in` redirects to `/ondemand`
    - `/ondemand`
 7. Promote only after preview validation passes.
 

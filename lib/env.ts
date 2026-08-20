@@ -63,11 +63,11 @@ function parseAbsoluteUrl(name: string, value: string): URL {
  * one branch a human types, so a bad value is a misconfiguration worth failing
  * the build over. The bases `resolveDerivedSiteUrl` computes get the
  * trailing-slash strip alone, because `readSiteUrl` also runs in the client
- * bundle - `components/Header.tsx` reads `getPublicEnv()` at module scope in a
- * component the root layout renders - and `window.location.origin` is the
- * literal string `null` on an opaque origin (sandboxed iframe, `file://`).
- * Rejecting that would take down the client render of every page over a base
- * no visitor can correct.
+ * bundle - `components/ContactForm.tsx` and `components/OndemandWaitlistForm.tsx`
+ * read `getPublicEnv()` at module scope in `'use client'` components - and
+ * `window.location.origin` is the literal string `null` on an opaque origin
+ * (sandboxed iframe, `file://`). Rejecting that would take down the client
+ * render of those pages over a base no visitor can correct.
  */
 function normaliseConfiguredSiteUrl(value: string): string {
   const url = parseAbsoluteUrl('NEXT_PUBLIC_SITE_URL', value);

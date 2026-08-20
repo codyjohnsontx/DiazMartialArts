@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-import { NAV_LINKS, ONDEMAND_URL } from '../fixtures/site';
+import { NAV_LINKS } from '../fixtures/site';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -30,11 +30,22 @@ test.describe('Mobile navigation', () => {
     await expect(toggle).toHaveAttribute('aria-expanded', 'true');
   });
 
-  test('mobile nav contains all primary links including On Demand', async ({ page }) => {
+  /**
+   * Destinations, not just labels. The click-through test below covers one
+   * marketing link; On Demand cannot be clicked through, because on the
+   * configured matrix leg /ondemand is an HTTP redirect off-site. With the
+   * member-app button gone this href is the whole remaining member entry
+   * contract, so a repointed link has to fail here.
+   */
+  test('mobile nav contains all primary links including On Demand, each pointing at its route', async ({
+    page,
+  }) => {
     await page.getByRole('button', { name: 'Toggle menu' }).click();
     const mobileNav = page.locator('#mobile-nav');
-    for (const { label } of NAV_LINKS) {
-      await expect(mobileNav.getByRole('link', { name: label })).toBeVisible();
+    for (const { href, label } of NAV_LINKS) {
+      const link = mobileNav.getByRole('link', { name: label });
+      await expect(link).toBeVisible();
+      await expect(link).toHaveAttribute('href', href);
     }
   });
 
@@ -46,20 +57,24 @@ test.describe('Mobile navigation', () => {
     await expect(toggle).toHaveAttribute('aria-expanded', 'false');
   });
 
-  test('mobile menu Member Login points at the configured member app', async ({ page }) => {
-    test.skip(!ONDEMAND_URL, 'NEXT_PUBLIC_ONDEMAND_URL is unset or still the placeholder.');
-    await page.getByRole('button', { name: 'Toggle menu' }).click();
-    await expect(
-      page.locator('#mobile-nav').getByRole('link', { name: 'Member Login' }),
-    ).toHaveAttribute('href', ONDEMAND_URL!);
-  });
-
-  test('mobile menu omits Member Login when no member app is configured', async ({ page }) => {
-    test.skip(Boolean(ONDEMAND_URL), 'NEXT_PUBLIC_ONDEMAND_URL points at a member app.');
+  /**
+   * The mobile menu used to carry a "Member Login" control alongside the call to
+   * action, shown only when NEXT_PUBLIC_ONDEMAND_URL named a deployed member
+   * app. That control is gone, so this asserts the shape unconditionally rather
+   * than only on the unconfigured matrix leg the old pair of tests split between
+   * them. On Demand stays in the link list above, which is now the site's only
+   * member entry point.
+   */
+  test('mobile menu ends in one Book Free Trial call to action and no Member Login', async ({
+    page,
+  }) => {
     await page.getByRole('button', { name: 'Toggle menu' }).click();
     const mobileNav = page.locator('#mobile-nav');
-    await expect(mobileNav.getByRole('link', { name: 'Member Login' })).toHaveCount(0);
-    await expect(mobileNav.getByRole('link', { name: 'Book Free Trial' })).toBeVisible();
+    const cta = mobileNav.getByRole('link', { name: 'Book Free Trial' });
+    await expect(cta).toHaveCount(1);
+    await expect(cta).toBeVisible();
+    await expect(cta).toHaveAttribute('href', '/contact');
+    await expect(page.getByRole('link', { name: 'Member Login' })).toHaveCount(0);
   });
 
   test('pressing Escape closes the menu', async ({ page }) => {

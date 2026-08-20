@@ -162,8 +162,8 @@ describe('deployment URL fallback', () => {
 
 /**
  * A `window` object puts readSiteUrl on the branch the client bundle takes:
- * components/Header.tsx reads getPublicEnv() at module scope in a 'use client'
- * component the root layout renders on every page.
+ * components/ContactForm.tsx and components/OndemandWaitlistForm.tsx read
+ * getPublicEnv() at module scope in 'use client' components.
  */
 describe('browser origin fallback', () => {
   it('derives the base from the page origin, without its trailing slash', async () => {

@@ -46,7 +46,7 @@ const buttonStyles = {
   // That gap is pre-existing and is not specific to imagery, so it is not why
   // the hero needed another variant. It is left alone deliberately because that
   // change was scoped to the hero, and it reaches every ghost-light call site:
-  // app/page.tsx, app/contact/page.tsx (twice), app/ondemand/page.tsx,
+  // app/page.tsx, app/contact/page.tsx, app/ondemand/page.tsx,
   // components/FaqAccordion.tsx and components/ScheduleContent.tsx. The hero
   // needed a border that clears 3:1 against a photographic backdrop, which a
   // 50% border does at about 4.06:1.

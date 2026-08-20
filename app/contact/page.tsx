@@ -3,10 +3,7 @@ import { ContactForm } from '@/components/ContactForm';
 import { Eyebrow } from '@/components/Eyebrow';
 import { LocalBusinessSchema } from '@/components/LocalBusinessSchema';
 import { site } from '@/content/site';
-import { getPublicEnv } from '@/lib/env';
 import { pageMetadata } from '@/lib/seo';
-
-const { ondemandUrl } = getPublicEnv();
 
 export const metadata = pageMetadata({
   title: 'Contact',
@@ -77,11 +74,6 @@ export default function ContactPage() {
                 launch updates.
               </p>
               <div className="flex flex-wrap gap-2">
-                {ondemandUrl && (
-                  <Button href={ondemandUrl} variant="ghost-light">
-                    Member Login
-                  </Button>
-                )}
                 <Button href="/ondemand" variant="ghost-light">
                   On Demand
                 </Button>
