@@ -52,6 +52,61 @@ test.describe('Home page', () => {
     expect(clip.scrollWidth).toBe(clip.clientWidth);
   });
 
+  test('hero parallax actually moves the framing box on scroll', async ({ page }, testInfo) => {
+    const box = page.locator('section:has(h1) .hero-parallax');
+
+    // The Mobile project asserts the other side: the scoping guard is what
+    // keeps the narrow hero exactly as it shipped, so it is worth a check too
+    if (testInfo.project.name === 'Mobile') {
+      await expect(box).toHaveCSS('animation-name', 'none');
+      return;
+    }
+
+    // Asserting animation-name alone proves the rule is wired, not that
+    // scrolling moves anything: it still passes with animation-timeline
+    // dropped, with a time-based timeline, or with the keyframes inverted, all
+    // of which leave the hero looking correct at rest. So drive the real
+    // scroller and watch the framing box travel instead.
+    const translateY = () =>
+      box.evaluate((el) => {
+        const t = getComputedStyle(el).transform;
+        return t === 'none' ? 0 : new DOMMatrixReadOnly(t).f;
+      });
+
+    const atRest = await translateY();
+    expect(atRest).toBe(0);
+
+    await page.evaluate(() => window.scrollTo(0, window.innerHeight));
+
+    // a scroll-driven animation settles on a later frame, so poll rather than
+    // read once
+    await expect.poll(translateY).toBeGreaterThan(atRest);
+    expect(await translateY()).toBeGreaterThan(0);
+
+    // Scrolling back must take the travel with it. A time-based timeline also
+    // "increases" while the test waits, so without this it could pass on
+    // elapsed time alone; only a scroll-driven one returns to rest.
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await expect.poll(translateY).toBe(0);
+  });
+
+  test('hero parallax does not run under reduced motion', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === 'Mobile', 'Already static at this width.');
+
+    // Parallax is a vestibular trigger, and the global reduce block in
+    // app/globals.css only neutralises animation-duration, which does not stop
+    // a scroll-driven animation. The hero carries its own no-preference guard,
+    // and losing it would be invisible to every other test here. The media is
+    // emulated on the page rather than through test.use, which does not reach
+    // the page from a nested describe in this config.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+
+    await expect(page.locator('section:has(h1) .hero-parallax')).toHaveCSS(
+      'animation-name',
+      'none',
+    );
+  });
+
   test('coming-up classes widget visible with schedule link', async ({ page }) => {
     await expect(page.getByText(/Coming up/i).first()).toBeVisible();
     await expect(page.getByText(/Starts in|Starting now/i).first()).toBeVisible();

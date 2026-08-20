@@ -75,6 +75,76 @@ p {
   }
 }
 
+/* Scroll-driven hero parallax, added to a hero that is already correct at rest.
+   Progress 0 is the identity transform, so at the top of the page the framing
+   app/page.tsx measures out is untouched, and a browser without scroll
+   timelines simply never runs the animation and keeps that framing forever.
+
+   Travel is downward. The framing box is anchored to the section's top, so
+   sliding the photo down shows rows further UP the bitmap and pushes the crest
+   (source rows 531-630) further out of frame than it sits at rest. Upward
+   travel would instead spend the crest margin, and that margin measures only
+   3.68% of the section's height at every width from 1024px to 1324px, where
+   the box is taller than the bitmap's aspect and object-cover pins the visible
+   window to rows 0-0.8 no matter how wide the viewport gets. Downward travel
+   opens a bare strip of (travel x progress) at the top of the frame instead.
+   What bounds that strip is the animation range, not the travel being small:
+   its bottom edge sits at 77 + S x (travel/range - 1) for scroll position S,
+   so it stays behind the sticky header for every S as long as travel does not
+   exceed the range. At a range of 100vh the ceiling is therefore a whole
+   window height of travel, and a strip first appears just past it, at every
+   width from 1024 to 2560. 20% of the framing box is 25% of the section,
+   about 176px of drift over the first viewport of scroll - a fifth of that
+   ceiling on a 900px-tall window - which lags the copy by roughly 19.6px per
+   100px scrolled.
+
+   Contrast moves the opposite way from the crest margin: showing rows further
+   up the bitmap slides the photo's bright top third under the headline, so the
+   backdrop lightens as travel proceeds and the worst case sits at full travel
+   rather than at rest. Measured at 1440px the 99th-percentile backdrop under
+   the headline goes from rgb(53,49,51) at rest to rgb(55,54,56) at full
+   travel, and contrast falls monotonically across the range: sand 11.59:1 to
+   10.87:1, gold 5.40:1 to 5.06:1, white/70 7.14:1 to 6.82:1. The tightest of
+   those is gold, at 5.06:1 against the 3:1 its 96px h1 span needs. What
+   carries the AA guarantee is not that direction but the scrim's 82% coverage
+   floor, which this change does not touch and which bounds any photo pixel,
+   including a pure 255,255,255 one. The scrim comment in app/page.tsx owns
+   that floor - its figures, how they are measured, and the worst cases where
+   text actually sits - so read them there rather than keeping a second copy in
+   step with it.
+   Travel cannot move the floor, because it is a property of the scrim rather
+   than of the photo, so size travel against the floor rather than against
+   which way the backdrop happens to move.
+
+   prefers-reduced-motion is handled here rather than left to the global reduce
+   block below: that block only neutralises animation-duration, and a
+   progress-based timeline takes its position from the scroller, not from a
+   duration. Longhands rather than the `animation` shorthand, which resets
+   animation-timeline to auto and would silently turn this into a time-based
+   animation that runs once on load. */
+@keyframes hero-drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(0, 20%, 0);
+  }
+}
+
+@media (min-width: 1024px) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: scroll()) {
+    .hero-parallax {
+      animation-name: hero-drift;
+      animation-duration: auto;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: scroll(root block);
+      animation-range: 0 100vh;
+      will-change: transform;
+    }
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

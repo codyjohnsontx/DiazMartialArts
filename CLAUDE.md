@@ -143,6 +143,13 @@ marking work complete or CI fails on unformatted files.
   `tests/e2e/public-pages.spec.ts` and the header reader in
   `tests/fixtures/imageSize.ts`. Note also that Playwright discards the
   webServer's output, so the dev server's own errors never reach the CI log.
+- The `prefers-reduced-motion: reduce` block in `app/globals.css` does not stop
+  a scroll-driven animation. It only neutralises `animation-duration`, and an
+  `animation-timeline` animation takes its position from the scroller, so
+  forcing the duration to 0.01ms merely compresses the whole motion into the
+  start of the scroll range - more abrupt, not stiller. Every scroll-driven
+  animation therefore needs its own `prefers-reduced-motion: no-preference`
+  guard; the hero parallax in `app/globals.css` is the worked example.
 
 ## Maintaining this file
 
