@@ -30,12 +30,15 @@ export type UpcomingItem = {
 // tests/unit/upcoming-content.test.ts fails as soon as any entry below is over,
 // so that staleness is loud instead of silent.
 //
-// To update: take dates from the current monthly events calendar on
-// /announcements (app/announcements/page.tsx, images in public/announcements/).
-// Genuine scheduled events only - never a placeholder, and never a guessed date
-// or time. If a flyer gives no time, set allDay rather than inventing one; if it
-// gives no date, leave the event out. An empty list is a supported state: the
-// section then renders a deliberate empty state pointing at the weekly schedule.
+// To update: there is no settled source for the next batch. This list was filled
+// from the monthly events calendar flyer on /announcements; that calendar is no
+// longer published there, and what replaces it as the source of dates is still an
+// open question. Until it is answered, take a date only from something that
+// actually prints it - genuine scheduled events only, never a placeholder, and
+// never a guessed date or time. If the source gives no time, set allDay rather
+// than inventing one; if it gives no date, leave the event out. An empty list is a
+// supported state: the section then renders a deliberate empty state pointing at
+// the weekly schedule, and that is the right answer while nothing is confirmed.
 //
 // `end` is optional and never guessed either. Leave it off and the entry runs
 // through the end of the day it starts on, at midnight at the gym, so an event
@@ -45,8 +48,11 @@ export type UpcomingItem = {
 // entry with an `end` finishes at that exact time.
 export const upcomingItems: UpcomingItem[] = [
   {
-    // Source: the August 2026 panel of public/announcements/july-2026-events-calendar.jpg
-    // ("26-27 Stripe Testing (White Stripe)"). That panel gives no time of day.
+    // Source: the August 2026 panel of the July 2026 events calendar flyer
+    // ("26-27 Stripe Testing (White Stripe)"), which gave no time of day. That
+    // flyer has since been retired from /announcements along with the rest of
+    // the June and July set; the event it printed still runs, so the entry
+    // stays until the date passes.
     id: 'stripe-testing-white-stripe-2026-08',
     title: 'Stripe Testing (White Stripe)',
     start: '2026-08-26T00:00:00Z',

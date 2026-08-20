@@ -31,8 +31,10 @@ describe('content/upcoming.ts staleness guard', () => {
     expect(
       passed.map((item) => `${item.id} (${item.start})`),
       'These entries in content/upcoming.ts have already happened, so they no longer ' +
-        'reach /schedule. Replace them with events from the current monthly calendar on ' +
-        '/announcements, or empty the list to choose the deliberate empty state.',
+        'reach /schedule. The monthly events calendar this list was filled from is no ' +
+        'longer published on /announcements and no replacement source has been settled, ' +
+        'so replace them only with events whose dates are actually printed somewhere - ' +
+        'or empty the list to choose the deliberate empty state.',
     ).toEqual([]);
   });
 

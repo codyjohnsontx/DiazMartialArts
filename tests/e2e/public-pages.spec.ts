@@ -53,12 +53,13 @@ test.describe('Announcements page details', () => {
     // `sharp` package installed the optimizer falls back to a WebAssembly
     // encoder whose worker pool is `min(cpus - 1, 6)` wide, so on a small CI
     // runner the whole page's variants encode more or less one at a time.
-    // Measured cold, serialized, over the fourteen variants this page asks for:
-    // ~12s on an idle developer machine and ~27s with the CPU contended. A
-    // flyer scrolled into view queues behind whatever is already encoding, so
-    // any fixed decode deadline is really an assertion about how busy the box
-    // is. Two such deadlines were raised here before; a third would not have
-    // converged either.
+    // Measured cold and serialized over the fourteen variants this page asked
+    // for when it carried thirteen flyers: ~12s on an idle developer machine
+    // and ~27s with the CPU contended, and the feed is content, so its length
+    // moves. A flyer scrolled into view queues behind whatever is already
+    // encoding, so any fixed decode deadline is really an assertion about how
+    // busy the box is. Two such deadlines were raised here before; a third
+    // would not have converged either.
     //
     // So assert what the page is actually responsible for instead: that the
     // featured flyer loads eagerly and the rest lazily, and that every flyer
@@ -100,21 +101,99 @@ test.describe('Announcements page details', () => {
     }
   });
 
-  test('every category filter still lists announcements', async ({ page }) => {
+  test('every flyer card names its control briefly and still announces the offer', async ({
+    page,
+  }) => {
     await page.goto('/announcements');
 
-    for (const category of ['Events', 'Promos', 'Testings', 'Closures']) {
-      await page.getByRole('button', { name: new RegExp(`^${category}$`, 'i') }).click();
-      await expect(page.locator('main article')).not.toHaveCount(0);
-      await expect(page.getByText(/No announcements in this category/i)).toHaveCount(0);
+    const cards = page.locator('main article');
+    const cardCount = await cards.count();
+    expect(cardCount).toBeGreaterThan(0);
 
-      // The two assertions above would also hold if clicking a filter did
-      // nothing, so prove the filter actually excludes. A monthly calendar is
-      // an Event and will never be a Promo, however the feed grows later.
-      if (category === 'Promos') {
-        await expect(page.getByRole('heading', { name: 'June Events Calendar' })).toHaveCount(0);
-      }
+    for (let i = 0; i < cardCount; i++) {
+      const card = cards.nth(i);
+      const enlarge = card.getByRole('button', { name: /^Enlarge / });
+      const title = ((await card.getByRole('heading').first().textContent()) ?? '').trim();
+      const alt = await card.locator('img').first().getAttribute('alt');
+      expect(alt, `flyer ${i} renders without alt text`).toBeTruthy();
+
+      // These flyers are the announcement - the offer, the price, what it
+      // includes, the phone number exist only inside the image - so the alt
+      // carries all of it. An aria-label wins the accessible name outright and
+      // assistive technology presents a button as one node, so that alt is not
+      // announced on the card and the description relationship is the only
+      // thing keeping it reachable without opening the lightbox. Read against
+      // the browser's own accessibility tree, which is what actually settles
+      // whether a visually hidden node still announces.
+      await expect(enlarge).toHaveAccessibleName(`Enlarge ${title}`);
+      await expect(enlarge).toHaveAccessibleDescription(alt!);
     }
+  });
+
+  test('every category filter it offers selects part of the feed', async ({ page }) => {
+    // This used to assert every one of four named categories lists something.
+    // That held only while the feed happened to span all four, and the feed is
+    // whatever the gym is currently running. The row now renders a button only
+    // for a category the feed carries, and no row at all below two of them, so
+    // what is checked here is that promise: nothing it advertises is a dead end
+    // or a no-op, against the real page and the real content. The guarantees
+    // that need a feed spanning several categories - that picking one excludes
+    // the others, and that an empty selection says so - are pinned in
+    // tests/components/announcement-flyer-gallery.test.tsx, where the feed is a
+    // fixture rather than whatever is running this month.
+    await page.goto('/announcements');
+
+    const articles = page.locator('main article');
+    const emptyState = page.getByText(/No announcements in this category/i);
+
+    const allCount = await articles.count();
+    expect(allCount).toBeGreaterThan(0);
+    await expect(emptyState).toHaveCount(0);
+
+    // The row is server-rendered, so this count is settled before hydration is.
+    // It is either absent or All plus at least two categories: a lone category
+    // would put up buttons that both select the whole feed.
+    const filterButtons = page.locator('main button[aria-pressed]');
+    const rowSize = await filterButtons.count();
+    expect(rowSize === 0 || rowSize >= 3, `the filter row renders ${rowSize} buttons`).toBe(true);
+
+    if (rowSize === 0) return;
+
+    // The row lists only the categories the feed carries, so walk what is
+    // rendered rather than a fixed set of names that need not all be there.
+    await expect(filterButtons.first()).toHaveText(/^All$/i);
+    const categories = (await filterButtons.allTextContents()).slice(1).map((t) => t.trim());
+    expect(categories.length).toBeGreaterThan(0);
+
+    let selected = 0;
+    for (const category of categories) {
+      const button = page.getByRole('button', { name: new RegExp(`^${category}$`, 'i') });
+      await button.click();
+
+      // count() does not retry, so read it only once the click has demonstrably
+      // landed. These specs run against `next dev`, where hydration can trail
+      // the load event; a click that arrives before it is swallowed, and the
+      // unfiltered count read in its place would surface much later as a bogus
+      // count mismatch instead of the timing miss it actually was.
+      await expect(button).toHaveAttribute('aria-pressed', 'true');
+
+      const count = await articles.count();
+      selected += count;
+
+      // The row advertises this category, so it has to lead somewhere, and the
+      // empty state has to stay away. Only that direction is observable from
+      // this page: no button is rendered for a category with no flyers, so the
+      // empty state cannot be reached here at all.
+      expect(count, `the "${category}" filter is a dead end`).toBeGreaterThan(0);
+      await expect(emptyState).toHaveCount(0);
+    }
+
+    // Each flyer carries exactly one category, so the filtered views should
+    // partition the feed. The walk covers only the categories currently
+    // present, but a row is rendered at all only from two of them up, so
+    // reaching here means the sum really is over more than one filtered view
+    // and a filter that stopped excluding over-counts and fails.
+    expect(selected).toBe(allCount);
   });
 });
 

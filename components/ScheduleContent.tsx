@@ -165,7 +165,8 @@ export function ScheduleContent({ upcoming, windowDays }: Props) {
             <h1 className="display text-5xl sm:text-7xl lg:text-[88px]">Schedule</h1>
           </div>
           <p className="text-base leading-relaxed text-black/75 sm:text-lg">
-            Use the weekly lineup for your routine, then check the monthly calendar for events.
+            Use the weekly lineup for your routine, then check announcements for events and
+            specials.
           </p>
         </div>
       </section>
@@ -328,7 +329,7 @@ export function ScheduleContent({ upcoming, windowDays }: Props) {
               <h2 className="display mt-3 text-3xl sm:text-[44px]">Upcoming events</h2>
             </div>
             <Button href="/announcements" variant="ghost-light">
-              Open monthly calendar →
+              Open announcements →
             </Button>
           </div>
 
