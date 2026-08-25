@@ -150,6 +150,23 @@ marking work complete or CI fails on unformatted files.
   start of the scroll range - more abrupt, not stiller. Every scroll-driven
   animation therefore needs its own `prefers-reduced-motion: no-preference`
   guard; the hero parallax in `app/globals.css` is the worked example.
+- The public pages are prerendered at build time (`○` in the `next build`
+  route table), so a client component that reads the clock while rendering
+  (`new Date()` in a `useState` initialiser or the render body) ships the
+  build's clock in the HTML and hydrates against the visitor's. React then
+  reports error 425 and, as the root `app/loading.tsx` Suspense boundary gives
+  up, 422, and the whole page re-renders on the client. Read the clock only
+  after mount and render the same time-free markup on both sides;
+  `components/HomeUpcomingClasses.tsx` is the worked example. Testing Library's
+  `render()` never sees a mismatch: prove it the way
+  `tests/components/home-upcoming-classes.test.tsx` does, server-rendering at
+  one time with `react-dom/server` and calling `hydrateRoot` at another with
+  `onRecoverableError` spied. `next dev` renders per request on the visitor's
+  clock, so in the e2e suite the mismatch only appears with the browser clock
+  moved, which `tests/e2e/home.spec.ts` does through `page.clock`. Note also
+  that `next dev` and `next build`/`next start` share `.next`: starting the dev
+  server beside a production server makes every chunk 500 and React never
+  runs, so reproduce production-only hydration issues with dev stopped.
 
 ## Maintaining this file
 

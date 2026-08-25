@@ -5,8 +5,31 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { formatCountdown, getScheduleLabel, getUpcomingClassBlocks } from '@/lib/classSchedule';
 
+// The card shell without any time-derived content. It is what the server
+// renders, what the client renders first, and what a visitor without
+// JavaScript keeps, so the copy has to stay true on its own.
+function UpcomingClassesShell({ headline }: { headline: string }) {
+  return (
+    <div className="relative w-[min(92vw,390px)] border border-black/10 bg-sand p-5 shadow-lift">
+      <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-bronze">Coming up</div>
+      <div className="mt-2 text-lg font-extrabold tracking-tight">{headline}</div>
+      <Link href="/schedule" className="mt-4 inline-block text-[13px] font-bold text-ember">
+        View full schedule →
+      </Link>
+    </div>
+  );
+}
+
 export function HomeUpcomingClasses() {
-  const [now, setNow] = useState(() => new Date());
+  // The home page is prerendered at build time, so a `new Date()` taken during
+  // render is the build's clock on the server and the visitor's clock in the
+  // browser. The two agree only within the build's own minute; at any other
+  // time the countdown text differs and React reports a hydration mismatch
+  // (error 425) and drops the whole page to client rendering (error 422). The
+  // clock is therefore read only after mount, and the first render on both
+  // sides is the same time-free shell. tests/components/home-upcoming-classes.test.tsx
+  // hydrates a build-time render at a later time to keep it that way.
+  const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
     const update = () => setNow(new Date());
@@ -16,22 +39,16 @@ export function HomeUpcomingClasses() {
     return () => window.clearInterval(interval);
   }, []);
 
-  const blocks = useMemo(() => getUpcomingClassBlocks(now, { limit: 4 }), [now]);
+  const blocks = useMemo(() => (now ? getUpcomingClassBlocks(now, { limit: 4 }) : []), [now]);
   const nextBlock = blocks[0];
   const laterBlocks = blocks.slice(1);
 
+  if (!now) {
+    return <UpcomingClassesShell headline="Classes six days a week" />;
+  }
+
   if (!nextBlock) {
-    return (
-      <div className="relative w-[min(92vw,360px)] border border-black/10 bg-sand p-5 shadow-lift">
-        <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-bronze">
-          Coming up
-        </div>
-        <div className="mt-2 text-lg font-extrabold tracking-tight">Schedule updates soon</div>
-        <Link href="/schedule" className="mt-4 inline-block text-[13px] font-bold text-ember">
-          View full schedule →
-        </Link>
-      </div>
-    );
+    return <UpcomingClassesShell headline="Schedule updates soon" />;
   }
 
   return (
