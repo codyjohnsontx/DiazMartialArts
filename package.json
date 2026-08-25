@@ -23,6 +23,7 @@
     "quality:strict": "npm run format:check && npm run lint && npm run typecheck && npm run test:coverage && npm run build && PLAYWRIGHT_USE_START=1 npm run test:e2e"
   },
   "dependencies": {
+    "@vercel/analytics": "2.0.1",
     "next": "14.2.35",
     "react": "18.3.1",
     "react-dom": "18.3.1",
