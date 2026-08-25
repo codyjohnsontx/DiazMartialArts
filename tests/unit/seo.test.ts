@@ -46,3 +46,16 @@ describe('pageMetadata', () => {
     expect(metadata.robots).toEqual({ index: false, follow: false });
   });
 });
+
+describe('pricing page metadata', () => {
+  it('keeps the page served but tells search engines not to index or follow it', async () => {
+    // /pricing stays live for anyone holding the link, but nothing links to it
+    // and app/sitemap.ts leaves it out, so it must not surface in search either.
+    vi.resetModules();
+    process.env.NEXT_PUBLIC_SITE_URL = 'https://diaz.example';
+    const { metadata } = await import('@/app/pricing/page');
+
+    expect(metadata.robots).toEqual({ index: false, follow: false });
+    expect(metadata.alternates?.canonical).toBe('https://diaz.example/pricing');
+  });
+});

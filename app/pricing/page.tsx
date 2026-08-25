@@ -11,6 +11,7 @@ export const metadata = pageMetadata({
   title: 'Pricing',
   description: 'Membership options for adults and kids at Diaz Martial Arts in San Marcos, Texas.',
   path: '/pricing',
+  noIndex: true,
   keywords: ['martial arts pricing', 'bjj membership cost', 'kids martial arts pricing san marcos'],
 });
 
