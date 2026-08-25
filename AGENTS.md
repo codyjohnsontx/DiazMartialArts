@@ -161,9 +161,10 @@ marking work complete or CI fails on unformatted files.
   `render()` never sees a mismatch: prove it the way
   `tests/components/home-upcoming-classes.test.tsx` does, server-rendering at
   one time with `react-dom/server` and calling `hydrateRoot` at another with
-  `onRecoverableError` spied. `next dev` renders per request on the visitor's
-  clock, so in the e2e suite the mismatch only appears with the browser clock
-  moved, which `tests/e2e/home.spec.ts` does through `page.clock`. Note also
+  `onRecoverableError` spied. `next dev` renders per request on the dev
+  server's clock, which agrees with the browser's at the moment of the visit,
+  so in the e2e suite the mismatch only appears with the browser clock moved,
+  which `tests/e2e/home.spec.ts` does through `page.clock`. Note also
   that `next dev` and `next build`/`next start` share `.next`: starting the dev
   server beside a production server makes every chunk 500 and React never
   runs, so reproduce production-only hydration issues with dev stopped.
