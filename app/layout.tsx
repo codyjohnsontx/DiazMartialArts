@@ -20,10 +20,11 @@ const { siteUrl } = getPublicEnv();
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: {
-    default: site.name,
-    template: `%s | ${site.name}`,
-  },
+  // pageMetadata (lib/seo.ts) already composes every page title with the site
+  // name, so the layout must not add a title.template: Next applies it to the
+  // nested pages, doubling the suffix, and never to the home page, which shares
+  // this segment. tests/unit/seo.test.ts guards the rendered result.
+  title: site.name,
   description: site.description,
   icons: {
     icon: '/diaz_logo.png',
