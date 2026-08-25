@@ -130,7 +130,6 @@ export default async function OndemandRoutePage() {
               </p>
               <OndemandWaitlistForm />
               <div className="mt-5 flex flex-wrap justify-between gap-2 border-t border-white/10 pt-4 text-xs text-white/60">
-                <span>2,400+ already on the list</span>
                 <span>No spam. Unsubscribe anytime.</span>
               </div>
             </div>

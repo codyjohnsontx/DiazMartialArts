@@ -134,6 +134,12 @@ describe('sitemap', () => {
     expect(sitemapUrls).toContain(`${SITE}/programs`);
     expect(sitemapUrls).toContain(`${SITE}/programs/brazilian-jiu-jitsu`);
   });
+
+  it('leaves the noindexed pricing page out', async () => {
+    const { sitemapUrls } = await load({ siteUrl: SITE });
+
+    expect(sitemapUrls).not.toContain(`${SITE}/pricing`);
+  });
 });
 
 describe('robots', () => {
