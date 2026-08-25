@@ -26,7 +26,7 @@ jobs:
           - member_app: unconfigured
             ondemand_url: https://replace-me.invalid
     env:
-      NEXT_PUBLIC_SITE_URL: https://diazmartialarts.vercel.app
+      NEXT_PUBLIC_SITE_URL: https://diaz-martial-arts.vercel.app
       NEXT_PUBLIC_ONDEMAND_URL: ${{ matrix.ondemand_url }}
       ONDEMAND_COMING_SOON: 'false'
     steps:

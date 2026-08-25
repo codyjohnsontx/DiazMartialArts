@@ -151,6 +151,13 @@ marking work complete or CI fails on unformatted files.
   animation therefore needs its own `prefers-reduced-motion: no-preference`
   guard; the hero parallax in `app/globals.css` is the worked example.
 
+- `npx tsc --noEmit` also checks `.next/types/**/*.ts` (see `tsconfig.json`),
+  and that directory is only rewritten by `next build`. After deleting or
+  renaming a route, `tsc` therefore fails on a `.next/types/app/...` file that
+  "cannot find module" the removed page until the next `npm run build`. That
+  is not a source error: rebuild (or delete `.next/types`) before treating it
+  as one. CI never sees it because each run starts from a clean checkout.
+
 ## Maintaining this file
 
 Keep this file for knowledge useful to almost every future agent session in this project.
