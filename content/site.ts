@@ -43,12 +43,6 @@ export const site = {
       href: '/coaches',
     },
   },
-  announcement: {
-    enabled: true,
-    message: 'Two months free with purchase of GI.',
-    link: '/announcements',
-    linkLabel: 'See announcements',
-  },
 };
 
 export type Site = typeof site;

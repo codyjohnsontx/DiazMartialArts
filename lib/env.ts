@@ -33,7 +33,7 @@ function parseAbsoluteUrl(name: string, value: string): URL {
     return new URL(value);
   } catch {
     throw new Error(
-      `[env] ${name} must be a full absolute URL including protocol. Example: https://diazmartialarts.vercel.app`,
+      `[env] ${name} must be a full absolute URL including protocol. Example: https://diaz-martial-arts.vercel.app`,
     );
   }
 }
@@ -74,13 +74,13 @@ function normaliseConfiguredSiteUrl(value: string): string {
 
   if (url.protocol !== 'http:' && url.protocol !== 'https:') {
     throw new Error(
-      '[env] NEXT_PUBLIC_SITE_URL must use http: or https:. Example: https://diazmartialarts.vercel.app',
+      '[env] NEXT_PUBLIC_SITE_URL must use http: or https:. Example: https://diaz-martial-arts.vercel.app',
     );
   }
 
   if (url.search || url.hash) {
     throw new Error(
-      '[env] NEXT_PUBLIC_SITE_URL must be a bare site URL with no query string or fragment. Example: https://diazmartialarts.vercel.app',
+      '[env] NEXT_PUBLIC_SITE_URL must be a bare site URL with no query string or fragment. Example: https://diaz-martial-arts.vercel.app',
     );
   }
 
@@ -115,7 +115,7 @@ function resolveDerivedSiteUrl(): string {
   }
 
   throw new Error(
-    '[env] Missing NEXT_PUBLIC_SITE_URL. Set it to the public site URL, for example https://diazmartialarts.vercel.app',
+    '[env] Missing NEXT_PUBLIC_SITE_URL. Set it to the public site URL, for example https://diaz-martial-arts.vercel.app',
   );
 }
 
