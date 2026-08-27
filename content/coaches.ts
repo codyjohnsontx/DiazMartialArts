@@ -1,3 +1,9 @@
+// Coach profiles behind /coaches. The head instructor's rank line, bio and
+// credentials are owner-approved copy, recorded a second time and verbatim in
+// tests/e2e/public-pages.spec.ts so an edit here fails the gate rather than
+// reaching the site quietly. Change both together; the comment above that
+// file's copy explains why the duplication is deliberate.
+
 export type CoachCredential = {
   /** The rank, degree, title or certification, exactly as the school states it. */
   rank: string;
