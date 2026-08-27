@@ -160,14 +160,18 @@ test.describe('Coaches page details', () => {
     const rendered = await credentials.evaluate((section) =>
       [...section.querySelectorAll('h3')].map((heading) => ({
         group: heading.textContent?.trim() ?? '',
-        entries: [...(heading.parentElement?.querySelectorAll('li') ?? [])].map((entry) => ({
-          rank: entry.querySelector('p:first-of-type')?.textContent?.trim() ?? '',
-          under: entry.querySelector('p:last-of-type')?.textContent?.trim() ?? '',
-        })),
+        entries: [...(heading.parentElement?.querySelectorAll('li') ?? [])].map((entry) =>
+          [...entry.querySelectorAll('p')].map((line) => line.textContent?.trim() ?? ''),
+        ),
       })),
     );
 
-    expect(rendered).toEqual(CREDENTIAL_GROUPS);
+    expect(rendered).toEqual(
+      CREDENTIAL_GROUPS.map(({ group, entries }) => ({
+        group,
+        entries: entries.map((entry) => [entry.rank, entry.under]),
+      })),
+    );
   });
 });
 

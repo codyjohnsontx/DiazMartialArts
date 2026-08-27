@@ -164,9 +164,12 @@ marking work complete or CI fails on unformatted files.
   an opaque `backgroundColor`: walking up the tree for one finds nothing, and
   `sand` is near but not equal to what any given pixel actually is. Measure the
   rendered page instead - hide every glyph with
-  `* { color: transparent !important }`, re-screenshot, and take the lightest
-  pixel behind each run of text as the worst case for dark type. The
-  `Rank and certification` list on `/coaches` was sized that way.
+  `* { color: transparent !important }`, re-screenshot, and scan the whole box
+  behind each run of text for the pixel that MINIMISES the ratio, which for
+  dark type on this light page is the darkest one, not the lightest. The
+  `Rank and certification` list on `/coaches` was sized that way; its tightest
+  runs measure 5.52:1 (bronze rank line) and 5.98:1 (bronze group headings)
+  against AA's 4.5:1.
 
 ## Maintaining this file
 
