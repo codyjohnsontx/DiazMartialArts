@@ -170,16 +170,18 @@ marking work complete or CI fails on unformatted files.
   runs, so reproduce production-only hydration issues with dev stopped.
 
 - Turning a wide layout on at a responsive breakpoint needs the layout's
-  measured width, not a plausible-looking breakpoint. The header's desktop
-  navigation is gated at `lg` because its six labels plus the call to action
-  need 892px under the sm/md spacing and about 1067px once the wider `lg`
-  gaps and padding apply; at `md` it overflowed every page across the whole
-  of tablet portrait. Note what hid that for so long: flex children shrink,
-  so the "Book Free Trial" button collapses to a three-line pill and
-  `documentElement.scrollWidth` stops exceeding `clientWidth` well before the
-  header actually fits. No-overflow is a floor, not proof the layout is right -
-  read the required width off a browser with the wide layout forced visible.
-  `tests/e2e/header-widths.spec.ts` pins both boundaries and holds the
+  measured width, not the nearest Tailwind size. The header's desktop
+  navigation is gated at `min-[1035px]`, because 1035px is where the header row
+  measurably reaches its natural width. Getting there took two wrong answers,
+  both for the same reason: flex children shrink, so the row stops overflowing
+  long before it fits. At `md` the page scrolled sideways across all of tablet
+  portrait; the row only stopped overflowing at 892px because "Book Free Trial"
+  had by then been crushed into a three-line pill. Moving to `lg` fixed the
+  tablets but left 1024-1034 rendering that button on two lines - no overflow,
+  still wrong. `documentElement.scrollWidth === clientWidth` is therefore a
+  floor, not proof the layout is right: measure the required width in a browser
+  with the wide layout forced visible, and check what the text does, not just
+  the box. `tests/e2e/header-widths.spec.ts` pins both boundaries and holds the
   reasoning.
 
 - `npx tsc --noEmit` also checks `.next/types/**/*.ts` (see `tsconfig.json`),

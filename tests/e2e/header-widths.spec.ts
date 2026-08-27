@@ -2,17 +2,25 @@ import { test, expect, type Page } from '@playwright/test';
 
 /**
  * The header used to turn its desktop navigation on at `md` (768px) while the
- * six nav labels plus the call to action needed 892px, so every page scrolled
- * sideways across the whole of tablet portrait - 768 on the classic iPad, 820
- * on the Air, 834 on the Pro. The nav is now held back to `lg` (1024px), which
- * is also where the header's own `lg:gap-8 lg:px-8` spacing steps up, so the
- * desktop header appears under exactly one spacing regime instead of two.
+ * six nav labels plus the call to action needed far more room, so every page
+ * scrolled sideways across the whole of tablet portrait - 768 on the classic
+ * iPad, 820 on the Air, 834 on the Pro.
  *
- * These tests measure the condition that defines the bug - scrollWidth against
- * clientWidth - rather than reading the Tailwind classes back, because a class
- * whose value misses its theme scale emits no CSS at all and would still read
- * correct. Both boundaries are pinned: move the breakpoint down and the tablet
- * widths overflow, move it up and 1024 loses its desktop nav.
+ * The desktop header is now gated at `min-[1035px]`, a measured number rather
+ * than the next Tailwind size up. 1035px is where the row reaches its natural
+ * width; below it the flex row shrinks until "Book Free Trial" wraps onto a
+ * second line, which no overflow assertion catches, because a squeezed button
+ * is not an overflowing one. That is how the same mistake survived twice - at
+ * 892px, where the document stopped overflowing only once the button had been
+ * crushed into three lines, and again at `lg`, which fixed the tablets but left
+ * 1024-1034 rendering a two-line button.
+ *
+ * These tests measure the conditions that define both bugs - scrollWidth
+ * against clientWidth, and how many lines the call to action occupies - rather
+ * than reading the Tailwind classes back, because a class whose value misses
+ * its theme scale emits no CSS at all and would still read correct. Both
+ * boundaries are pinned: move the breakpoint down and the widths below it wrap
+ * or overflow, move it up and 1035 loses its desktop header.
  */
 
 // This spec drives the viewport itself, so the configured project viewports are
@@ -21,11 +29,11 @@ test.beforeEach(async ({}, testInfo) => {
   test.skip(testInfo.project.name === 'Mobile', 'This spec sets its own viewports.');
 });
 
-/** Widths that get the hamburger and used to overflow. */
-const TABLET_WIDTHS = [768, 800, 820, 834, 891, 1023];
+/** Widths that get the menu button, and used to overflow or wrap. */
+const TABLET_WIDTHS = [768, 800, 820, 834, 891, 1023, 1024, 1034];
 
 /** Widths whose header rendering must not have moved. */
-const UNCHANGED_WIDTHS = [320, 375, 390, 767, 1024, 1440];
+const UNCHANGED_WIDTHS = [320, 375, 390, 767, 1035, 1440];
 
 /** The header is shared but page content is not, so this checks several. */
 const PATHS = ['/', '/programs', '/schedule', '/coaches', '/contact'];
@@ -87,6 +95,8 @@ test.describe('Header fits its viewport', () => {
 test.describe('Which navigation each width gets', () => {
   const toggle = (page: Page) => page.getByRole('button', { name: 'Toggle menu' });
   const desktopNav = (page: Page) => page.getByRole('navigation', { name: 'Primary' });
+  const desktopCta = (page: Page) =>
+    page.locator('header > div').first().getByRole('link', { name: 'Book Free Trial' });
 
   for (const width of TABLET_WIDTHS) {
     test(`${width}px gets the menu button, not the desktop nav`, async ({ page }) => {
@@ -94,15 +104,21 @@ test.describe('Which navigation each width gets', () => {
       await page.goto('/');
       await expect(toggle(page)).toBeVisible();
       await expect(desktopNav(page)).toBeHidden();
+      // The desktop call to action is gated separately from the nav, so a
+      // regression on that one spot alone would otherwise slip through: it
+      // would show a menu button and a desktop button side by side.
+      await expect(desktopCta(page)).toBeHidden();
     });
   }
 
   // The upper boundary. Without this the guard would be satisfied by pushing the
-  // breakpoint to `xl`, which would take the desktop nav away from laptops.
-  test('1024px still gets the desktop nav, not the menu button', async ({ page }) => {
-    await page.setViewportSize({ width: 1024, height: 900 });
+  // breakpoint higher still, which would take the desktop header away from the
+  // laptops it fits on.
+  test('1035px gets the desktop header, not the menu button', async ({ page }) => {
+    await page.setViewportSize({ width: 1035, height: 900 });
     await page.goto('/');
     await expect(desktopNav(page)).toBeVisible();
+    await expect(desktopCta(page)).toBeVisible();
     await expect(toggle(page)).toBeHidden();
   });
 
@@ -210,4 +226,68 @@ test.describe('The closed menu stays out of the keyboard path', () => {
     }
     expect(reached, `focus never reached the open menu panel within ${TABS} tabs`).toBe(true);
   });
+});
+
+/**
+ * The width the desktop header switches on at has to come from the width it
+ * actually needs. Measured on the rendered page: the header row reaches its
+ * natural size at 1035px, and below that the flex row shrinks "Book Free
+ * Trial" until the label wraps onto a second line - 56px tall instead of 38.
+ * No overflow assertion catches that, because a button squeezed into two lines
+ * is not an overflowing one, which is exactly how the same mistake survived one
+ * breakpoint lower at 892px. So the desktop header is gated at `min-[1035px]`
+ * rather than at `lg`, and this pins the property that number was chosen for.
+ */
+test.describe('The call to action never renders wrapped', () => {
+  const CTA_WIDTHS = [768, 834, 1023, 1024, 1034, 1035, 1036, 1100, 1280, 1440];
+
+  /** Sitting on its own line is the observable form of "the header fits". */
+  const lineCount = (page: Page) =>
+    page
+      .locator('header a', { hasText: 'Book Free Trial' })
+      .first()
+      .evaluate((el) => {
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        return range.getClientRects().length;
+      });
+
+  for (const width of CTA_WIDTHS) {
+    test(`no visible Book Free Trial control wraps at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/');
+      await page.evaluate(() => document.fonts.ready);
+
+      const visible = page.getByRole('link', { name: 'Book Free Trial' });
+      for (const control of await visible.all()) {
+        if (!(await control.isVisible())) continue;
+        expect(
+          await control.evaluate((el) => {
+            const range = document.createRange();
+            range.selectNodeContents(el);
+            return range.getClientRects().length;
+          }),
+          `"Book Free Trial" wrapped onto more than one line at ${width}px`,
+        ).toBe(1);
+      }
+    });
+  }
+
+  /**
+   * The counterweight. Without this the loop above would be satisfied by a
+   * header that shows no call to action at all, at any width.
+   */
+  for (const width of [1035, 1100, 1440]) {
+    test(`the desktop call to action is shown and unwrapped at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/');
+      await page.evaluate(() => document.fonts.ready);
+
+      const cta = page.locator('header > div').first().getByRole('link', {
+        name: 'Book Free Trial',
+      });
+      await expect(cta).toBeVisible();
+      expect(await lineCount(page)).toBe(1);
+    });
+  }
 });

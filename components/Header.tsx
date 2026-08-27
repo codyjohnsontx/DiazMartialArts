@@ -56,7 +56,7 @@ export function Header() {
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-6 lg:flex lg:gap-7" aria-label="Primary">
+        <nav className="hidden items-center gap-6 lg:gap-7 min-[1035px]:flex" aria-label="Primary">
           {navItems.map((item) => {
             const active = isActive(item.href);
             return (
@@ -77,13 +77,13 @@ export function Header() {
           })}
         </nav>
 
-        <div className="hidden items-center gap-2 lg:flex">
+        <div className="hidden items-center gap-2 min-[1035px]:flex">
           <Button href="/contact">Book Free Trial</Button>
         </div>
 
         <button
           type="button"
-          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/15 text-ink lg:hidden"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/15 text-ink min-[1035px]:hidden"
           aria-expanded={open}
           aria-controls="mobile-nav"
           aria-label="Toggle menu"
@@ -97,7 +97,7 @@ export function Header() {
       <div
         id="mobile-nav"
         className={cn(
-          'lg:hidden',
+          'min-[1035px]:hidden',
           // `invisible` is load-bearing rather than decoration: opacity and max-height
           // hide the closed panel from the eye and the mouse but leave its links in
           // the tab order. `tests/e2e/header-widths.spec.ts` owns that reasoning and
