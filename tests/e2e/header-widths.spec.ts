@@ -31,7 +31,11 @@ const UNCHANGED_WIDTHS = [320, 375, 390, 767, 1024, 1440];
 const PATHS = ['/', '/programs', '/schedule', '/coaches', '/contact'];
 
 async function measure(page: Page) {
-  return page.evaluate(() => {
+  return page.evaluate(async () => {
+    // Every assertion here is text-metric-driven and the 320px row clears the
+    // viewport by only a few pixels, so measuring before Manrope has swapped in
+    // would size the header off the fallback font's metrics instead.
+    await document.fonts.ready;
     const doc = document.documentElement;
     // The flex row inside <header> is what the nav overflows; measuring it
     // separately keeps this guard blind to unrelated page-content overflow.
@@ -152,5 +156,58 @@ test.describe('The menu works at tablet portrait', () => {
       'aria-expanded',
       'false',
     );
+  });
+});
+
+/**
+ * Holding the desktop nav back to `lg` lays the mobile panel out across
+ * 768-1023 too, where `md:hidden` used to take it out of the flow entirely.
+ * `pointer-events-none max-h-0 opacity-0` hides the closed panel from the eye
+ * and the mouse but not from the keyboard - neither opacity nor max-height
+ * removes a link from the tab order - so without `invisible` a keyboard visitor
+ * tabbing off the menu button lands in six invisible nav links and the call to
+ * action, on every page. Both directions are pinned: closed must be
+ * unreachable, open must be reachable, or "nothing is focusable" would pass.
+ */
+test.describe('The closed menu stays out of the keyboard path', () => {
+  const TABS = 8;
+
+  const focusIsInsidePanel = (page: Page) =>
+    page.evaluate(() => {
+      const panel = document.getElementById('mobile-nav');
+      return Boolean(panel && document.activeElement && panel.contains(document.activeElement));
+    });
+
+  test.beforeEach(async ({ page }) => {
+    await page.setViewportSize({ width: 800, height: 1000 });
+    await page.goto('/');
+  });
+
+  test('tabbing off the menu button never enters the closed panel', async ({ page }) => {
+    const toggle = page.getByRole('button', { name: 'Toggle menu' });
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await toggle.focus();
+
+    for (let i = 1; i <= TABS; i += 1) {
+      await page.keyboard.press('Tab');
+      expect(
+        await focusIsInsidePanel(page),
+        `focus entered the closed menu panel after ${i} tab(s)`,
+      ).toBe(false);
+    }
+  });
+
+  test('tabbing off the menu button does reach the open panel', async ({ page }) => {
+    const toggle = page.getByRole('button', { name: 'Toggle menu' });
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await toggle.focus();
+
+    let reached = false;
+    for (let i = 0; i < TABS && !reached; i += 1) {
+      await page.keyboard.press('Tab');
+      reached = await focusIsInsidePanel(page);
+    }
+    expect(reached, `focus never reached the open menu panel within ${TABS} tabs`).toBe(true);
   });
 });

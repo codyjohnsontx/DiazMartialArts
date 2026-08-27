@@ -99,8 +99,8 @@ export function Header() {
         className={cn(
           'lg:hidden',
           open
-            ? 'pointer-events-auto max-h-[560px] border-t border-black/10 opacity-100'
-            : 'pointer-events-none max-h-0 opacity-0',
+            ? 'visible pointer-events-auto max-h-[560px] border-t border-black/10 opacity-100'
+            : 'invisible pointer-events-none max-h-0 overflow-hidden opacity-0',
         )}
       >
         <nav aria-label="Mobile" className="space-y-2 bg-sand px-4 py-5 sm:px-6">
