@@ -159,6 +159,15 @@ marking work complete or CI fails on unformatted files.
   rebuild, restart dev, or delete `.next/types` before treating it as one. CI
   never sees it because each run starts from a clean checkout.
 
+- Text contrast on this site cannot be checked against a nominal background
+  colour. `body` paints a gradient (`app/globals.css`), so no ancestor carries
+  an opaque `backgroundColor`: walking up the tree for one finds nothing, and
+  `sand` is near but not equal to what any given pixel actually is. Measure the
+  rendered page instead - hide every glyph with
+  `* { color: transparent !important }`, re-screenshot, and take the lightest
+  pixel behind each run of text as the worst case for dark type. The
+  `Rank and certification` list on `/coaches` was sized that way.
+
 ## Maintaining this file
 
 Keep this file for knowledge useful to almost every future agent session in this project.
