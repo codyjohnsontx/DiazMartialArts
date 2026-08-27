@@ -98,6 +98,10 @@ export function Header() {
         id="mobile-nav"
         className={cn(
           'lg:hidden',
+          // `invisible` is load-bearing rather than decoration: opacity and max-height
+          // hide the closed panel from the eye and the mouse but leave its links in
+          // the tab order. `tests/e2e/header-widths.spec.ts` owns that reasoning and
+          // fails in both directions - closed unreachable, open reachable.
           open
             ? 'visible pointer-events-auto max-h-[560px] border-t border-black/10 opacity-100'
             : 'invisible pointer-events-none max-h-0 overflow-hidden opacity-0',
