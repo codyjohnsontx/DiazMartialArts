@@ -113,6 +113,12 @@ test.describe('Coaches page details', () => {
   // paragraphs, which is the same silent drift the rank list guard below exists
   // to stop. The rank line is the first paragraph in the block, so it is
   // asserted here too.
+  //
+  // The profile is addressed as a named landmark, labelled by its own <h2>, so
+  // the read stays scoped without coupling to a class name or markup position.
+  // The exact compare also rests on Placeholder emitting no <p> when it is
+  // given a src: that is what makes this run exactly the rank line plus the bio
+  // paragraphs, so a caption added to that branch would surface here.
   test('renders the rank line and the bio paragraphs, in order and with nothing extra', async ({
     page,
   }) => {
