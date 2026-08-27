@@ -169,6 +169,19 @@ marking work complete or CI fails on unformatted files.
   server beside a production server makes every chunk 500 and React never
   runs, so reproduce production-only hydration issues with dev stopped.
 
+- Turning a wide layout on at a responsive breakpoint needs the layout's
+  measured width, not a plausible-looking breakpoint. The header's desktop
+  navigation is gated at `lg` because its six labels plus the call to action
+  need 892px under the sm/md spacing and about 1067px once the wider `lg`
+  gaps and padding apply; at `md` it overflowed every page across the whole
+  of tablet portrait. Note what hid that for so long: flex children shrink,
+  so the "Book Free Trial" button collapses to a three-line pill and
+  `documentElement.scrollWidth` stops exceeding `clientWidth` well before the
+  header actually fits. No-overflow is a floor, not proof the layout is right -
+  read the required width off a browser with the wide layout forced visible.
+  `tests/e2e/header-widths.spec.ts` pins both boundaries and holds the
+  reasoning.
+
 - `npx tsc --noEmit` also checks `.next/types/**/*.ts` (see `tsconfig.json`),
   and that directory is only rewritten when `next build` or `next dev` starts.
   After deleting or renaming a route, `tsc` therefore fails on a
