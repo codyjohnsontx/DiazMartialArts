@@ -27,6 +27,8 @@ export default function CoachesPage() {
     );
   }
 
+  const [lead, ...rest] = head.bio;
+
   return (
     <>
       {/* HERO */}
@@ -44,7 +46,10 @@ export default function CoachesPage() {
       </section>
 
       {/* FEATURED HEAD COACH */}
-      <section className="mx-auto w-full max-w-6xl px-4 pb-12 pt-16 sm:px-6 lg:grid lg:grid-cols-[1.1fr_1fr] lg:gap-12 lg:px-8">
+      <section
+        aria-labelledby="head-instructor"
+        className="mx-auto w-full max-w-6xl px-4 pb-12 pt-16 sm:px-6 lg:grid lg:grid-cols-[1.1fr_1fr] lg:gap-12 lg:px-8"
+      >
         <Placeholder
           label={`Coach ${head.name} · portrait`}
           tint="ember"
@@ -52,16 +57,20 @@ export default function CoachesPage() {
           src={head.image}
           alt={head.name}
         />
-        <div className="mt-8 lg:mt-0 lg:pt-4">
+        <div className="mt-8 min-w-0 lg:mt-0 lg:pt-4">
           <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-bronze">
             01 · Head Instructor
           </div>
-          <h2 className="display mt-3 text-4xl sm:text-5xl lg:text-[64px]">
+          <h2 id="head-instructor" className="display mt-3 text-4xl sm:text-5xl lg:text-[64px]">
             {head.name.replace(/^Coach\s+/, '')}
           </h2>
-          <div className="mt-6 space-y-3">
-            {head.bio.split('\n\n').map((paragraph, i) => (
-              <p key={i} className="text-base leading-relaxed text-black/75">
+          <p className="mt-3 text-base font-bold text-bronze sm:text-lg">{head.rank}</p>
+          {lead ? (
+            <p className="mt-6 text-lg leading-relaxed font-semibold text-ink">{lead}</p>
+          ) : null}
+          <div className="mt-4 space-y-3">
+            {rest.map((paragraph) => (
+              <p key={paragraph} className="text-base leading-relaxed text-black/75">
                 {paragraph}
               </p>
             ))}
@@ -69,6 +78,35 @@ export default function CoachesPage() {
           <Button href="/contact" variant="secondary" size="lg" className="mt-6">
             Train with {head.name.split(' ')[1] ?? head.name} →
           </Button>
+        </div>
+      </section>
+
+      {/* RANK AND CERTIFICATION */}
+      <section aria-labelledby="rank-and-certification" className="border-t border-black/10">
+        <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
+          <Eyebrow>Credentials</Eyebrow>
+          <h2 id="rank-and-certification" className="display mt-3 text-3xl sm:text-4xl">
+            Rank and certification
+          </h2>
+          <div className="mt-10 grid gap-x-10 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+            {head.credentials.map((group) => (
+              <div key={group.group} className="min-w-0 border-t-2 border-ember pt-4">
+                <h3 className="text-[11px] font-bold uppercase tracking-[0.24em] text-bronze">
+                  {group.group}
+                </h3>
+                <ul className="mt-4 grid gap-4">
+                  {group.entries.map((entry) => (
+                    <li key={entry.rank} className="min-w-0">
+                      <p className="text-sm font-semibold leading-snug text-black/75">
+                        {entry.rank}
+                      </p>
+                      <p className="mt-1 text-sm leading-snug text-black/65">{`under ${entry.under}`}</p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
     </>

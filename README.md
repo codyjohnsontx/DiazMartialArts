@@ -53,6 +53,11 @@ All primary content is in `content/`:
 - `content/schedule.ts`
 - `content/upcoming.ts` (fallback list)
 
+Editing the head instructor's rank line, bio or credentials in
+`content/coaches.ts` also means updating the copy of them recorded verbatim in
+`tests/e2e/public-pages.spec.ts`; the comment at the top of `content/coaches.ts`
+explains why that duplication is deliberate.
+
 ## Schedule Setup
 
 `/schedule` ships with three sections:

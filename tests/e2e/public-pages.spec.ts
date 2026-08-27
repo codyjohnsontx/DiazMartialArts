@@ -16,11 +16,162 @@ test.describe('Public pages - HTTP 200 + heading + footer', () => {
   }
 });
 
+// The head instructor's rank line, bio and rank list, written out here in full
+// and on purpose. A guard that read the same strings back out of
+// content/coaches.ts would pass any rename made in that file, which is exactly
+// the change it needs to catch: this copy is owner-approved and is not the
+// page's to reword, re-order or quietly drop. So this block is the independent
+// record of what was approved, and the page is measured against it.
+//
+// Note the plain hyphens. The copy uses no em or en dash anywhere, and the
+// middle dot appears only in the rank line and in the F.I.G.H.T. entry, so a
+// stray typographic substitution fails here rather than reaching the site.
+const HEAD_COACH_RANK = '8th Degree Grandmaster · Chief Head Instructor';
+
+const HEAD_COACH_BIO = [
+  'Training since December 1989. Leading Diaz Martial Arts as owner and Chief Head Instructor for 28 years.',
+  "His work has shaped instruction well beyond one school. He served as senior consultant for United Professionals and head instructor of East West Karate in Coral Springs, Florida. In 2001 he joined the corporate headquarters of Black Belt Schools International, helping schools across the country strengthen their programs and contributing to the Instructor's College curriculum. He has produced and been featured in multiple instructional video series for Century Martial Arts.",
+  'He holds grandmaster rank in three Filipino martial arts and black belt rank in six more disciplines, earned under some of the most respected names in the industry - and he still trains with them.',
+];
+
+const CREDENTIAL_GROUPS = [
+  {
+    group: 'Filipino martial arts & JKD',
+    entries: [
+      {
+        rank: 'Kali - 8th Degree Black Belt, Grandmaster',
+        under: 'under Grandmaster John Bruce Daniels',
+      },
+      {
+        rank: 'Escrido - 8th Degree Black Belt, Grandmaster',
+        under: 'under Grandmaster John Bruce Daniels',
+      },
+      {
+        rank: 'Arnis - 8th Degree Black Belt, Grandmaster',
+        under: 'under Grandmaster John Bruce Daniels',
+      },
+      { rank: 'Jeet Kune Do - Full Instructor', under: 'under John Bruce Daniels' },
+    ],
+  },
+  {
+    group: 'Traditional',
+    entries: [
+      // No art is named on this one. The owner's source material gives the
+      // degree and the teachers and nothing else, and that gap is with him as
+      // an open question - so it is not a typo to be helpfully filled in here.
+      {
+        rank: '7th Degree Black Belt, Shihan',
+        under: 'under Professor Larry Hilton & Hanshi John Geyston',
+      },
+      { rank: 'Tae Kwon Do - 6th Degree Black Belt', under: 'under Master Ronald Brett Brown' },
+    ],
+  },
+  {
+    group: 'Striking',
+    entries: [
+      {
+        rank: 'American Kickboxing - 2nd Degree Black Belt',
+        under: 'under Bill "Superfoot" Wallace',
+      },
+      { rank: 'Muay Thai (Chute Boxe) - Kru', under: 'under Luiz Charneski' },
+      { rank: 'Muay Lao Kickboxing - Arjan', under: 'under Arjan John Bruce Daniels' },
+    ],
+  },
+  {
+    group: 'Grappling',
+    entries: [
+      {
+        rank: 'Brazilian Jiu-Jitsu - 2nd Degree Black Belt, Instructor Bars',
+        under: 'under Frank "King" Webb / Coral Belt Cleber Luciano',
+      },
+    ],
+  },
+  {
+    group: 'Reality-based self defense',
+    entries: [
+      { rank: 'HagAnaH - 4th Degree, Master Instructor', under: 'under Mike Lee Kanarek' },
+      { rank: 'Blade Artist (HagAnaH) - 2nd Degree Black Belt', under: 'under Mike Lee Kanarek' },
+      {
+        rank: 'F.I.G.H.T. Instructor · Ground Survival · I.K.T. Instructor',
+        under: 'under Mike Lee Kanarek',
+      },
+      { rank: 'I.P.T.T. Instructor', under: 'under Mike Lee Kanarek & Garret Machine' },
+    ],
+  },
+];
+
 test.describe('Coaches page details', () => {
   test('shows Coach Eddie Diaz and head instructor label', async ({ page }) => {
     await page.goto('/coaches');
     await expect(page.getByText(/Eddie Diaz/i).first()).toBeVisible();
     await expect(page.getByText(/Head Instructor/i).first()).toBeVisible();
+  });
+
+  // Compares the profile's whole run of paragraphs in one go rather than
+  // asserting each approved one is present somewhere. Presence checks pass an
+  // added paragraph nobody approved, and pass a re-ordering of the two body
+  // paragraphs, which is the same silent drift the rank list guard below exists
+  // to stop. The rank line is the first paragraph in the block, so it is
+  // asserted here too.
+  //
+  // The profile is addressed as a named landmark, labelled by its own <h2>, so
+  // the read stays scoped without coupling to a class name or markup position.
+  // The exact compare also rests on Placeholder emitting no <p> when it is
+  // given a src: that is what makes this run exactly the rank line plus the bio
+  // paragraphs, so a caption added to that branch would surface here.
+  test('renders the rank line and the bio paragraphs, in order and with nothing extra', async ({
+    page,
+  }) => {
+    await page.goto('/coaches');
+
+    const profile = page.getByRole('region', { name: 'Eddie Diaz' });
+    await expect(profile).toBeVisible();
+
+    const paragraphs = (await profile.locator('p').allTextContents()).map((text) => text.trim());
+
+    expect(paragraphs).toEqual([HEAD_COACH_RANK, ...HEAD_COACH_BIO]);
+  });
+
+  // The opening line carries the whole claim, so it is set apart from the two
+  // paragraphs under it. Assert the relationship rather than the exact type
+  // scale, so a restyle stays free but a flattening does not pass unnoticed.
+  test('sets the lead paragraph apart from the body paragraphs', async ({ page }) => {
+    await page.goto('/coaches');
+
+    const sizeOf = (text: string) =>
+      page
+        .getByText(text, { exact: true })
+        .evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+
+    const [leadSize, bodySize] = await Promise.all([
+      sizeOf(HEAD_COACH_BIO[0]!),
+      sizeOf(HEAD_COACH_BIO[1]!),
+    ]);
+
+    expect(leadSize).toBeGreaterThan(bodySize);
+  });
+
+  test('renders every rank and certification group exactly as approved', async ({ page }) => {
+    await page.goto('/coaches');
+
+    const credentials = page.getByRole('region', { name: 'Rank and certification' });
+    await expect(credentials).toBeVisible();
+
+    const rendered = await credentials.evaluate((section) =>
+      [...section.querySelectorAll('h3')].map((heading) => ({
+        group: heading.textContent?.trim() ?? '',
+        entries: [...(heading.parentElement?.querySelectorAll('li') ?? [])].map((entry) =>
+          [...entry.querySelectorAll('p')].map((line) => line.textContent?.trim() ?? ''),
+        ),
+      })),
+    );
+
+    expect(rendered).toEqual(
+      CREDENTIAL_GROUPS.map(({ group, entries }) => ({
+        group,
+        entries: entries.map((entry) => [entry.rank, entry.under]),
+      })),
+    );
   });
 });
 
