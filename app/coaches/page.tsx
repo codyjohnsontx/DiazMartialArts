@@ -46,7 +46,10 @@ export default function CoachesPage() {
       </section>
 
       {/* FEATURED HEAD COACH */}
-      <section className="mx-auto w-full max-w-6xl px-4 pb-12 pt-16 sm:px-6 lg:grid lg:grid-cols-[1.1fr_1fr] lg:gap-12 lg:px-8">
+      <section
+        aria-labelledby="head-instructor"
+        className="mx-auto w-full max-w-6xl px-4 pb-12 pt-16 sm:px-6 lg:grid lg:grid-cols-[1.1fr_1fr] lg:gap-12 lg:px-8"
+      >
         <Placeholder
           label={`Coach ${head.name} · portrait`}
           tint="ember"
@@ -58,7 +61,7 @@ export default function CoachesPage() {
           <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-bronze">
             01 · Head Instructor
           </div>
-          <h2 className="display mt-3 text-4xl sm:text-5xl lg:text-[64px]">
+          <h2 id="head-instructor" className="display mt-3 text-4xl sm:text-5xl lg:text-[64px]">
             {head.name.replace(/^Coach\s+/, '')}
           </h2>
           <p className="mt-3 text-base font-bold text-bronze sm:text-lg">{head.rank}</p>

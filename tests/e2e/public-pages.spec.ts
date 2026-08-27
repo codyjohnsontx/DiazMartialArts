@@ -107,13 +107,23 @@ test.describe('Coaches page details', () => {
     await expect(page.getByText(/Head Instructor/i).first()).toBeVisible();
   });
 
-  test('shows the head instructor rank line and every bio paragraph', async ({ page }) => {
+  // Compares the profile's whole run of paragraphs in one go rather than
+  // asserting each approved one is present somewhere. Presence checks pass an
+  // added paragraph nobody approved, and pass a re-ordering of the two body
+  // paragraphs, which is the same silent drift the rank list guard below exists
+  // to stop. The rank line is the first paragraph in the block, so it is
+  // asserted here too.
+  test('renders the rank line and the bio paragraphs, in order and with nothing extra', async ({
+    page,
+  }) => {
     await page.goto('/coaches');
 
-    await expect(page.getByText(HEAD_COACH_RANK, { exact: true })).toBeVisible();
-    for (const paragraph of HEAD_COACH_BIO) {
-      await expect(page.getByText(paragraph, { exact: true })).toBeVisible();
-    }
+    const profile = page.getByRole('region', { name: 'Eddie Diaz' });
+    await expect(profile).toBeVisible();
+
+    const paragraphs = (await profile.locator('p').allTextContents()).map((text) => text.trim());
+
+    expect(paragraphs).toEqual([HEAD_COACH_RANK, ...HEAD_COACH_BIO]);
   });
 
   // The opening line carries the whole claim, so it is set apart from the two
