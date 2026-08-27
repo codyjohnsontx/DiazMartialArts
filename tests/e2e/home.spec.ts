@@ -1,5 +1,7 @@
 import { test, expect } from '@playwright/test';
 
+import { formatCountdown, getUpcomingClassBlocks } from '@/lib/classSchedule';
+
 test.describe('Home page', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
@@ -130,5 +132,44 @@ test.describe('Home page', () => {
     const footer = page.getByRole('contentinfo');
     await expect(footer).toBeVisible();
     await expect(footer.getByText(/All rights reserved/i)).toBeVisible();
+  });
+});
+
+test.describe('Home page hydration', () => {
+  test('coming-up card hydrates without a mismatch after the page was rendered', async ({
+    page,
+  }) => {
+    // In production the page is prerendered, so its HTML carries the build's
+    // clock and every visitor hydrates later. Against `next dev` the server
+    // renders per request and shares the clock, so the bug never shows there.
+    // Moving the browser's clock ahead of the server's reproduces the deployed
+    // condition on either server.
+    const visitTime = new Date(Date.now() + 30 * 60_000);
+    await page.clock.setFixedTime(visitTime);
+
+    const errors: string[] = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    page.on('console', (message) => {
+      if (message.type() === 'error') errors.push(message.text());
+    });
+
+    await page.goto('/');
+
+    // React reports a mismatch while hydrating, so the errors are only in by
+    // the time the card shows a countdown computed from the browser's clock;
+    // the server's own countdown, if it sent one, is on screen before that.
+    const [nextBlock] = getUpcomingClassBlocks(visitTime, { limit: 1 });
+    await expect(
+      page.getByText(formatCountdown(nextBlock.start, visitTime), { exact: true }),
+    ).toBeVisible();
+    // .first(): the Later list repeats a block's first program, so the same
+    // name can appear twice when consecutive blocks share it
+    await expect(
+      page.getByText(nextBlock.classes[0].program, { exact: true }).first(),
+    ).toBeVisible();
+
+    expect(
+      errors.filter((text) => /hydrat|did not match|Minified React error/i.test(text)),
+    ).toEqual([]);
   });
 });
