@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Locator, type Page } from '@playwright/test';
 
 /**
  * The header used to turn its desktop navigation on at `md` (768px) while the
@@ -21,6 +21,14 @@ import { test, expect, type Page } from '@playwright/test';
  * its theme scale emits no CSS at all and would still read correct. Both
  * boundaries are pinned: move the breakpoint down and the widths below it wrap
  * or overflow, move it up and 1035 loses its desktop header.
+ *
+ * Every width below was measured under overlay scrollbars, which is what
+ * headless Chromium and macOS give you, and that omits one case. A media query
+ * is evaluated against `window.innerWidth`, which counts a classic scrollbar,
+ * while the row lays out in `documentElement.clientWidth`, which does not, so
+ * on a classic-scrollbar platform a window of 1035-1049 turns the desktop
+ * header on with only 1020-1034px to lay it out in and the call to action wraps
+ * again. That residual is known and accepted; these numbers do not cover it.
  */
 
 // This spec drives the viewport itself, so the configured project viewports are
@@ -242,15 +250,12 @@ test.describe('The call to action never renders wrapped', () => {
   const CTA_WIDTHS = [768, 834, 1023, 1024, 1034, 1035, 1036, 1100, 1280, 1440];
 
   /** Sitting on its own line is the observable form of "the header fits". */
-  const lineCount = (page: Page) =>
-    page
-      .locator('header a', { hasText: 'Book Free Trial' })
-      .first()
-      .evaluate((el) => {
-        const range = document.createRange();
-        range.selectNodeContents(el);
-        return range.getClientRects().length;
-      });
+  const lineCount = (control: Locator) =>
+    control.evaluate((el) => {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      return range.getClientRects().length;
+    });
 
   for (const width of CTA_WIDTHS) {
     test(`no visible Book Free Trial control wraps at ${width}px`, async ({ page }) => {
@@ -262,11 +267,7 @@ test.describe('The call to action never renders wrapped', () => {
       for (const control of await visible.all()) {
         if (!(await control.isVisible())) continue;
         expect(
-          await control.evaluate((el) => {
-            const range = document.createRange();
-            range.selectNodeContents(el);
-            return range.getClientRects().length;
-          }),
+          await lineCount(control),
           `"Book Free Trial" wrapped onto more than one line at ${width}px`,
         ).toBe(1);
       }
@@ -287,7 +288,7 @@ test.describe('The call to action never renders wrapped', () => {
         name: 'Book Free Trial',
       });
       await expect(cta).toBeVisible();
-      expect(await lineCount(page)).toBe(1);
+      expect(await lineCount(cta)).toBe(1);
     });
   }
 });

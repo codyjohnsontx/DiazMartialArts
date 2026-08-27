@@ -183,6 +183,19 @@ marking work complete or CI fails on unformatted files.
   with the wide layout forced visible, and check what the text does, not just
   the box. `tests/e2e/header-widths.spec.ts` pins both boundaries and holds the
   reasoning.
+  One residual is knowingly left in: a CSS `@media (min-width: ...)` is
+  evaluated against `window.innerWidth`, which counts a classic scrollbar,
+  while the element lays out in `documentElement.clientWidth`, which does not.
+  Measured in Chromium with overlay scrollbars disabled, an innerWidth of 1035
+  gives a clientWidth of 1020 and `(min-width:1035px)` still matches, so on
+  Windows, on Linux, and on macOS set to always show scrollbars, a window
+  1035-1049 wide turns the desktop header on with only 1020-1034px of layout
+  width and the call to action wraps to two lines again. Headless Chromium and
+  macOS default to overlay scrollbars, where the two widths are equal, so this
+  class of defect is invisible until the scrollbars are made classic: launch
+  Chromium with `--disable-features=OverlayScrollbar` and without
+  `--hide-scrollbars` to see it. A width measured under overlay scrollbars is
+  not the width a media query will hand you.
 
 - `npx tsc --noEmit` also checks `.next/types/**/*.ts` (see `tsconfig.json`),
   and that directory is only rewritten when `next build` or `next dev` starts.

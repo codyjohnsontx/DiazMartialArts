@@ -56,7 +56,7 @@ export function Header() {
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-6 lg:gap-7 min-[1035px]:flex" aria-label="Primary">
+        <nav className="hidden items-center gap-7 min-[1035px]:flex" aria-label="Primary">
           {navItems.map((item) => {
             const active = isActive(item.href);
             return (
