@@ -32,9 +32,11 @@ export type UpcomingItem = {
 //
 // To update: the source is a person, not a feed. The gym emails new flyers to the
 // site owner, the owner passes them on, and entries are added here by hand from
-// whatever those flyers actually print. There is no automatic source and none is
-// expected, so do not go looking for a calendar feed to wire up. Take a date only
-// from something that actually prints it - genuine scheduled events only, never a
+// whatever those flyers actually print. Beyond the optional
+// NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL feed the header above describes, these
+// hand-written entries have no automatic source and none is expected, so do not
+// go hunting for another calendar feed to wire up. Take a date only from
+// something that actually prints it - genuine scheduled events only, never a
 // placeholder, and never a guessed date or time. If the source gives no time, set
 // allDay rather than inventing one; if it gives no date, leave the event out. An
 // empty list is a supported state and the normal resting state between flyers,
