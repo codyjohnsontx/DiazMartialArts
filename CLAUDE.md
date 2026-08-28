@@ -122,10 +122,14 @@ marking work complete or CI fails on unformatted files.
   `font-[var(--font-body)]` compiles to `font-weight: var(--font-body)` - a
   rule that emits, applies, and does nothing - and the page keeps rendering in
   whatever the browser picks for `ui-sans-serif`. The body in `app/layout.tsx`
-  carries exactly that today, filed as dma-body-font-never-applied. Give an
+  carried exactly that from the first commit, so every page on the site
+  rendered in the browser's fallback face and no test noticed. Give an
   ambiguous arbitrary value its data-type hint
   (`font-[family-name:var(--font-body)]`), and read the compiled declaration,
-  not just the presence of the class.
+  not just the presence of the class. Reading the class list, the source, or a
+  React render proves nothing here; `tests/e2e/body-font.spec.ts` reads the
+  computed `font-family` off `body` in a real browser, which is the only place
+  the mistake shows.
 - `site.url` (from `readSiteUrl` in `lib/env.ts`) never carries a trailing
   slash, so on a bare-origin base both `${site.url}/sitemap.xml` and
   `new URL(path, site.url)` are safe. The two idioms diverge once the base
@@ -209,6 +213,17 @@ marking work complete or CI fails on unformatted files.
   unnoticed. Sizing this header from its own content instead of from a number
   somebody measured is filed as dma-header-size-from-content, which owns both
   that residual and the machine-local pixel.
+  Read those widths knowing they predate the body font working at all. Until
+  `font-[family-name:var(--font-body)]` landed, the header laid out in
+  `ui-sans-serif`, which is by definition a different typeface on every
+  platform - San Francisco on macOS, whatever fontconfig hands Chromium on the
+  Linux runner - so the disagreement the note above records was measured
+  between two different fonts, not two rendering stacks. Manrope is a
+  self-hosted file that is byte-identical everywhere, which should narrow that
+  gap considerably. Measured with the query forced on, the row's own content
+  now fits at 985px against 1003px in the fallback face, so 1035 keeps the
+  desktop header and gains headroom; the numbers to re-take when picking that
+  work up are these, not the pre-fix ones.
 
 - `npx tsc --noEmit` also checks `.next/types/**/*.ts` (see `tsconfig.json`),
   and that directory is only rewritten when `next build` or `next dev` starts.
