@@ -7,13 +7,13 @@ import { test, expect, type Locator, type Page } from '@playwright/test';
  * iPad, 820 on the Air, 834 on the Pro.
  *
  * The desktop header is now gated at `min-[1035px]`, a measured number rather
- * than the next Tailwind size up. 1035px is where the row reaches its natural
- * width; below it the flex row shrinks until "Book Free Trial" wraps onto a
- * second line, which no overflow assertion catches, because a squeezed button
- * is not an overflowing one. That is how the same mistake survived twice - at
- * 892px, where the document stopped overflowing only once the button had been
- * crushed into three lines, and again at `lg`, which fixed the tablets but left
- * 1024-1034 rendering a two-line button.
+ * than the next Tailwind size up. Below the width the row needs, the flex row
+ * shrinks until "Book Free Trial" wraps onto a second line, which no overflow
+ * assertion catches, because a squeezed button is not an overflowing one. That
+ * is how the same mistake survived twice - at 892px, where the document stopped
+ * overflowing only once the button had been crushed into three lines, and again
+ * at `lg`, which fixed the tablets but left 1024-1034 rendering a two-line
+ * button.
  *
  * These tests measure the conditions that define both bugs - scrollWidth
  * against clientWidth, and how many lines the call to action occupies - rather
@@ -21,6 +21,16 @@ import { test, expect, type Locator, type Page } from '@playwright/test';
  * its theme scale emits no CSS at all and would still read correct. Both
  * boundaries are pinned: move the breakpoint down and the widths below it wrap
  * or overflow, move it up and 1035 loses its desktop header.
+ *
+ * Every number here is a text measurement, so it is only meaningful while the
+ * page renders in the font it declares. It did not: `font-[var(--font-body)]`
+ * on the body compiled to `font-weight`, leaving the site in whatever the
+ * browser resolves `ui-sans-serif` to, which is narrow on macOS and wide on the
+ * Linux CI runner - where these same assertions failed on a header that needed
+ * over 1100px. `renders in the site font` below is what keeps that from coming
+ * back silently. In the site's own font the row reaches its natural width by
+ * 1024px, so 1035 now carries a margin; it is deliberately left where it is
+ * rather than re-litigated a third time.
  *
  * Every width below was measured under overlay scrollbars, which is what
  * headless Chromium and macOS give you, and that omits one case. A media query
@@ -64,6 +74,28 @@ async function measure(page: Page) {
     };
   });
 }
+
+/**
+ * The premise of every width in this file. Manrope is self-hosted by
+ * `next/font`, so once the body actually asks for it the metrics are the same
+ * byte-for-byte on a laptop and on a CI runner; falling back to the platform's
+ * own sans is what made these numbers disagree across machines.
+ */
+test('the header renders in the site font', async ({ page }) => {
+  await page.goto('/');
+  await page.evaluate(() => document.fonts.ready);
+  const state = await page.evaluate(() => {
+    const row = document.querySelector('header > div') as HTMLElement;
+    return {
+      family: getComputedStyle(row).fontFamily,
+      loaded: [...document.fonts].some((f) => f.status === 'loaded' && /Manrope/.test(f.family)),
+    };
+  });
+  expect(state.family, 'the header row does not ask for the site font').toMatch(/Manrope/);
+  expect(state.loaded, 'the site font never loaded, so these widths are the fallback font').toBe(
+    true,
+  );
+});
 
 test.describe('Header fits its viewport', () => {
   for (const width of [...TABLET_WIDTHS, ...UNCHANGED_WIDTHS]) {

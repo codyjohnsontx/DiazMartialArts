@@ -117,6 +117,14 @@ marking work complete or CI fails on unformatted files.
   opacity value. When the guard trips, fix the class, not the config: adding the
   off-scale value to `theme.opacity` in `tailwind.config.ts` legalises that one
   typo and leaves the next one silent.
+  An arbitrary value fails the same silent way when Tailwind cannot tell which
+  property it belongs to. `font-` is both `font-family` and `font-weight`, so
+  `font-[var(--font-body)]` compiles to `font-weight: var(--font-body)` - a
+  rule that emits, applies, and does nothing - and the page keeps rendering in
+  whatever the browser picks for `ui-sans-serif`. The body carried exactly that
+  for a while. Give an ambiguous arbitrary value its data-type hint
+  (`font-[family-name:var(--font-body)]`), and read the compiled declaration,
+  not just the presence of the class.
 - `site.url` (from `readSiteUrl` in `lib/env.ts`) never carries a trailing
   slash, so on a bare-origin base both `${site.url}/sitemap.xml` and
   `new URL(path, site.url)` are safe. The two idioms diverge once the base
@@ -183,6 +191,16 @@ marking work complete or CI fails on unformatted files.
   with the wide layout forced visible, and check what the text does, not just
   the box. `tests/e2e/header-widths.spec.ts` pins both boundaries and holds the
   reasoning.
+  A measured width is only portable if the text it measures is. Until the body
+  font utility was fixed the site rendered in the platform default sans, so
+  1035px was macOS's number: on the Linux CI runner the same header needed more
+  than 1100px and the call to action came back wrapped, and the home hero's
+  next-class card pushed the document to 1081px at a 1024px viewport. With
+  Manrope actually applied the header row reaches its natural width by 1024px,
+  so `min-[1035px]` is now a margin rather than the exact boundary; it is left
+  where it is deliberately. Reproduce that class of divergence locally by
+  injecting `html, body { font-family: Verdana; }` - no `!important`, so a body
+  that declares its own family through a utility class still outranks it.
   One residual is knowingly left in: a CSS `@media (min-width: ...)` is
   evaluated against `window.innerWidth`, which counts a classic scrollbar,
   while the element lays out in `documentElement.clientWidth`, which does not.
