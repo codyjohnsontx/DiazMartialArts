@@ -6,39 +6,48 @@ import { test, expect, type Locator, type Page } from '@playwright/test';
  * scrolled sideways across the whole of tablet portrait - 768 on the classic
  * iPad, 820 on the Air, 834 on the Pro.
  *
- * The desktop header is now gated at `min-[1035px]`, a measured number rather
- * than the next Tailwind size up. Below the width the row needs, the flex row
- * shrinks until "Book Free Trial" wraps onto a second line, which no overflow
- * assertion catches, because a squeezed button is not an overflowing one. That
- * is how the same mistake survived twice - at 892px, where the document stopped
- * overflowing only once the button had been crushed into three lines, and again
- * at `lg`, which fixed the tablets but left 1024-1034 rendering a two-line
- * button.
+ * Below the width the row needs, the flex row shrinks until "Book Free Trial"
+ * wraps onto a second line, which no overflow assertion catches, because a
+ * squeezed button is not an overflowing one. That is how the same mistake
+ * survived three times: at 892px, where the document stopped overflowing only
+ * once the button had been crushed into three lines; at `lg`, which fixed the
+ * tablets but left 1024-1034 rendering a two-line button; and at
+ * `min-[1035px]`, which was measured on one machine and did not port - the same
+ * page, in the same self-hosted Manrope, needs 1017px of layout width on a Mac
+ * and more than 1036px on the Linux CI runner, where 1035 and 1036 came back
+ * wrapped.
  *
- * These tests measure the conditions that define both bugs - scrollWidth
- * against clientWidth, and how many lines the call to action occupies - rather
- * than reading the Tailwind classes back, because a class whose value misses
- * its theme scale emits no CSS at all and would still read correct. Both
- * boundaries are pinned: move the breakpoint down and the widths below it wrap
- * or overflow, move it up and 1035 loses its desktop header.
+ * So the gate is no longer a measured text width at all. This row is
+ * `max-w-6xl` with `lg:px-8`, so its content box stops growing at a 1152px
+ * viewport and is 1088px wide from there up. Gating the desktop header at
+ * `min-[1152px]` means it only ever lays out at that single width - the widest
+ * the design can hand it - so there is no squeezed band left for a font metric
+ * to move. CI measured the header fitting in the 1036px of content a 1100px
+ * viewport gives it, so 1088px clears it by about 50px.
  *
- * Every number here is a text measurement, so it is only meaningful while the
- * page renders in the font it declares. It did not: `font-[var(--font-body)]`
- * on the body compiled to `font-weight`, leaving the site in whatever the
- * browser resolves `ui-sans-serif` to, which is narrow on macOS and wide on the
- * Linux CI runner - where these same assertions failed on a header that needed
- * over 1100px. `renders in the site font` below is what keeps that from coming
- * back silently. In the site's own font the row reaches its natural width by
- * 1024px, so 1035 now carries a margin; it is deliberately left where it is
- * rather than re-litigated a third time.
+ * That margin also absorbs the residual the previous number could not. A
+ * `@media (min-width: ...)` is evaluated against `window.innerWidth`, which
+ * counts a classic scrollbar, while the row lays out in
+ * `documentElement.clientWidth`, which does not, so on Windows and on Linux the
+ * row is handed 15px less than the query promised. At 1035px that 15px was
+ * wider than the entire margin; at 1152px it is not.
  *
- * Every width below was measured under overlay scrollbars, which is what
- * headless Chromium and macOS give you, and that omits one case. A media query
- * is evaluated against `window.innerWidth`, which counts a classic scrollbar,
- * while the row lays out in `documentElement.clientWidth`, which does not, so
- * on a classic-scrollbar platform a window of 1035-1049 turns the desktop
- * header on with only 1020-1034px to lay it out in and the call to action wraps
- * again. That residual is known and accepted; these numbers do not cover it.
+ * These tests measure the conditions that define the bug - scrollWidth against
+ * clientWidth, and how many lines the call to action occupies - rather than
+ * reading the Tailwind classes back, because a class whose value misses its
+ * theme scale emits no CSS at all and would still read correct. Both boundaries
+ * are pinned: move the breakpoint down and 1151 wraps or overflows, move it up
+ * and 1152 loses its desktop header.
+ *
+ * Text measurements are only meaningful while the page renders in the font it
+ * declares. It did not: `font-[var(--font-body)]` on the body compiled to
+ * `font-weight`, leaving the site in whatever the browser resolves
+ * `ui-sans-serif` to, which is narrow on macOS and wide on the Linux CI runner
+ * - where these same assertions failed on a header that needed over 1100px.
+ * `renders in the site font` below is what keeps that from coming back
+ * silently. Note it proves less than it looks: `next/font` emits a
+ * `__Manrope_Fallback_*` face alongside the real one, and the family name a
+ * loaded fallback reports still matches.
  */
 
 // This spec drives the viewport itself, so the configured project viewports are
@@ -48,10 +57,10 @@ test.beforeEach(async ({}, testInfo) => {
 });
 
 /** Widths that get the menu button, and used to overflow or wrap. */
-const TABLET_WIDTHS = [768, 800, 820, 834, 891, 1023, 1024, 1034];
+const MENU_BUTTON_WIDTHS = [768, 800, 820, 834, 891, 1023, 1024, 1034, 1035, 1100, 1151];
 
-/** Widths whose header rendering must not have moved. */
-const UNCHANGED_WIDTHS = [320, 375, 390, 767, 1035, 1440];
+/** Widths outside the band this fix moved, on either side of it. */
+const UNCHANGED_WIDTHS = [320, 375, 390, 767, 1152, 1440];
 
 /** The header is shared but page content is not, so this checks several. */
 const PATHS = ['/', '/programs', '/schedule', '/coaches', '/contact'];
@@ -98,7 +107,7 @@ test('the header renders in the site font', async ({ page }) => {
 });
 
 test.describe('Header fits its viewport', () => {
-  for (const width of [...TABLET_WIDTHS, ...UNCHANGED_WIDTHS]) {
+  for (const width of [...MENU_BUTTON_WIDTHS, ...UNCHANGED_WIDTHS]) {
     test(`header row does not overflow at ${width}px`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 });
       for (const path of PATHS) {
@@ -114,13 +123,13 @@ test.describe('Header fits its viewport', () => {
 
   /**
    * The document-level assertion, which is what a visitor actually feels. It is
-   * scoped to the tablet band on purpose: at 320-390 two pages overflow for
+   * scoped to the menu-button band on purpose: at 320-390 two pages overflow for
    * reasons that have nothing to do with the header - the /announcements h1 is
    * one unbreakable word wider than the viewport, and the home page's next-class
    * card overflows below about 331px. Widening this loop before those are fixed
    * would fail for reasons this guard is not about.
    */
-  for (const width of TABLET_WIDTHS) {
+  for (const width of MENU_BUTTON_WIDTHS) {
     test(`page does not scroll sideways at ${width}px`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 });
       for (const path of PATHS) {
@@ -138,7 +147,7 @@ test.describe('Which navigation each width gets', () => {
   const desktopCta = (page: Page) =>
     page.locator('header > div').first().getByRole('link', { name: 'Book Free Trial' });
 
-  for (const width of TABLET_WIDTHS) {
+  for (const width of MENU_BUTTON_WIDTHS) {
     test(`${width}px gets the menu button, not the desktop nav`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 });
       await page.goto('/');
@@ -154,8 +163,8 @@ test.describe('Which navigation each width gets', () => {
   // The upper boundary. Without this the guard would be satisfied by pushing the
   // breakpoint higher still, which would take the desktop header away from the
   // laptops it fits on.
-  test('1035px gets the desktop header, not the menu button', async ({ page }) => {
-    await page.setViewportSize({ width: 1035, height: 900 });
+  test('1152px gets the desktop header, not the menu button', async ({ page }) => {
+    await page.setViewportSize({ width: 1152, height: 900 });
     await page.goto('/');
     await expect(desktopNav(page)).toBeVisible();
     await expect(desktopCta(page)).toBeVisible();
@@ -216,8 +225,8 @@ test.describe('The menu works at tablet portrait', () => {
 });
 
 /**
- * Gating the desktop nav on `min-[1035px]` lays the mobile panel out across
- * 768-1034 too, where `md:hidden` used to take it out of the flow entirely.
+ * Gating the desktop nav on `min-[1152px]` lays the mobile panel out across
+ * 768-1151 too, where `md:hidden` used to take it out of the flow entirely.
  * `pointer-events-none max-h-0 opacity-0` hides the closed panel from the eye
  * and the mouse but not from the keyboard - neither opacity nor max-height
  * removes a link from the tab order - so without `invisible` a keyboard visitor
@@ -269,17 +278,15 @@ test.describe('The closed menu stays out of the keyboard path', () => {
 });
 
 /**
- * The width the desktop header switches on at has to come from the width it
- * actually needs. Measured on the rendered page: the header row reaches its
- * natural size at 1035px, and below that the flex row shrinks "Book Free
- * Trial" until the label wraps onto a second line - 56px tall instead of 38.
- * No overflow assertion catches that, because a button squeezed into two lines
- * is not an overflowing one, which is exactly how the same mistake survived one
- * breakpoint lower at 892px. So the desktop header is gated at `min-[1035px]`
- * rather than at `lg`, and this pins the property that number was chosen for.
+ * Below the width it needs, the flex row shrinks "Book Free Trial" until the
+ * label wraps onto a second line - 56px tall instead of 38. No overflow
+ * assertion catches that, because a button squeezed into two lines is not an
+ * overflowing one, which is how the same mistake survived at 892px, at `lg`,
+ * and again at `min-[1035px]`. This is the assertion that caught each of them,
+ * so it runs on both sides of the boundary rather than only above it.
  */
 test.describe('The call to action never renders wrapped', () => {
-  const CTA_WIDTHS = [768, 834, 1023, 1024, 1034, 1035, 1036, 1100, 1280, 1440];
+  const CTA_WIDTHS = [768, 834, 1023, 1024, 1034, 1035, 1100, 1151, 1152, 1280, 1440];
 
   /** Sitting on its own line is the observable form of "the header fits". */
   const lineCount = (control: Locator) =>
@@ -310,7 +317,7 @@ test.describe('The call to action never renders wrapped', () => {
    * The counterweight. Without this the loop above would be satisfied by a
    * header that shows no call to action at all, at any width.
    */
-  for (const width of [1035, 1100, 1440]) {
+  for (const width of [1152, 1280, 1440]) {
     test(`the desktop call to action is shown and unwrapped at ${width}px`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 });
       await page.goto('/');
