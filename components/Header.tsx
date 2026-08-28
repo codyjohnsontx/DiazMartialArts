@@ -56,7 +56,16 @@ export function Header() {
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-6 lg:gap-7 md:flex" aria-label="Primary">
+        {/*
+          1035 is the width this header measurably needs. Gating below it is
+          what left tablet portrait scrolling sideways and 1024-1034 rendering
+          "Book Free Trial" on two lines. It is a measurement taken on one
+          machine rather than a universal constant:
+          `tests/e2e/header-widths.spec.ts` holds that reasoning and the
+          residual it leaves, and dma-header-size-from-content owns sizing this
+          row from its own content instead.
+        */}
+        <nav className="hidden items-center gap-7 min-[1035px]:flex" aria-label="Primary">
           {navItems.map((item) => {
             const active = isActive(item.href);
             return (
@@ -77,13 +86,13 @@ export function Header() {
           })}
         </nav>
 
-        <div className="hidden items-center gap-2 md:flex">
+        <div className="hidden items-center gap-2 min-[1035px]:flex">
           <Button href="/contact">Book Free Trial</Button>
         </div>
 
         <button
           type="button"
-          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/15 text-ink md:hidden"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/15 text-ink min-[1035px]:hidden"
           aria-expanded={open}
           aria-controls="mobile-nav"
           aria-label="Toggle menu"
@@ -97,10 +106,14 @@ export function Header() {
       <div
         id="mobile-nav"
         className={cn(
-          'md:hidden',
+          'min-[1035px]:hidden',
+          // `invisible` is load-bearing rather than decoration: opacity and max-height
+          // hide the closed panel from the eye and the mouse but leave its links in
+          // the tab order. `tests/e2e/header-widths.spec.ts` owns that reasoning and
+          // fails in both directions - closed unreachable, open reachable.
           open
-            ? 'pointer-events-auto max-h-[560px] border-t border-black/10 opacity-100'
-            : 'pointer-events-none max-h-0 opacity-0',
+            ? 'visible pointer-events-auto max-h-[560px] border-t border-black/10 opacity-100'
+            : 'invisible pointer-events-none max-h-0 overflow-hidden opacity-0',
         )}
       >
         <nav aria-label="Mobile" className="space-y-2 bg-sand px-4 py-5 sm:px-6">

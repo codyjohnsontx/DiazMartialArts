@@ -117,6 +117,15 @@ marking work complete or CI fails on unformatted files.
   opacity value. When the guard trips, fix the class, not the config: adding the
   off-scale value to `theme.opacity` in `tailwind.config.ts` legalises that one
   typo and leaves the next one silent.
+  An arbitrary value fails the same silent way when Tailwind cannot tell which
+  property it belongs to. `font-` is both `font-family` and `font-weight`, so
+  `font-[var(--font-body)]` compiles to `font-weight: var(--font-body)` - a
+  rule that emits, applies, and does nothing - and the page keeps rendering in
+  whatever the browser picks for `ui-sans-serif`. The body in `app/layout.tsx`
+  carries exactly that today, filed as dma-body-font-never-applied. Give an
+  ambiguous arbitrary value its data-type hint
+  (`font-[family-name:var(--font-body)]`), and read the compiled declaration,
+  not just the presence of the class.
 - `site.url` (from `readSiteUrl` in `lib/env.ts`) never carries a trailing
   slash, so on a bare-origin base both `${site.url}/sitemap.xml` and
   `new URL(path, site.url)` are safe. The two idioms diverge once the base
@@ -168,6 +177,38 @@ marking work complete or CI fails on unformatted files.
   that `next dev` and `next build`/`next start` share `.next`: starting the dev
   server beside a production server makes every chunk 500 and React never
   runs, so reproduce production-only hydration issues with dev stopped.
+
+- Gate a wide layout on the width the layout measurably needs, not on the
+  nearest standard breakpoint above it. The header's desktop navigation is
+  gated at `min-[1035px]`, and 1035 is a measurement: it was read off a
+  rendered browser with the wide layout forced visible, rather than guessed at
+  the next Tailwind size up. `md` and `lg` were each wrong here for the same
+  underlying reason - flex children shrink, so the row stops overflowing long
+  before it fits, and "Book Free Trial" was crushed into a three-line pill at
+  892px and onto two lines across 1024-1034 with no overflow to show for it.
+  So `documentElement.scrollWidth === clientWidth` is a floor, not proof the
+  layout is right; check what the text does, not just the box.
+  `tests/e2e/header-widths.spec.ts` pins both boundaries and owns the rest of
+  that reasoning, including why it carries no assertion on text width at all:
+  a wrap boundary is a text measurement, Chromium shapes text through the
+  platform's own stack, and the same page in the same self-hosted Manrope is
+  single-line on macOS but came back wrapped at 1035 on the Linux CI runner.
+  An assertion widened until it passes everywhere is one that can no longer
+  fail, so no guard is the honest answer here. When a width or text assertion
+  fails on another platform, remove or report that assertion rather than
+  moving the breakpoint or restyling the header to make the measurement pass:
+  changing the product to satisfy a machine-local number is how 1035 became
+  1152 and had to be put back.
+  One residual is live, accepted and unfixed at roughly 1035-1049 on
+  classic-scrollbar platforms: a CSS `@media (min-width: ...)` is evaluated
+  against `window.innerWidth`, which counts a classic scrollbar, while the row
+  lays out in `documentElement.clientWidth`, which does not, so the row is
+  handed about 15px less than the query promised and the call to action can
+  wrap. Every width here was measured under overlay scrollbars, which is what
+  headless Chromium and macOS give you, which is exactly why that went
+  unnoticed. Sizing this header from its own content instead of from a number
+  somebody measured is filed as dma-header-size-from-content, which owns both
+  that residual and the machine-local pixel.
 
 - `npx tsc --noEmit` also checks `.next/types/**/*.ts` (see `tsconfig.json`),
   and that directory is only rewritten when `next build` or `next dev` starts.

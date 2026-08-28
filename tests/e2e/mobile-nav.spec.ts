@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 
+import { waitForMenuToggleHydration } from '../fixtures/hydration';
 import { NAV_LINKS } from '../fixtures/site';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -7,6 +8,7 @@ test.use({ viewport: { width: 390, height: 844 } });
 test.describe('Mobile navigation', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
+    await waitForMenuToggleHydration(page);
   });
 
   test('desktop nav is hidden at mobile viewport', async ({ page }) => {
