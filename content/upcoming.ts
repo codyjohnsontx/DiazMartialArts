@@ -30,15 +30,17 @@ export type UpcomingItem = {
 // tests/unit/upcoming-content.test.ts fails as soon as any entry below is over,
 // so that staleness is loud instead of silent.
 //
-// To update: there is no settled source for the next batch. This list was filled
-// from the monthly events calendar flyer on /announcements; that calendar is no
-// longer published there, and what replaces it as the source of dates is still an
-// open question. Until it is answered, take a date only from something that
-// actually prints it - genuine scheduled events only, never a placeholder, and
-// never a guessed date or time. If the source gives no time, set allDay rather
-// than inventing one; if it gives no date, leave the event out. An empty list is a
-// supported state: the section then renders a deliberate empty state pointing at
-// the weekly schedule, and that is the right answer while nothing is confirmed.
+// To update: the source is a person, not a feed. The gym emails new flyers to the
+// site owner, the owner passes them on, and entries are added here by hand from
+// whatever those flyers actually print. There is no automatic source and none is
+// expected, so do not go looking for a calendar feed to wire up. Take a date only
+// from something that actually prints it - genuine scheduled events only, never a
+// placeholder, and never a guessed date or time. If the source gives no time, set
+// allDay rather than inventing one; if it gives no date, leave the event out. An
+// empty list is a supported state and the normal resting state between flyers,
+// not a fault or a gap waiting to be filled: the section then renders a
+// deliberate empty state pointing at the weekly schedule, and that is the right
+// answer whenever nothing is confirmed.
 //
 // `end` is optional and never guessed either. Leave it off and the entry runs
 // through the end of the day it starts on, at midnight at the gym, so an event
@@ -46,17 +48,12 @@ export type UpcomingItem = {
 // prints one: an allDay entry takes the last day the event runs rather than the
 // day after, and stays listed until that day is over at the gym, while a timed
 // entry with an `end` finishes at that exact time.
-export const upcomingItems: UpcomingItem[] = [
-  {
-    // Source: the August 2026 panel of the July 2026 events calendar flyer
-    // ("26-27 Stripe Testing (White Stripe)"), which gave no time of day. That
-    // flyer has since been retired from /announcements along with the rest of
-    // the June and July set; the event it printed still runs, so the entry
-    // stays until the date passes.
-    id: 'stripe-testing-white-stripe-2026-08',
-    title: 'Stripe Testing (White Stripe)',
-    start: '2026-08-26T00:00:00Z',
-    end: '2026-08-27T00:00:00Z',
-    allDay: true,
-  },
-];
+//
+// CLEARED 2026-08-28. The last entry - "Stripe Testing (White Stripe)",
+// 26-27 August 2026, taken from the August panel of the July 2026 events
+// calendar flyer - had finished, so it no longer reached the page and the
+// staleness guard went red. The owner checked /announcements the same day: the
+// three flyers published there print no dates at all, so there was nothing to
+// replace it with and the empty state is the honest answer. The list simply
+// waits here for the next flyer that prints a date.
+export const upcomingItems: UpcomingItem[] = [];
