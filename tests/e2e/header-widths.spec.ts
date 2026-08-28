@@ -1,5 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 
+import { waitForMenuToggleHydration } from '../fixtures/hydration';
+
 /**
  * The header used to turn its desktop navigation on at `md` (768px) while the
  * six nav labels plus the call to action needed far more room, so every page
@@ -160,6 +162,7 @@ test.describe('The menu works at tablet portrait', () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 834, height: 1112 });
     await page.goto('/');
+    await waitForMenuToggleHydration(page);
   });
 
   test('opens, closes, and reopens', async ({ page }) => {
@@ -197,7 +200,7 @@ test.describe('The menu works at tablet portrait', () => {
 
 /**
  * Gating the desktop nav on `min-[1035px]` lays the mobile panel out across
- * 768-1151 too, where `md:hidden` used to take it out of the flow entirely.
+ * 768-1034 too, where `md:hidden` used to take it out of the flow entirely.
  * `pointer-events-none max-h-0 opacity-0` hides the closed panel from the eye
  * and the mouse but not from the keyboard - neither opacity nor max-height
  * removes a link from the tab order - so without `invisible` a keyboard visitor
@@ -217,6 +220,7 @@ test.describe('The closed menu stays out of the keyboard path', () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 800, height: 1000 });
     await page.goto('/');
+    await waitForMenuToggleHydration(page);
   });
 
   test('tabbing off the menu button never enters the closed panel', async ({ page }) => {

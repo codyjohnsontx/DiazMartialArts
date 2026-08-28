@@ -57,13 +57,13 @@ export function Header() {
         </Link>
 
         {/*
-          The desktop header is gated on the width at which the row stops
-          growing rather than on a measured text width: `max-w-6xl` plus
-          `lg:px-8` cap this row's content box at 1088px from a 1152px viewport
-          up. Gating there means the desktop header only ever lays out at that
-          one width, so no band is left in which the flex row squeezes "Book
-          Free Trial" onto a second line.
-          `tests/e2e/header-widths.spec.ts` owns the measurements.
+          1035 is the width this header measurably needs. Gating below it is
+          what left tablet portrait scrolling sideways and 1024-1034 rendering
+          "Book Free Trial" on two lines. It is a measurement taken on one
+          machine rather than a universal constant:
+          `tests/e2e/header-widths.spec.ts` holds that reasoning and the
+          residual it leaves, and dma-header-size-from-content owns sizing this
+          row from its own content instead.
         */}
         <nav className="hidden items-center gap-7 min-[1035px]:flex" aria-label="Primary">
           {navItems.map((item) => {

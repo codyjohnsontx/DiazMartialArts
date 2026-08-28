@@ -121,8 +121,9 @@ marking work complete or CI fails on unformatted files.
   property it belongs to. `font-` is both `font-family` and `font-weight`, so
   `font-[var(--font-body)]` compiles to `font-weight: var(--font-body)` - a
   rule that emits, applies, and does nothing - and the page keeps rendering in
-  whatever the browser picks for `ui-sans-serif`. The body carried exactly that
-  for a while. Give an ambiguous arbitrary value its data-type hint
+  whatever the browser picks for `ui-sans-serif`. The body in `app/layout.tsx`
+  carries exactly that today, filed as dma-body-font-never-applied. Give an
+  ambiguous arbitrary value its data-type hint
   (`font-[family-name:var(--font-body)]`), and read the compiled declaration,
   not just the presence of the class.
 - `site.url` (from `readSiteUrl` in `lib/env.ts`) never carries a trailing
@@ -177,13 +178,11 @@ marking work complete or CI fails on unformatted files.
   server beside a production server makes every chunk 500 and React never
   runs, so reproduce production-only hydration issues with dev stopped.
 
-- Gate a wide layout on a width the layout itself defines, not on the width
-  its text happens to need. The header's desktop navigation is gated at
-  `min-[1152px]`, which is not a text measurement: the header row is
-  `max-w-6xl` with `lg:px-8`, so its content box stops growing at a 1152px
-  viewport and is 1088px wide from there up. Gating there means the desktop
-  header only ever lays out at that single width, so there is no band in which
-  it renders squeezed. Three earlier answers were wrong, all for the same
+- Gate a wide layout on the width the layout measurably needs, not on the
+  nearest standard breakpoint above it. The header's desktop navigation is
+  gated at `min-[1035px]`, and 1035 is a measurement: it was read off a
+  rendered browser with the wide layout forced visible, rather than guessed at
+  the next Tailwind size up. Two earlier answers were wrong for the same
   underlying reason - flex children shrink, so the row stops overflowing long
   before it fits. At `md` the page scrolled sideways across all of tablet
   portrait, and the row only stopped overflowing at 892px because "Book Free
@@ -191,30 +190,24 @@ marking work complete or CI fails on unformatted files.
   tablets but left 1024-1034 rendering that button on two lines - no overflow,
   still wrong. So `documentElement.scrollWidth === clientWidth` is a floor, not
   proof the layout is right; check what the text does, not just the box.
-  `min-[1035px]` then measured the required width properly, in a browser with
-  the wide layout forced visible, and was still wrong, because a measured pixel
-  is a local fact: the same page in the same self-hosted Manrope needs 1017px
-  of layout width on macOS and more than 1036px on the Linux CI runner. Nothing
-  local reproduces that - `--disable-font-subpixel-positioning`,
-  `--font-render-hinting` and `--disable-features=OverlayScrollbar` are all
-  no-ops on macOS - so a number measured on one machine cannot be trusted to
-  hold on another. `tests/e2e/header-widths.spec.ts` pins both boundaries and
-  holds the reasoning. Note its `renders in the site font` guard proves less
-  than it looks: `next/font` emits a `__Manrope_Fallback_*` face beside the
-  real one, and a loaded fallback reports a family name that still matches, so
-  the guard passes with the real font blocked. When the whole site drops to the
-  platform sans the effect is far bigger - that is what made the header need
-  over 1100px on CI before the body font utility was fixed - and it is
-  reproducible locally by injecting `html, body { font-family: Verdana; }`, with
-  no `!important` so a body that declares its own family still outranks it.
-  Choosing the container's own ceiling also retires a residual the old number
-  could not cover: a CSS `@media (min-width: ...)` is evaluated against
-  `window.innerWidth`, which counts a classic scrollbar, while the element lays
-  out in `documentElement.clientWidth`, which does not, so on Windows and on
-  Linux the row is handed 15px less than the query promised. At 1035px that
-  15px was wider than the entire margin; at 1152px it is not. Headless Chromium
-  and macOS default to overlay scrollbars, where the two widths are equal, so
-  that class of defect stays invisible locally.
+  `tests/e2e/header-widths.spec.ts` pins both boundaries and holds the
+  reasoning.
+  Two things 1035 does not settle, both accepted deliberately and both filed as
+  dma-header-size-from-content, which owns sizing this header from its own
+  content instead of from a number somebody measured. First, a measured pixel
+  is a local fact: the same page in the same self-hosted Manrope is single-line
+  on macOS and came back wrapped at 1035 and 1036 on the Linux CI runner,
+  because Chromium lays text out through the platform's own shaping stack.
+  That is why this header carries no assertion on text width at all - an
+  assertion widened until it passes everywhere is one that can no longer fail,
+  so no guard is the honest answer here. Second, the scrollbar residual is live
+  and unfixed at roughly 1035-1049 on classic-scrollbar platforms: a CSS
+  `@media (min-width: ...)` is evaluated against `window.innerWidth`, which
+  counts a classic scrollbar, while the row lays out in
+  `documentElement.clientWidth`, which does not, so the row is handed about
+  15px less than the query promised and the call to action can wrap. Every
+  width here was measured under overlay scrollbars, which is what headless
+  Chromium and macOS give you, which is exactly why that went unnoticed.
 
 - `npx tsc --noEmit` also checks `.next/types/**/*.ts` (see `tsconfig.json`),
   and that directory is only rewritten when `next build` or `next dev` starts.
