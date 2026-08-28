@@ -19,13 +19,16 @@ import { waitForMenuToggleHydration } from '../fixtures/hydration';
  * rendering a two-line button.
  *
  * It was removed anyway, because it cannot hold. The wrap boundary is a text
- * measurement, and the same page in the same self-hosted Manrope does not
- * measure the same on every machine: 1035 and 1036 came back wrapped on the
- * Linux CI runner while both were comfortably single-line on macOS. Chromium
- * lays text out through the platform's own shaping and rasterisation stack, so
- * a pixel boundary measured on one machine is partly a measurement of that
- * machine. An assertion widened until it passes on every platform is one that
- * can no longer fail, so it is gone rather than loosened. `1035` is therefore
+ * measurement, and the same page did not measure the same on every machine:
+ * 1035 and 1036 came back wrapped on the Linux CI runner while both were
+ * comfortably single-line on macOS. Chromium lays text out through the
+ * platform's own shaping and rasterisation stack, so a pixel boundary measured
+ * on one machine is partly a measurement of that machine. Read that
+ * disagreement knowing it was taken while the body still rendered in
+ * `ui-sans-serif`, a different typeface on each platform, rather than in the
+ * self-hosted Manrope it renders in now, so part of that gap was the font. An
+ * assertion widened until it passes on every platform is one that can no
+ * longer fail, so it is gone rather than loosened. `1035` is therefore
  * the width this header needs on the machine it was measured on, not a
  * universal constant - see the project notes and the follow-up work filed as
  * dma-header-size-from-content, which owns sizing this header from its content

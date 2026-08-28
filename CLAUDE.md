@@ -195,8 +195,8 @@ marking work complete or CI fails on unformatted files.
   `tests/e2e/header-widths.spec.ts` pins both boundaries and owns the rest of
   that reasoning, including why it carries no assertion on text width at all:
   a wrap boundary is a text measurement, Chromium shapes text through the
-  platform's own stack, and the same page in the same self-hosted Manrope is
-  single-line on macOS but came back wrapped at 1035 on the Linux CI runner.
+  platform's own stack, and the same page is single-line on macOS but came
+  back wrapped at 1035 on the Linux CI runner.
   An assertion widened until it passes everywhere is one that can no longer
   fail, so no guard is the honest answer here. When a width or text assertion
   fails on another platform, remove or report that assertion rather than
