@@ -184,8 +184,8 @@ test.describe('The menu works at tablet portrait', () => {
 });
 
 /**
- * Holding the desktop nav back to `lg` lays the mobile panel out across
- * 768-1023 too, where `md:hidden` used to take it out of the flow entirely.
+ * Gating the desktop nav on `min-[1035px]` lays the mobile panel out across
+ * 768-1034 too, where `md:hidden` used to take it out of the flow entirely.
  * `pointer-events-none max-h-0 opacity-0` hides the closed panel from the eye
  * and the mouse but not from the keyboard - neither opacity nor max-height
  * removes a link from the tab order - so without `invisible` a keyboard visitor
