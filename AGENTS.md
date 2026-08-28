@@ -223,7 +223,10 @@ marking work complete or CI fails on unformatted files.
   gap considerably. Measured with the query forced on, the row's own content
   now fits at 985px against 1003px in the fallback face, so 1035 keeps the
   desktop header and gains headroom; the numbers to re-take when picking that
-  work up are these, not the pre-fix ones.
+  work up are these, not the pre-fix ones. Both figures are the narrowest
+  viewport at which the desktop row keeps "Book Free Trial" on a single line
+  and leaves neither the row nor the document overflowing, so the call to
+  action's wrap was measured there, not just the box.
 
 - `npx tsc --noEmit` also checks `.next/types/**/*.ts` (see `tsconfig.json`),
   and that directory is only rewritten when `next build` or `next dev` starts.
