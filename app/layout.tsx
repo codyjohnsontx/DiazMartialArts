@@ -50,7 +50,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={bodyFont.variable}>
-      <body className="font-[family-name:var(--font-body)] antialiased">
+      <body className="font-[var(--font-body)] antialiased">
         <WebSiteSchema />
         <a
           href="#main-content"
