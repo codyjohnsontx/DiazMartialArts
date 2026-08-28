@@ -182,32 +182,33 @@ marking work complete or CI fails on unformatted files.
   nearest standard breakpoint above it. The header's desktop navigation is
   gated at `min-[1035px]`, and 1035 is a measurement: it was read off a
   rendered browser with the wide layout forced visible, rather than guessed at
-  the next Tailwind size up. Two earlier answers were wrong for the same
+  the next Tailwind size up. `md` and `lg` were each wrong here for the same
   underlying reason - flex children shrink, so the row stops overflowing long
-  before it fits. At `md` the page scrolled sideways across all of tablet
-  portrait, and the row only stopped overflowing at 892px because "Book Free
-  Trial" had by then been crushed into a three-line pill. `lg` fixed the
-  tablets but left 1024-1034 rendering that button on two lines - no overflow,
-  still wrong. So `documentElement.scrollWidth === clientWidth` is a floor, not
-  proof the layout is right; check what the text does, not just the box.
-  `tests/e2e/header-widths.spec.ts` pins both boundaries and holds the
-  reasoning.
-  Two things 1035 does not settle, both accepted deliberately and both filed as
-  dma-header-size-from-content, which owns sizing this header from its own
-  content instead of from a number somebody measured. First, a measured pixel
-  is a local fact: the same page in the same self-hosted Manrope is single-line
-  on macOS and came back wrapped at 1035 and 1036 on the Linux CI runner,
-  because Chromium lays text out through the platform's own shaping stack.
-  That is why this header carries no assertion on text width at all - an
-  assertion widened until it passes everywhere is one that can no longer fail,
-  so no guard is the honest answer here. Second, the scrollbar residual is live
-  and unfixed at roughly 1035-1049 on classic-scrollbar platforms: a CSS
-  `@media (min-width: ...)` is evaluated against `window.innerWidth`, which
-  counts a classic scrollbar, while the row lays out in
-  `documentElement.clientWidth`, which does not, so the row is handed about
-  15px less than the query promised and the call to action can wrap. Every
-  width here was measured under overlay scrollbars, which is what headless
-  Chromium and macOS give you, which is exactly why that went unnoticed.
+  before it fits, and "Book Free Trial" was crushed into a three-line pill at
+  892px and onto two lines across 1024-1034 with no overflow to show for it.
+  So `documentElement.scrollWidth === clientWidth` is a floor, not proof the
+  layout is right; check what the text does, not just the box.
+  `tests/e2e/header-widths.spec.ts` pins both boundaries and owns the rest of
+  that reasoning, including why it carries no assertion on text width at all:
+  a wrap boundary is a text measurement, Chromium shapes text through the
+  platform's own stack, and the same page in the same self-hosted Manrope is
+  single-line on macOS but came back wrapped at 1035 on the Linux CI runner.
+  An assertion widened until it passes everywhere is one that can no longer
+  fail, so no guard is the honest answer here. When a width or text assertion
+  fails on another platform, remove or report that assertion rather than
+  moving the breakpoint or restyling the header to make the measurement pass:
+  changing the product to satisfy a machine-local number is how 1035 became
+  1152 and had to be put back.
+  One residual is live, accepted and unfixed at roughly 1035-1049 on
+  classic-scrollbar platforms: a CSS `@media (min-width: ...)` is evaluated
+  against `window.innerWidth`, which counts a classic scrollbar, while the row
+  lays out in `documentElement.clientWidth`, which does not, so the row is
+  handed about 15px less than the query promised and the call to action can
+  wrap. Every width here was measured under overlay scrollbars, which is what
+  headless Chromium and macOS give you, which is exactly why that went
+  unnoticed. Sizing this header from its own content instead of from a number
+  somebody measured is filed as dma-header-size-from-content, which owns both
+  that residual and the machine-local pixel.
 
 - `npx tsc --noEmit` also checks `.next/types/**/*.ts` (see `tsconfig.json`),
   and that directory is only rewritten when `next build` or `next dev` starts.
