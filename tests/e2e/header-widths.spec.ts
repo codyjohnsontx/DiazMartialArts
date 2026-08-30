@@ -19,13 +19,16 @@ import { waitForMenuToggleHydration } from '../fixtures/hydration';
  * rendering a two-line button.
  *
  * It was removed anyway, because it cannot hold. The wrap boundary is a text
- * measurement, and the same page in the same self-hosted Manrope does not
- * measure the same on every machine: 1035 and 1036 came back wrapped on the
- * Linux CI runner while both were comfortably single-line on macOS. Chromium
- * lays text out through the platform's own shaping and rasterisation stack, so
- * a pixel boundary measured on one machine is partly a measurement of that
- * machine. An assertion widened until it passes on every platform is one that
- * can no longer fail, so it is gone rather than loosened. `1035` is therefore
+ * measurement, and the same page did not measure the same on every machine:
+ * 1035 and 1036 came back wrapped on the Linux CI runner while both were
+ * comfortably single-line on macOS. Chromium lays text out through the
+ * platform's own shaping and rasterisation stack, so a pixel boundary measured
+ * on one machine is partly a measurement of that machine. Read that
+ * disagreement knowing it was taken while the body still rendered in
+ * `ui-sans-serif`, a different typeface on each platform, rather than in the
+ * self-hosted Manrope it renders in now, so part of that gap was the font. An
+ * assertion widened until it passes on every platform is one that can no
+ * longer fail, so it is gone rather than loosened. `1035` is therefore
  * the width this header needs on the machine it was measured on, not a
  * universal constant - see the project notes and the follow-up work filed as
  * dma-header-size-from-content, which owns sizing this header from its content
@@ -69,9 +72,14 @@ const MENU_BUTTON_WIDTHS = [768, 800, 820, 834, 891, 1023, 1024, 1034];
  * 1024 to about 1079. The Linux CI runner is such a platform and macOS is not.
  * That is page content, not the header: the header row itself fits at 1024 and
  * 1034 on all five pages, `/` is the only page that overflows, and the hero is
- * untouched by this fix, so the band overflows on `main` too. It is reported
- * rather than fixed here, along with the wide fallback face behind it, which is
- * its own bug and filed as dma-body-font-never-applied.
+ * untouched by this fix, so the band overflows on `main` too. It is still
+ * reported rather than fixed here, but the wide fallback face this blames it on
+ * no longer applies: the body renders in Manrope now, a self-hosted file that
+ * is byte-identical on macOS and on the Linux runner, so the reason recorded
+ * here for excluding everything from 1024 up has gone, even though the
+ * exclusion itself is left exactly as it stands and unexamined by that fix.
+ * Whether it is still earned belongs to dma-header-size-from-content, which
+ * already owns sizing this header from its own content.
  */
 const DOC_OVERFLOW_WIDTHS = MENU_BUTTON_WIDTHS.filter((width) => width < 1024);
 
