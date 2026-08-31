@@ -122,7 +122,16 @@ export function HomeUpcomingClasses() {
               name added later wraps harder instead of pushing the page wider.
               None of that is stated as a per-cell pixel figure, deliberately:
               those are machine-local, so a number belongs only where a test
-              reproduces it. tests/e2e/home.spec.ts holds the 320px check. */}
+              reproduces it. The abbreviation is visual only: the three letters
+              are `aria-hidden` and the `sr-only` span beside them carries the
+              full day, so a screen reader still reads `Wednesday 10:00 AM`
+              while the row pays nothing for it - `sr-only` is out of flow and
+              adds no layout width. An `aria-label` on the visible span is not
+              the shorter way to write that: a bare span is `role=generic`,
+              which ARIA prohibits naming, so user agents ignore the label. The
+              one at ScheduleContent.tsx sits on a `role=tab` button and does
+              not transfer. tests/e2e/home.spec.ts holds the 320px check and
+              asserts both strings. */}
           <ul className="grid gap-1.5">
             {laterBlocks.map((block) => (
               <li

@@ -238,10 +238,11 @@ marking work complete or CI fails on unformatted files.
   350 against 320, before the fix. Clipping is not the answer either: an earlier
   attempt clipped this and cut times to `Tuesday 7:0`, AM/PM gone with no way to
   reveal it, which is worse than a scrollbar. Make the row fit instead - wrap
-  the name, shorten the day label to three letters, and add `min-w-0` to release
-  the content-based minimums so the next long class name wraps rather than
-  widening the page. Check 320px explicitly: the `Mobile` Playwright project is
-  390px wide and sees none of this. `components/HomeUpcomingClasses.tsx` and the
+  the name, shorten the visible day label to three letters while an `sr-only`
+  span keeps the full day for screen readers, and add `min-w-0` to release the
+  content-based minimums so the next long class name wraps rather than widening
+  the page. Check 320px explicitly: the `Mobile` Playwright project is 390px
+  wide and sees none of this. `components/HomeUpcomingClasses.tsx` and the
   "Coming-up card fits the narrowest phones" block in `tests/e2e/home.spec.ts`
   own that reasoning, including why that block measures against the card's edge
   as well as the viewport. Neither states a per-cell pixel width, deliberately:
