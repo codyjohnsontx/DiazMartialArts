@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 
@@ -190,5 +190,144 @@ describe('AnnouncementFlyerGallery', () => {
     expect(description).toHaveClass('sr-only');
     expect(description).not.toHaveAttribute('aria-hidden');
     expect(description).toBeVisible();
+  });
+  /**
+   * The lightbox is the only route to a flyer at full size, and on this page
+   * the flyer IS the announcement, so these are not optional polish: a dialog
+   * that cannot be closed from the keyboard, or that lets focus wander onto
+   * the page behind it, is the whole content put out of reach.
+   *
+   * These run in jsdom, which models focus but not a browser's own focus
+   * rules, so they pin the component's side of each path and leave the real
+   * ones to `tests/e2e/announcement-lightbox.spec.ts`, which drives the same
+   * paths with a real keyboard in a real browser.
+   */
+  describe('the lightbox keyboard paths', () => {
+    async function openFlyer(user: ReturnType<typeof userEvent.setup>) {
+      const trigger = screen.getByRole('button', { name: 'Enlarge Open Mat Night' });
+      await user.click(trigger);
+
+      const dialog = screen.getByRole('dialog');
+      const close = within(dialog).getByRole('button', { name: 'Close' });
+      // Focus crosses on the next frame, so it is waited for rather than
+      // assumed - and it has to cross at all: left on the trigger, focus is
+      // behind the scrim and every key the lightbox listens for is aimed at it.
+      await waitFor(() => expect(close).toHaveFocus());
+
+      return { trigger, dialog, close };
+    }
+
+    it('closes on Escape, hands focus back, and releases the page scroll', async () => {
+      const user = userEvent.setup();
+      render(<AnnouncementFlyerGallery flyers={flyers} />);
+      const { trigger } = await openFlyer(user);
+
+      expect(document.body.style.overflow).toBe('hidden');
+
+      await user.keyboard('{Escape}');
+
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      await waitFor(() => expect(trigger).toHaveFocus());
+      expect(document.body.style.overflow).toBe('');
+    });
+
+    it('closes from its own Close control and hands focus back', async () => {
+      const user = userEvent.setup();
+      render(<AnnouncementFlyerGallery flyers={flyers} />);
+      const { trigger } = await openFlyer(user);
+
+      // Focus is already on Close, so this is the visible control activated
+      // the way a keyboard visitor activates it.
+      await user.keyboard('{Enter}');
+
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      await waitFor(() => expect(trigger).toHaveFocus());
+    });
+
+    it('hands focus back to whichever control opened it', async () => {
+      const user = userEvent.setup();
+      render(<AnnouncementFlyerGallery flyers={flyers} />);
+
+      // Two controls open the same flyer. A restore hard-coded to the enlarge
+      // button would silently move a reader up the card on every close from
+      // the second one.
+      const view = within(
+        screen.getByRole('heading', { name: 'Open Mat Night' }).closest('article')!,
+      ).getByRole('button', { name: /^View/ });
+      await user.click(view);
+      await waitFor(() =>
+        expect(
+          within(screen.getByRole('dialog')).getByRole('button', { name: 'Close' }),
+        ).toHaveFocus(),
+      );
+
+      await user.keyboard('{Escape}');
+
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      await waitFor(() => expect(view).toHaveFocus());
+    });
+
+    it('keeps Tab and Shift+Tab inside it', async () => {
+      const user = userEvent.setup();
+      render(<AnnouncementFlyerGallery flyers={flyers} />);
+      const { dialog } = await openFlyer(user);
+
+      for (let i = 1; i <= 3; i++) {
+        await user.tab();
+        expect(dialog, `Tab ${i} left the lightbox`).toContainElement(
+          document.activeElement as HTMLElement,
+        );
+      }
+      for (let i = 1; i <= 3; i++) {
+        await user.tab({ shift: true });
+        expect(dialog, `Shift+Tab ${i} left the lightbox`).toContainElement(
+          document.activeElement as HTMLElement,
+        );
+      }
+    });
+
+    it('keeps Tab inside it from the overlay itself, which is not one of its stops', async () => {
+      const user = userEvent.setup();
+      render(<AnnouncementFlyerGallery flyers={flyers} />);
+      const { dialog } = await openFlyer(user);
+
+      // The state a click on the flyer leaves behind in a browser: that click
+      // deliberately does not close the lightbox, and Chrome hands it to the
+      // nearest focusable ancestor, which is the overlay root. The trap lists
+      // the overlay's focusable DESCENDANTS, so the root is neither its first
+      // stop nor its last and Tab used to fall straight through to the page
+      // behind. jsdom does not model that focus rule, so the position is set
+      // directly here; the e2e spec performs the click itself.
+      dialog.focus();
+      expect(dialog).toHaveFocus();
+
+      await user.tab({ shift: true });
+      expect(dialog, 'Shift+Tab escaped the lightbox').toContainElement(
+        document.activeElement as HTMLElement,
+      );
+      await user.tab();
+      expect(dialog, 'Tab escaped the lightbox').toContainElement(
+        document.activeElement as HTMLElement,
+      );
+    });
+
+    it('closes on Escape from wherever focus is, not only from inside', async () => {
+      const user = userEvent.setup();
+      render(<AnnouncementFlyerGallery flyers={flyers} />);
+      const { dialog } = await openFlyer(user);
+
+      // Deliberately belt and braces, and the state is a real one - it is
+      // where the Shift+Tab above used to land. The trap is what keeps focus
+      // in; this keeps "Escape closes it" true when something else has taken
+      // focus out. Bound to the overlay, that promise held only while the trap
+      // was perfect.
+      const behind = screen.getAllByRole('button', { name: /^View/ })[0]!;
+      behind.focus();
+      expect(dialog).not.toContainElement(behind);
+
+      await user.keyboard('{Escape}');
+
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
   });
 });
