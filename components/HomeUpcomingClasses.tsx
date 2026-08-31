@@ -100,29 +100,29 @@ export function HomeUpcomingClasses() {
             Later
           </div>
           {/* These rows are the narrowest layout on the site: the card is
-              w-[min(92vw,390px)], so at a 320px viewport each row has 252px to
-              divide between a class name and a time. Getting that wrong scrolls
-              the whole page sideways rather than spilling quietly, because a
-              grid track sized `auto` may not shrink below its items' min-content
-              and an `li` with the default `min-width: auto` reports its own
-              min-content as that minimum. `truncate` used to set the name
-              `white-space: nowrap`, which made that min-content the entire name:
-              313px of row inside 252px, and document.scrollWidth 350 against a
-              320px viewport. Clipping the overflow is not the fix - the hero
+              w-[min(92vw,390px)], so at a 320px viewport each row has very
+              little width to divide between a class name and a time. Getting
+              that wrong scrolls the whole page sideways rather than spilling
+              quietly, because a grid track sized `auto` may not shrink below its
+              items' min-content and an `li` with the default `min-width: auto`
+              reports its own min-content as that minimum. `truncate` used to set
+              the name `white-space: nowrap`, which made that min-content the
+              entire name, and the row that would not shrink widened the document
+              instead of clipping: document.scrollWidth 350 against a 320px
+              viewport. Clipping the overflow is not the fix either - the hero
               tried it and cut times to `Tuesday 7:0` with no way to reveal the
-              rest - so the row is made to fit instead. Two changes do it, and
-              the measurements are per row at 320px against Manrope at text-xs:
-              the name wraps rather than truncating, which drops its floor from
-              the full 219-252px name to its longest unbreakable run (98px, in
-              `Muay Thai/Muay Lao/Boxing/Kick-Boxing`), and the day is
-              abbreviated, which takes the time from 125.7px to 83.3px and so
-              leaves the name about 157px - enough that all 21 class names in
-              content/schedule.ts wrap to at most two lines. The row then needs
-              98 + 12 + 83.3 = 193.3px of the 252px available. The two `min-w-0`
-              are what keep that a bound rather than a coincidence: they release
-              the grid track and the flex item from their content-based minimums,
-              so a longer class name added later wraps harder instead of pushing
-              the page wider. tests/e2e/home.spec.ts holds the 320px check. */}
+              rest - so the row is made to fit instead. Two changes do it: the
+              name wraps rather than truncating, which drops its floor from the
+              whole name to its longest unbreakable run, and the day is
+              abbreviated to three letters, which hands the difference back to
+              the name - enough that all 21 class names in content/schedule.ts
+              wrap to at most two lines. The two `min-w-0` are what keep that a
+              bound rather than a coincidence: they release the grid track and
+              the flex item from their content-based minimums, so a longer class
+              name added later wraps harder instead of pushing the page wider.
+              None of that is stated as a per-cell pixel figure, deliberately:
+              those are machine-local, so a number belongs only where a test
+              reproduces it. tests/e2e/home.spec.ts holds the 320px check. */}
           <ul className="grid gap-1.5">
             {laterBlocks.map((block) => (
               <li

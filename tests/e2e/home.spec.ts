@@ -181,8 +181,8 @@ test.describe('Home page hydration', () => {
  * name used to carry `truncate`, which sets `white-space: nowrap`. A row is a
  * grid item whose track is sized `auto`, and neither that track nor the row's
  * own `min-width: auto` may shrink below the row's min-content, so a name that
- * refuses to wrap made the whole row 313px wide inside the 252px the card has
- * at a 320px viewport. Nothing clipped it, so it pushed the document out
+ * refuses to wrap made the whole row wider than the card had to give it at a
+ * 320px viewport. Nothing clipped it, so it pushed the document out
  * instead: `document.scrollWidth` came back 350 against a 320px viewport and
  * the home page scrolled sideways on the narrowest common phones. At 360px the
  * document stayed put and the rows still painted out through the side of the
@@ -198,10 +198,12 @@ test.describe('Home page hydration', () => {
  * that is the `overflow: visible` assertion in the hero test further up.
  *
  * These are relations - a scroll width against a client width, an edge against
- * an edge - rather than pixel counts, so they do not restate the measurements
- * in components/HomeUpcomingClasses.tsx and do not depend on the platform's
- * text shaping the way a wrap boundary would. See the note in
- * tests/e2e/header-widths.spec.ts for what that distinction cost to learn.
+ * an edge - rather than pixel counts, so they do not depend on the platform's
+ * text shaping the way a wrap boundary would. That is also why neither this
+ * block nor components/HomeUpcomingClasses.tsx records a per-cell width: a
+ * number belongs only where a test reproduces it, and a machine-local one
+ * leaves the next reader unable to tell an environment from a regression. See
+ * the note in tests/e2e/header-widths.spec.ts for what that cost to learn.
  */
 test.describe('Coming-up card fits the narrowest phones', () => {
   // Tuesday night, after the last class of the day: every upcoming block is
@@ -216,7 +218,7 @@ test.describe('Coming-up card fits the narrowest phones', () => {
     await page.clock.setFixedTime(visitTime);
   });
 
-  /** The card, and the "Later" list inside it, once the clock-driven card is up. */
+  /** The "Later" list inside the card, once the clock-driven card is up. */
   async function openCard(page: Page, width: number) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/');
@@ -232,7 +234,7 @@ test.describe('Coming-up card fits the narrowest phones', () => {
     await page.evaluate(async () => {
       await document.fonts.ready;
     });
-    return { card, list };
+    return list;
   }
 
   for (const width of [320, 360, 390]) {
@@ -248,7 +250,7 @@ test.describe('Coming-up card fits the narrowest phones', () => {
 
   for (const width of [320, 360]) {
     test(`every Later row stays inside the card at ${width}px`, async ({ page }) => {
-      const { list } = await openCard(page, width);
+      const list = await openCard(page, width);
       const overhang = await list.evaluate((ul) => {
         const card = ul.closest('.shadow-lift') as HTMLElement;
         const style = getComputedStyle(card);
@@ -277,7 +279,7 @@ test.describe('Coming-up card fits the narrowest phones', () => {
   }
 
   test('every Later row still shows its whole time at 320px', async ({ page }) => {
-    const { list } = await openCard(page, 320);
+    const list = await openCard(page, 320);
     const [, ...later] = getUpcomingClassBlocks(visitTime, { limit: 4 });
     expect(later.length).toBeGreaterThan(0);
 
@@ -290,7 +292,7 @@ test.describe('Coming-up card fits the narrowest phones', () => {
       const timeCell = row.locator('> span').filter({ has: marker });
       const nameCell = row.locator('> span').filter({ hasNot: marker });
       // The three-letter day is what buys the row the width its class name
-      // needs to wrap into; restoring the full name takes 42px back off it.
+      // needs to wrap into; restoring the full day name takes that back off it.
       await expect(timeCell.locator('[aria-hidden="true"]')).toHaveText(
         `${block.day.slice(0, 3)} ${block.startLabel}`,
       );
@@ -301,8 +303,8 @@ test.describe('Coming-up card fits the narrowest phones', () => {
       // name cell has to say separately that it is showing all of it. That cell
       // is where the `truncate` which started all this actually lived, and it
       // is still squeezable: it carries `min-w-0` and the default
-      // `flex-shrink: 1`, so putting a nowrap utility back on it forces about
-      // 250px of text into the 157px the row has at 320px and this relation
+      // `flex-shrink: 1`, so putting a nowrap utility back on it forces far
+      // more text through the cell than the row can give it and this relation
       // goes red. It is a flex item and so blockified, which is the only reason
       // there is a layout box here to read at all.
       //
