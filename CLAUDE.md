@@ -228,6 +228,24 @@ marking work complete or CI fails on unformatted files.
   and leaves neither the row nor the document overflowing, so the call to
   action's wrap was measured there, not just the box.
 
+- The home page's coming-up card is the narrowest layout on the site. It is
+  `w-[min(92vw,390px)]`, so at a 320px viewport its "Later" rows have 252px to
+  split between a class name and a time, and a `truncate` (or any `nowrap`)
+  child does not quietly clip there. A grid track sized `auto` and an `li` with
+  the default `min-width: auto` may not shrink below their min-content, so the
+  nowrap text becomes a floor that pushes `document.scrollWidth` past the
+  viewport and scrolls the whole page sideways - 350 against 320, before the
+  fix. Clipping is not the answer either: an earlier attempt clipped this and
+  cut times to `Tuesday 7:0`, AM/PM gone with no way to reveal it, which is
+  worse than a scrollbar. Make the row fit instead - wrap the name, shorten the
+  label, and add `min-w-0` to release the content-based minimums so the next
+  long class name wraps rather than widening the page. Check 320px explicitly:
+  the `Mobile` Playwright project is 390px wide and sees none of this.
+  `components/HomeUpcomingClasses.tsx` and the "Coming-up card fits the
+  narrowest phones" block in `tests/e2e/home.spec.ts` own the measurements,
+  including why that block measures against the card's edge as well as the
+  viewport.
+
 - `npx tsc --noEmit` also checks `.next/types/**/*.ts` (see `tsconfig.json`),
   and that directory is only rewritten when `next build` or `next dev` starts.
   After deleting or renaming a route, `tsc` therefore fails on a
