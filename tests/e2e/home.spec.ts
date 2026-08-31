@@ -258,8 +258,11 @@ test.describe('Coming-up card fits the narrowest phones', () => {
           parseFloat(style.borderRightWidth);
         // The spans as well as the rows: a row can sit inside the card while
         // the text it refuses to shrink paints out through the side of it.
+        // Only what paints, though - the screen-reader copy is out of flow and
+        // invisible, so measuring it could only fail for a reason this guard
+        // does not mean.
         return Math.max(
-          ...[...ul.querySelectorAll('li, span')].map(
+          ...[...ul.querySelectorAll('li, span:not(.sr-only)')].map(
             (el) => el.getBoundingClientRect().right - limit,
           ),
         );
@@ -277,21 +280,43 @@ test.describe('Coming-up card fits the narrowest phones', () => {
 
     for (const [index, block] of later.entries()) {
       const row = list.locator('li').nth(index);
-      // The row carries the time twice - the abbreviated form it paints and the
-      // full one only a screen reader gets - so each assertion has to name which
-      // it means. Selected by the attribute that distinguishes them rather than
-      // by position, which would quietly follow the markup if it moved again.
-      const painted = row.locator('[aria-hidden="true"]');
+      // The row's two cells, named by what each holds rather than by position:
+      // a positional index is what quietly followed the markup when the time
+      // cell gained children, and it would do so again.
+      const marker = page.locator('[aria-hidden="true"]');
+      const timeCell = row.locator('> span').filter({ has: marker });
+      const nameCell = row.locator('> span').filter({ hasNot: marker });
       // The three-letter day is what buys the row the width its class name
       // needs to wrap into; restoring the full name takes 42px back off it.
-      await expect(painted).toHaveText(`${block.day.slice(0, 3)} ${block.startLabel}`);
-      // toHaveText reads the DOM, which a clipped element still fills, so the
-      // element has to say separately that it is showing all of it.
-      const clipped = await painted.evaluate((el) => el.scrollWidth > el.clientWidth);
-      expect(clipped, 'the time is clipped rather than shown in full').toBe(false);
+      await expect(timeCell.locator('[aria-hidden="true"]')).toHaveText(
+        `${block.day.slice(0, 3)} ${block.startLabel}`,
+      );
       // What the abbreviation costs a screen reader is paid back here, so
       // dropping this copy fails rather than passing quietly.
       await expect(row.locator('.sr-only')).toHaveText(`${block.day} ${block.startLabel}`);
+      // toHaveText reads the DOM, which a clipped element still fills, so each
+      // cell has to say separately that it is showing all of it - the name as
+      // well as the time, because the name is where the `truncate` that started
+      // all this actually lived. Both are flex items and so blockified, which
+      // is the only reason there is a layout box here to measure: an inline box
+      // reports 0 for both widths and would compare equal whatever it held, so
+      // the box is proved to exist before the relation is read off it.
+      for (const [what, cell] of [
+        ['the class name', nameCell],
+        ['the time', timeCell],
+      ] as const) {
+        const box = await cell.evaluate((el) => ({
+          scroll: el.scrollWidth,
+          client: el.clientWidth,
+        }));
+        expect(
+          box.client,
+          `${what} has no layout box, so nothing measured on it can fail`,
+        ).toBeGreaterThan(0);
+        expect(box.scroll, `${what} is clipped rather than shown in full`).toBeLessThanOrEqual(
+          box.client,
+        );
+      }
     }
   });
 });
