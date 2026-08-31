@@ -189,10 +189,13 @@ test.describe('Home page hydration', () => {
  * sand card, which is why the second test here measures against the card and
  * not the viewport - one of these failures does not imply the other.
  *
- * Clipping is not the fix, and this spec would pass if someone reintroduced it:
- * the hero briefly clipped this overflow and cut times to `Tuesday 7:0`, with
- * the AM/PM gone and no way to reveal it, which is worse than a scrollbar. The
- * third test is the one that holds that line, by reading the times back.
+ * Clipping is not the fix, and the first two tests here would pass if someone
+ * reintroduced it: the hero briefly clipped this overflow and cut times to
+ * `Tuesday 7:0`, with the AM/PM gone and no way to reveal it, which is worse
+ * than a scrollbar. The third test holds that line inside the card, by reading
+ * the times back and checking the name cell is not squeezed. The hero's own
+ * clip was an ancestor of the card rather than anything in it, so what holds
+ * that is the `overflow: visible` assertion in the hero test further up.
  *
  * These are relations - a scroll width against a client width, an edge against
  * an edge - rather than pixel counts, so they do not restate the measurements
@@ -294,29 +297,45 @@ test.describe('Coming-up card fits the narrowest phones', () => {
       // What the abbreviation costs a screen reader is paid back here, so
       // dropping this copy fails rather than passing quietly.
       await expect(row.locator('.sr-only')).toHaveText(`${block.day} ${block.startLabel}`);
-      // toHaveText reads the DOM, which a clipped element still fills, so each
-      // cell has to say separately that it is showing all of it - the name as
-      // well as the time, because the name is where the `truncate` that started
-      // all this actually lived. Both are flex items and so blockified, which
-      // is the only reason there is a layout box here to measure: an inline box
-      // reports 0 for both widths and would compare equal whatever it held, so
-      // the box is proved to exist before the relation is read off it.
-      for (const [what, cell] of [
-        ['the class name', nameCell],
-        ['the time', timeCell],
-      ] as const) {
-        const box = await cell.evaluate((el) => ({
-          scroll: el.scrollWidth,
-          client: el.clientWidth,
-        }));
-        expect(
-          box.client,
-          `${what} has no layout box, so nothing measured on it can fail`,
-        ).toBeGreaterThan(0);
-        expect(box.scroll, `${what} is clipped rather than shown in full`).toBeLessThanOrEqual(
-          box.client,
-        );
-      }
+      // toHaveText reads the DOM, which a clipped element still fills, so the
+      // name cell has to say separately that it is showing all of it. That cell
+      // is where the `truncate` which started all this actually lived, and it
+      // is still squeezable: it carries `min-w-0` and the default
+      // `flex-shrink: 1`, so putting a nowrap utility back on it forces about
+      // 250px of text into the 157px the row has at 320px and this relation
+      // goes red. It is a flex item and so blockified, which is the only reason
+      // there is a layout box here to read at all.
+      //
+      // There is deliberately no matching relation on the time cell. While that
+      // cell is `shrink-0` with `flex-basis: auto`, its used width IS its
+      // max-content width, so its content cannot exceed its box and
+      // `scrollWidth <= clientWidth` holds whatever it contains - an assertion
+      // that cannot fail, which this file's own rule says to remove rather than
+      // keep, because a green test gets read as proof. See the note at
+      // tests/e2e/header-widths.spec.ts:30-32. Reinstate one there the moment a
+      // future edit drops that `shrink-0` or gives the cell a width: it becomes
+      // squeezable then, and the relation starts meaning what it says.
+      //
+      // A cell-level relation was never what held the `Tuesday 7:0` line
+      // anyway. That was an ancestor clipping the whole card, which nothing
+      // measured inside the card can see; the assertion that catches it is
+      // `expect(hero).toHaveCSS('overflow', 'visible')` in "hero inverts to
+      // light-on-dark and clips the photo on the image layer" above.
+      //
+      // The client width is read first because an inline box reports 0 on both
+      // sides and would compare equal whatever it held. A measurement that
+      // cannot fail has to fail loudly rather than pass quietly.
+      const box = await nameCell.evaluate((el) => ({
+        scroll: el.scrollWidth,
+        client: el.clientWidth,
+      }));
+      expect(
+        box.client,
+        'the class name has no layout box, so nothing measured on it can fail',
+      ).toBeGreaterThan(0);
+      expect(box.scroll, 'the class name is clipped rather than shown in full').toBeLessThanOrEqual(
+        box.client,
+      );
     }
   });
 });
