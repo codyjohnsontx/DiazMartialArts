@@ -126,11 +126,14 @@ test.describe('Header fits its viewport', () => {
    * The document-level assertion, which is what a visitor actually feels. It is
    * scoped to the widths where the header is the only thing that can overflow
    * the page, and both edges of that scope are page content rather than the
-   * header. Below it, at 320-390, two pages overflow for reasons of their own -
-   * the /announcements h1 is one unbreakable word wider than the viewport, and
-   * the home page's next-class card overflows below about 331px. Above it, from
-   * 1024, the home page hero does; see DOC_OVERFLOW_WIDTHS. Widening this loop
-   * before those are fixed would fail for reasons this guard is not about.
+   * header. Below it, the home page's next-class card still overflows on its
+   * own - measured at 302-315px on macOS against the "below about 331px" this
+   * note first recorded, so read that as an unfixed page-content bug rather
+   * than as a number. Above it, from 1024, the home page hero does; see
+   * DOC_OVERFLOW_WIDTHS. Widening this loop before those are fixed would fail
+   * for reasons this guard is not about. The /announcements h1 was the other
+   * page named here, one unbreakable word wider than the viewport; it now
+   * carries a soft hyphen and tests/e2e/public-pages.spec.ts guards it.
    */
   for (const width of DOC_OVERFLOW_WIDTHS) {
     test(`page does not scroll sideways at ${width}px`, async ({ page }) => {
