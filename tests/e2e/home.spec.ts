@@ -276,14 +276,22 @@ test.describe('Coming-up card fits the narrowest phones', () => {
     expect(later.length).toBeGreaterThan(0);
 
     for (const [index, block] of later.entries()) {
-      const time = list.locator('li').nth(index).locator('span').nth(1);
+      const row = list.locator('li').nth(index);
+      // The row carries the time twice - the abbreviated form it paints and the
+      // full one only a screen reader gets - so each assertion has to name which
+      // it means. Selected by the attribute that distinguishes them rather than
+      // by position, which would quietly follow the markup if it moved again.
+      const painted = row.locator('[aria-hidden="true"]');
       // The three-letter day is what buys the row the width its class name
       // needs to wrap into; restoring the full name takes 42px back off it.
-      await expect(time).toHaveText(`${block.day.slice(0, 3)} ${block.startLabel}`);
+      await expect(painted).toHaveText(`${block.day.slice(0, 3)} ${block.startLabel}`);
       // toHaveText reads the DOM, which a clipped element still fills, so the
       // element has to say separately that it is showing all of it.
-      const clipped = await time.evaluate((el) => el.scrollWidth > el.clientWidth);
+      const clipped = await painted.evaluate((el) => el.scrollWidth > el.clientWidth);
       expect(clipped, 'the time is clipped rather than shown in full').toBe(false);
+      // What the abbreviation costs a screen reader is paid back here, so
+      // dropping this copy fails rather than passing quietly.
+      await expect(row.locator('.sr-only')).toHaveText(`${block.day} ${block.startLabel}`);
     }
   });
 });
