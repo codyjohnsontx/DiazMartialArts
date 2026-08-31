@@ -224,21 +224,21 @@ test.describe('Coming-up card fits the narrowest phones', () => {
     const card = page.locator('section:has(h1) .shadow-lift').first();
     const list = card.locator('ul').filter({ hasText: /:\d\d/ }).last();
     await expect(list.locator('li').first()).toBeVisible();
+    // Measuring before webfonts settle would size the rows off fallback
+    // metrics rather than off the Manrope the page actually renders in.
+    await page.evaluate(async () => {
+      await document.fonts.ready;
+    });
     return { card, list };
   }
 
   for (const width of [320, 360, 390]) {
     test(`the home page does not scroll sideways at ${width}px`, async ({ page }) => {
       await openCard(page, width);
-      const doc = await page.evaluate(async () => {
-        // Measuring before webfonts settle would size the rows off fallback
-        // metrics rather than off the Manrope the page actually renders in.
-        await document.fonts.ready;
-        return {
-          scrollWidth: document.documentElement.scrollWidth,
-          clientWidth: document.documentElement.clientWidth,
-        };
-      });
+      const doc = await page.evaluate(() => ({
+        scrollWidth: document.documentElement.scrollWidth,
+        clientWidth: document.documentElement.clientWidth,
+      }));
       expect(doc.scrollWidth, `home scrolls sideways at ${width}px`).toBe(doc.clientWidth);
     });
   }
@@ -248,7 +248,14 @@ test.describe('Coming-up card fits the narrowest phones', () => {
       const { list } = await openCard(page, width);
       const overhang = await list.evaluate((ul) => {
         const card = ul.closest('.shadow-lift') as HTMLElement;
-        const limit = card.getBoundingClientRect().right;
+        const style = getComputedStyle(card);
+        // The card's content edge, not its border-box edge: it is `p-5` inside a
+        // 1px border, so measuring to the outside would let a row paint 21px of
+        // overflow across the padding and still read as inside the card.
+        const limit =
+          card.getBoundingClientRect().right -
+          parseFloat(style.paddingRight) -
+          parseFloat(style.borderRightWidth);
         // The spans as well as the rows: a row can sit inside the card while
         // the text it refuses to shrink paints out through the side of it.
         return Math.max(
@@ -257,7 +264,9 @@ test.describe('Coming-up card fits the narrowest phones', () => {
           ),
         );
       });
-      expect(overhang, `Later rows paint past the card at ${width}px`).toBeLessThanOrEqual(0);
+      // A relation, not a pixel count - the tolerance is only the sub-pixel
+      // rounding between a laid-out edge and one recomputed from two lengths.
+      expect(overhang, `Later rows paint past the card at ${width}px`).toBeLessThanOrEqual(0.5);
     });
   }
 

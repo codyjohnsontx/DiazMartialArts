@@ -132,7 +132,12 @@ export function HomeUpcomingClasses() {
                 <span className="min-w-0 font-semibold text-black/70">
                   {block.classes[0]?.program}
                 </span>
-                <span className="shrink-0 font-extrabold text-ink [font-variant-numeric:tabular-nums]">
+                <span
+                  aria-label={
+                    block.dayOffset === 0 ? undefined : `${block.day} ${block.startLabel}`
+                  }
+                  className="shrink-0 font-extrabold text-ink [font-variant-numeric:tabular-nums]"
+                >
                   {block.dayOffset === 0
                     ? block.startLabel
                     : `${block.day.slice(0, 3)} ${block.startLabel}`}
