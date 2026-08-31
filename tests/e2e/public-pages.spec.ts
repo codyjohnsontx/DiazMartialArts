@@ -196,8 +196,20 @@ test.describe('Announcements page details', () => {
    * widths themselves are only where the failure used to live; move the type
    * scale and the band moves, but a band that reopens still lands on one of
    * them.
+   *
+   * 300 is deliberately not in that list, and adding it back would assert on
+   * the browser rather than on this page. 300px is Chromium's own minimum
+   * layout width, not anything this page contains: at viewports of 296 to
+   * 299px a walk of every element on the page found none whose right edge
+   * passed the viewport, and documentElement.scrollWidth still came back 300.
+   * So below 320px the page cannot report overflow whatever the heading does,
+   * and a 300px case would clear that floor by nothing at all. 320px is the
+   * narrowest width any real device has, and the heading clears it with room
+   * to spare: the widest rendered line of the hyphenated word (ANNOUNCE-)
+   * measures 263.53px at the 48px step, and with the h1's left edge at 16px
+   * its right edge sits at 279.5px, about 40px inside the viewport.
    */
-  for (const width of [300, 320, 390, 439, 440, 639, 640, 658, 659]) {
+  for (const width of [320, 390, 439, 440, 639, 640, 658, 659]) {
     test(`does not scroll sideways at ${width}px`, async ({ page }, testInfo) => {
       // These set their own viewports, so the configured project viewports are
       // irrelevant and running them under both would do the same work twice -
