@@ -99,17 +99,57 @@ export function HomeUpcomingClasses() {
           <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-bronze">
             Later
           </div>
+          {/* These rows are the narrowest layout on the site: the card is
+              w-[min(92vw,390px)], so at a 320px viewport each row has very
+              little width to divide between a class name and a time. Getting
+              that wrong scrolls the whole page sideways rather than spilling
+              quietly, because a grid track sized `auto` may not shrink below its
+              items' min-content and an `li` with the default `min-width: auto`
+              reports its own min-content as that minimum. `truncate` used to set
+              the name `white-space: nowrap`, which made that min-content the
+              entire name, and the row that would not shrink widened the document
+              instead of clipping: document.scrollWidth 350 against a 320px
+              viewport. Clipping the overflow is not the fix either - the hero
+              tried it and cut times to `Tuesday 7:0` with no way to reveal the
+              rest - so the row is made to fit instead. Two changes do it: the
+              name wraps rather than truncating, which drops its floor from the
+              whole name to its longest unbreakable run, and the day is
+              abbreviated to three letters, which hands the difference back to
+              the name - enough that all 21 class names in content/schedule.ts
+              wrap to at most two lines. The two `min-w-0` are what keep that a
+              bound rather than a coincidence: they release the grid track and
+              the flex item from their content-based minimums, so a longer class
+              name added later wraps harder instead of pushing the page wider.
+              None of that is stated as a per-cell pixel figure, deliberately:
+              those are machine-local, so a number belongs only where a test
+              reproduces it. The abbreviation is visual only: the three letters
+              are `aria-hidden` and the `sr-only` span beside them carries the
+              full day, so a screen reader still reads `Wednesday 10:00 AM`
+              while the row pays nothing for it - `sr-only` is out of flow and
+              adds no layout width. An `aria-label` on the visible span is not
+              the shorter way to write that: a bare span is `role=generic`,
+              which ARIA prohibits naming, so user agents ignore the label. The
+              one at ScheduleContent.tsx sits on a `role=tab` button and does
+              not transfer. tests/e2e/home.spec.ts holds the 320px check and
+              asserts both strings. */}
           <ul className="grid gap-1.5">
             {laterBlocks.map((block) => (
               <li
                 key={`${block.day}-${block.start.toISOString()}`}
-                className="flex items-center justify-between gap-3 text-xs"
+                className="flex min-w-0 items-baseline justify-between gap-3 text-xs"
               >
-                <span className="truncate font-semibold text-black/70">
+                <span className="min-w-0 font-semibold text-black/70">
                   {block.classes[0]?.program}
                 </span>
                 <span className="shrink-0 font-extrabold text-ink [font-variant-numeric:tabular-nums]">
-                  {block.dayOffset === 0 ? block.startLabel : `${block.day} ${block.startLabel}`}
+                  {block.dayOffset === 0 ? (
+                    block.startLabel
+                  ) : (
+                    <>
+                      <span aria-hidden="true">{`${block.day.slice(0, 3)} ${block.startLabel}`}</span>
+                      <span className="sr-only">{`${block.day} ${block.startLabel}`}</span>
+                    </>
+                  )}
                 </span>
               </li>
             ))}

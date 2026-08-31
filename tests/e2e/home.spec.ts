@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 import { formatCountdown, getUpcomingClassBlocks } from '@/lib/classSchedule';
 
@@ -171,5 +171,173 @@ test.describe('Home page hydration', () => {
     expect(
       errors.filter((text) => /hydrat|did not match|Minified React error/i.test(text)),
     ).toEqual([]);
+  });
+});
+
+/**
+ * The upcoming-classes card at the narrowest widths a phone actually has.
+ *
+ * Each row of the card's "Later" list pairs a class name with a time, and the
+ * name used to carry `truncate`, which sets `white-space: nowrap`. A row is a
+ * grid item whose track is sized `auto`, and neither that track nor the row's
+ * own `min-width: auto` may shrink below the row's min-content, so a name that
+ * refuses to wrap made the whole row wider than the card had to give it at a
+ * 320px viewport. Nothing clipped it, so it pushed the document out
+ * instead: `document.scrollWidth` came back 350 against a 320px viewport and
+ * the home page scrolled sideways on the narrowest common phones. At 360px the
+ * document stayed put and the rows still painted out through the side of the
+ * sand card, which is why the second test here measures against the card and
+ * not the viewport - one of these failures does not imply the other.
+ *
+ * Clipping is not the fix, and the first two tests here would pass if someone
+ * reintroduced it: the hero briefly clipped this overflow and cut times to
+ * `Tuesday 7:0`, with the AM/PM gone and no way to reveal it, which is worse
+ * than a scrollbar. The third test holds that line inside the card, by reading
+ * the times back and checking the name cell is not squeezed. The hero's own
+ * clip was an ancestor of the card rather than anything in it, so what holds
+ * that is the `overflow: visible` assertion in the hero test further up.
+ *
+ * These are relations - a scroll width against a client width, an edge against
+ * an edge - rather than pixel counts, so they do not depend on the platform's
+ * text shaping the way a wrap boundary would. That is also why neither this
+ * block nor components/HomeUpcomingClasses.tsx records a per-cell width: a
+ * number belongs only where a test reproduces it, and a machine-local one
+ * leaves the next reader unable to tell an environment from a regression. See
+ * the note in tests/e2e/header-widths.spec.ts for what that cost to learn.
+ */
+test.describe('Coming-up card fits the narrowest phones', () => {
+  // Tuesday night, after the last class of the day: every upcoming block is
+  // Wednesday, so the rows carry both the longest day name and the widest class
+  // names in content/schedule.ts. That is the worst case the week can produce.
+  const visitTime = new Date('2026-09-01T21:30:00');
+
+  // This spec drives the viewport itself, so running it under both configured
+  // projects would just do the same work twice.
+  test.beforeEach(async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === 'Mobile', 'This spec sets its own viewports.');
+    await page.clock.setFixedTime(visitTime);
+  });
+
+  /** The "Later" list inside the card, once the clock-driven card is up. */
+  async function openCard(page: Page, width: number) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/');
+    // The card renders a time-free shell until it has mounted and read the
+    // clock, and that shell has no rows at all, so measuring before the
+    // countdown is on screen would measure the wrong markup.
+    await expect(page.getByText(/Starts in|Starting now/).first()).toBeVisible();
+    const card = page.locator('section:has(h1) .shadow-lift').first();
+    const list = card.locator('ul').filter({ hasText: /:\d\d/ }).last();
+    await expect(list.locator('li').first()).toBeVisible();
+    // Measuring before webfonts settle would size the rows off fallback
+    // metrics rather than off the Manrope the page actually renders in.
+    await page.evaluate(async () => {
+      await document.fonts.ready;
+    });
+    return list;
+  }
+
+  for (const width of [320, 360, 390]) {
+    test(`the home page does not scroll sideways at ${width}px`, async ({ page }) => {
+      await openCard(page, width);
+      const doc = await page.evaluate(() => ({
+        scrollWidth: document.documentElement.scrollWidth,
+        clientWidth: document.documentElement.clientWidth,
+      }));
+      expect(doc.scrollWidth, `home scrolls sideways at ${width}px`).toBe(doc.clientWidth);
+    });
+  }
+
+  for (const width of [320, 360]) {
+    test(`every Later row stays inside the card at ${width}px`, async ({ page }) => {
+      const list = await openCard(page, width);
+      const overhang = await list.evaluate((ul) => {
+        const card = ul.closest('.shadow-lift') as HTMLElement;
+        const style = getComputedStyle(card);
+        // The card's content edge, not its border-box edge: it is `p-5` inside a
+        // 1px border, so measuring to the outside would let a row paint 21px of
+        // overflow across the padding and still read as inside the card.
+        const limit =
+          card.getBoundingClientRect().right -
+          parseFloat(style.paddingRight) -
+          parseFloat(style.borderRightWidth);
+        // The spans as well as the rows: a row can sit inside the card while
+        // the text it refuses to shrink paints out through the side of it.
+        // Only what paints, though - the screen-reader copy is out of flow and
+        // invisible, so measuring it could only fail for a reason this guard
+        // does not mean.
+        return Math.max(
+          ...[...ul.querySelectorAll('li, span:not(.sr-only)')].map(
+            (el) => el.getBoundingClientRect().right - limit,
+          ),
+        );
+      });
+      // A relation, not a pixel count - the tolerance is only the sub-pixel
+      // rounding between a laid-out edge and one recomputed from two lengths.
+      expect(overhang, `Later rows paint past the card at ${width}px`).toBeLessThanOrEqual(0.5);
+    });
+  }
+
+  test('every Later row still shows its whole time at 320px', async ({ page }) => {
+    const list = await openCard(page, 320);
+    const [, ...later] = getUpcomingClassBlocks(visitTime, { limit: 4 });
+    expect(later.length).toBeGreaterThan(0);
+
+    for (const [index, block] of later.entries()) {
+      const row = list.locator('li').nth(index);
+      // The row's two cells, named by what each holds rather than by position:
+      // a positional index is what quietly followed the markup when the time
+      // cell gained children, and it would do so again.
+      const marker = page.locator('[aria-hidden="true"]');
+      const timeCell = row.locator('> span').filter({ has: marker });
+      const nameCell = row.locator('> span').filter({ hasNot: marker });
+      // The three-letter day is what buys the row the width its class name
+      // needs to wrap into; restoring the full day name takes that back off it.
+      await expect(timeCell.locator('[aria-hidden="true"]')).toHaveText(
+        `${block.day.slice(0, 3)} ${block.startLabel}`,
+      );
+      // What the abbreviation costs a screen reader is paid back here, so
+      // dropping this copy fails rather than passing quietly.
+      await expect(row.locator('.sr-only')).toHaveText(`${block.day} ${block.startLabel}`);
+      // toHaveText reads the DOM, which a clipped element still fills, so the
+      // name cell has to say separately that it is showing all of it. That cell
+      // is where the `truncate` which started all this actually lived, and it
+      // is still squeezable: it carries `min-w-0` and the default
+      // `flex-shrink: 1`, so putting a nowrap utility back on it forces far
+      // more text through the cell than the row can give it and this relation
+      // goes red. It is a flex item and so blockified, which is the only reason
+      // there is a layout box here to read at all.
+      //
+      // There is deliberately no matching relation on the time cell. While that
+      // cell is `shrink-0` with `flex-basis: auto`, its used width IS its
+      // max-content width, so its content cannot exceed its box and
+      // `scrollWidth <= clientWidth` holds whatever it contains - an assertion
+      // that cannot fail, which this file's own rule says to remove rather than
+      // keep, because a green test gets read as proof. See the note at
+      // tests/e2e/header-widths.spec.ts:30-32. Reinstate one there the moment a
+      // future edit drops that `shrink-0` or gives the cell a width: it becomes
+      // squeezable then, and the relation starts meaning what it says.
+      //
+      // A cell-level relation was never what held the `Tuesday 7:0` line
+      // anyway. That was an ancestor clipping the whole card, which nothing
+      // measured inside the card can see; the assertion that catches it is
+      // `expect(hero).toHaveCSS('overflow', 'visible')` in "hero inverts to
+      // light-on-dark and clips the photo on the image layer" above.
+      //
+      // The client width is read first because an inline box reports 0 on both
+      // sides and would compare equal whatever it held. A measurement that
+      // cannot fail has to fail loudly rather than pass quietly.
+      const box = await nameCell.evaluate((el) => ({
+        scroll: el.scrollWidth,
+        client: el.clientWidth,
+      }));
+      expect(
+        box.client,
+        'the class name has no layout box, so nothing measured on it can fail',
+      ).toBeGreaterThan(0);
+      expect(box.scroll, 'the class name is clipped rather than shown in full').toBeLessThanOrEqual(
+        box.client,
+      );
+    }
   });
 });

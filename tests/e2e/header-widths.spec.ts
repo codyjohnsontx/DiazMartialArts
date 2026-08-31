@@ -125,19 +125,25 @@ test.describe('Header fits its viewport', () => {
   /**
    * The document-level assertion, which is what a visitor actually feels. It is
    * scoped to the widths where the header is the only thing that can overflow
-   * the page, and both edges of that scope are page content rather than the
-   * header. Below it, the home page's next-class card still overflows on its
-   * own - measured at 302-315px on macOS against the "below about 331px" this
-   * note first recorded, so read that as an unfixed page-content bug rather
-   * than as a number. Above it, from 1024, the home page hero does; see
-   * DOC_OVERFLOW_WIDTHS. Widening this loop before those are fixed would fail
-   * for reasons this guard is not about. The /announcements h1 was the other
-   * page named here, one unbreakable word wider than the viewport; it now
-   * carries a soft hyphen and tests/e2e/public-pages.spec.ts guards it. That
-   * leaves the conclusion above only half earned: with the /announcements
-   * reason gone and the next-class card's overflow measured at 302-315px,
-   * nothing recorded here still blocks the widths between that band and 768,
-   * so the floor below 768 is unverified rather than justified.
+   * the page, and the edges of that scope are page content rather than the
+   * header. Above it, from 1024, the home page hero overflows for a reason of
+   * its own; see DOC_OVERFLOW_WIDTHS, which owns that exclusion. Widening this
+   * loop up into that band would fail for a reason this guard is not about.
+   *
+   * Below the scope, neither page this note once named overflows any more. The
+   * /announcements h1 was one unbreakable word wider than the viewport and now
+   * carries a soft hyphen, which tests/e2e/public-pages.spec.ts guards; the
+   * home page's next-class card used to overflow below about 331px and now
+   * fits, its "Later" rows inside 320px, guarded with the page it belongs to
+   * in tests/e2e/home.spec.ts under "Coming-up card fits the narrowest
+   * phones".
+   *
+   * Nothing recorded here therefore still blocks the widths below 768, so that
+   * floor is unverified rather than justified. This loop was still not widened
+   * down to 320-390 on the strength of it: a document-level check at these
+   * widths reaches page content across all five PATHS - which is the kind of
+   * measurement this file already learned not to settle from one machine's
+   * reading. That is recorded here rather than the constant changed.
    */
   for (const width of DOC_OVERFLOW_WIDTHS) {
     test(`page does not scroll sideways at ${width}px`, async ({ page }) => {
