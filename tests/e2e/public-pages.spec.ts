@@ -181,6 +181,76 @@ test.describe('Announcements page details', () => {
     await expect(page.getByRole('heading', { name: 'Announcements', level: 1 })).toBeVisible();
   });
 
+  /**
+   * The h1 is a single word with no break opportunity of its own, so it used
+   * to run past the right edge of a phone and take the whole page sideways
+   * with it: every width from 300 to 439px, where the word measures 424px
+   * against a column of viewport minus 32px, and again from 640 to 658px,
+   * where the `sm` step takes it to 635px against viewport minus 48px. The
+   * word now carries a soft hyphen; app/announcements/page.tsx explains why
+   * that rather than a smaller type step.
+   *
+   * These are the two boundary widths of each band plus the two just outside
+   * it, and they assert a relation - scrollWidth against clientWidth - not a
+   * pixel count, so nothing here depends on how this machine shapes text. The
+   * widths themselves are only where the failure used to live; move the type
+   * scale and the band moves, but a band that reopens still lands on one of
+   * them.
+   *
+   * 300 is deliberately not in that list, and adding it back would assert on
+   * the browser rather than on this page. 300px is Chromium's own minimum
+   * layout width, not anything this page contains: at viewports of 296 to
+   * 299px a walk of every element on the page found none whose right edge
+   * passed the viewport, and documentElement.scrollWidth still came back 300.
+   * So below 320px the page cannot report overflow whatever the heading does,
+   * and a 300px case would clear that floor by nothing at all. 320px is the
+   * narrowest width any real device has, and the heading clears it with room
+   * to spare: the widest rendered line of the hyphenated word (ANNOUNCE-)
+   * measures 263.53px at the 48px step, and with the h1's left edge at 16px
+   * its right edge sits at 279.5px, about 40px inside the viewport.
+   */
+  for (const width of [320, 390, 439, 440, 639, 640, 658, 659]) {
+    test(`does not scroll sideways at ${width}px`, async ({ page }, testInfo) => {
+      // These set their own viewports, so the configured project viewports are
+      // irrelevant and running them under both would do the same work twice -
+      // the same reason tests/e2e/header-widths.spec.ts skips that project.
+      test.skip(testInfo.project.name === 'Mobile', 'This block sets its own viewports.');
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/announcements');
+      const doc = await page.evaluate(async () => {
+        // Measuring before the webfont settles would size the heading off
+        // fallback metrics, which are not the ones this page renders in.
+        await document.fonts.ready;
+        const el = document.documentElement;
+        return { scrollWidth: el.scrollWidth, clientWidth: el.clientWidth };
+      });
+      expect(doc.scrollWidth, `/announcements scrolls sideways at ${width}px`).toBe(
+        doc.clientWidth,
+      );
+    });
+  }
+
+  /**
+   * The break opportunity itself, which the overflow guard above cannot see:
+   * `overflow-wrap: break-word` would satisfy every one of those widths while
+   * splitting the word mid-syllable and drawing no hyphen. The soft hyphen is
+   * invisible in the rendered page and in the accessible name, so a stray
+   * reformat or a copy-paste through an editor that strips control characters
+   * would take it out silently. Both halves are pinned: the character is in
+   * the text, and the name assistive technology reads is still the plain word.
+   */
+  test('the h1 carries a soft hyphen and still reads as one word', async ({ page }) => {
+    await page.goto('/announcements');
+    // Read raw rather than through toHaveText, which normalises U+00AD away
+    // and so passes just as happily on the unhyphenated word - it was written
+    // that way first and could not fail. Spelled as an escape on purpose too:
+    // the character this pins is invisible, and a literal copy of it here
+    // would be as easy to lose as the one in the page.
+    const h1 = page.getByRole('heading', { name: 'Announcements', level: 1 });
+    await expect(h1).toBeVisible();
+    expect(await h1.evaluate((el) => el.textContent)).toBe('Announce\u00ADments');
+  });
+
   test('carries no class-schedule flyer and every flyer resolves to a real image', async ({
     page,
     request,

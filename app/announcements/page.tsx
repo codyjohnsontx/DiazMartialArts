@@ -66,7 +66,37 @@ export default function AnnouncementsPage() {
         <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
           <div>
             <Eyebrow>What&apos;s happening</Eyebrow>
-            <h1 className="display mt-5 text-5xl sm:text-7xl lg:text-[80px]">Announcements</h1>
+            {/*
+              ANNOUNCEMENTS is one thirteen-character word with nowhere to
+              break, and in Manrope 800 at the `.display` tracking it measures
+              8.83px of width per pixel of font size: 424px at the 48px base
+              step, 635px at the 72px `sm` step. Both are wider than the column
+              they sit in on a phone, so this page scrolled sideways at every
+              width from 300 to 439px and again from 640 to 658px.
+
+              The soft hyphen is the fix, over a smaller type step or a shorter
+              word, because it costs nothing until the word does not fit: every
+              width that already fit is untouched, the heading keeps the same
+              scale every other page's h1 gets, and no measured pixel constant
+              is involved. A smaller step would need one, and it would be a
+              large one - holding a single line at 320px takes a 30px h1, a
+              third smaller than the 48px elsewhere - and it would only be the
+              right number for this font on the platform it was read on.
+
+              Neither CSS route works here. `overflow-wrap: break-word` clears
+              the overflow but breaks mid-syllable with no hyphen drawn
+              (ANNOUNCEME / NTS), and `hyphens: auto` does nothing at all in a
+              browser carrying no hyphenation dictionary, which headless
+              Chromium is - it left all 159 overflowing widths overflowing.
+              `hyphens: manual` is the CSS default, so this one character needs
+              no rule beside it and breaks the same way in every browser.
+
+              U+00AD is invisible to the accessible name - Chromium computes
+              this heading as "Announcements" - so the by-name heading
+              assertions in tests/e2e/public-pages.spec.ts match unchanged.
+              That spec owns the regression guard.
+            */}
+            <h1 className="display mt-5 text-5xl sm:text-7xl lg:text-[80px]">Announce&shy;ments</h1>
           </div>
         </div>
       </section>

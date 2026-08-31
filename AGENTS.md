@@ -248,6 +248,26 @@ marking work complete or CI fails on unformatted files.
   runs measure 5.52:1 (bronze rank line) and 5.98:1 (bronze group headings)
   against AA's 4.5:1.
 
+- A `.display` heading is one long word away from scrolling the whole page
+  sideways, and no test on this site sees it until one is written for that
+  page. `/announcements` did it at every width from 300 to 439px and again
+  from 640 to 658px, because ANNOUNCEMENTS has no break opportunity of its
+  own. The fix is a soft hyphen in the word (`&shy;` in the JSX), not a
+  smaller type step: it costs nothing until the word does not fit, so it
+  needs no measured pixel constant, and `hyphens: manual` being the CSS
+  default means it breaks the same way in every browser. `hyphens: auto` is
+  not an alternative - it does nothing in a browser carrying no hyphenation
+  dictionary, which headless Chromium is - and `overflow-wrap: break-word`
+  breaks mid-syllable with no hyphen drawn. `app/announcements/page.tsx`
+  holds the reasoning and the measurements.
+  Guard such a heading with the scrollWidth/clientWidth relation, which is
+  platform-independent, and NOT with `toHaveText`: Playwright normalises
+  U+00AD away, so `toHaveText('Announce\u00ADments')` passes just as happily
+  on the unhyphenated word. Read `textContent` raw instead. Chromium strips
+  U+00AD from the accessible name too, which is what keeps `getByRole` name
+  lookups working - and is why only the raw read can fail.
+  `tests/e2e/public-pages.spec.ts` owns both guards.
+
 ## Maintaining this file
 
 Keep this file for knowledge useful to almost every future agent session in this project.
