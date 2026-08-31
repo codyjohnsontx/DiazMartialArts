@@ -133,7 +133,11 @@ test.describe('Header fits its viewport', () => {
    * DOC_OVERFLOW_WIDTHS. Widening this loop before those are fixed would fail
    * for reasons this guard is not about. The /announcements h1 was the other
    * page named here, one unbreakable word wider than the viewport; it now
-   * carries a soft hyphen and tests/e2e/public-pages.spec.ts guards it.
+   * carries a soft hyphen and tests/e2e/public-pages.spec.ts guards it. That
+   * leaves the conclusion above only half earned: with the /announcements
+   * reason gone and the next-class card's overflow measured at 302-315px,
+   * nothing recorded here still blocks the widths between that band and 768,
+   * so the floor below 768 is unverified rather than justified.
    */
   for (const width of DOC_OVERFLOW_WIDTHS) {
     test(`page does not scroll sideways at ${width}px`, async ({ page }) => {
