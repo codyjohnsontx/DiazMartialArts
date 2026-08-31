@@ -9,12 +9,20 @@ import type { Page } from '@playwright/test';
  * first is swallowed with nothing to retry - which is how `pressing Enter on
  * toggle opens menu` flaked in CI, `focus()` and `keyboard.press()` having no
  * actionability check at all. React tags each host node it hydrates with its
- * own `__react*` keys, so their arrival on this button is the moment its
- * onClick exists.
+ * own `__react*` keys, so their arrival on a node is the moment its handlers
+ * exist.
  */
+export async function waitForHydration(page: Page, selector: string) {
+  await page.waitForFunction(
+    (sel) => {
+      const el = document.querySelector(sel);
+      return Boolean(el && Object.keys(el).some((key) => key.startsWith('__react')));
+    },
+    selector,
+    { polling: 'raf' },
+  );
+}
+
 export async function waitForMenuToggleHydration(page: Page) {
-  await page.waitForFunction(() => {
-    const el = document.querySelector('button[aria-label="Toggle menu"]');
-    return Boolean(el && Object.keys(el).some((key) => key.startsWith('__react')));
-  });
+  await waitForHydration(page, 'button[aria-label="Toggle menu"]');
 }

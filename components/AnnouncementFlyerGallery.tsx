@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -61,9 +61,9 @@ export function AnnouncementFlyerGallery({ flyers }: AnnouncementFlyerGalleryPro
     setActiveId(id);
   }
 
-  function closeFlyer() {
-    setActiveId(null);
-  }
+  // Stable so the effect below can list it and still run only when a flyer
+  // opens or closes, rather than on every render.
+  const closeFlyer = useCallback(() => setActiveId(null), []);
 
   useEffect(() => {
     if (!activeFlyer) return undefined;
@@ -75,39 +75,65 @@ export function AnnouncementFlyerGallery({ flyers }: AnnouncementFlyerGalleryPro
       closeButtonRef.current?.focus();
     });
 
+    /**
+     * Bound to the document, not to the overlay, and handling both keys in one
+     * place because they answer the same question - where focus happens to be -
+     * and used to get it wrong in the same way.
+     *
+     * A handler on the overlay only runs while focus is inside it, and focus is
+     * not guaranteed to be. Clicking the flyer is the one click in here that
+     * deliberately does not close the lightbox, and Chrome gives that click to
+     * the nearest focusable ancestor - the overlay's own `tabIndex={0}` root.
+     * The trap enumerates the overlay's focusable DESCENDANTS, so the root is
+     * neither its first stop nor its last; a Tab from there fell through to the
+     * browser and landed focus on the card behind an opaque scrim, where an
+     * overlay-bound Escape reached nothing and the lightbox could not be closed
+     * from the keyboard at all.
+     *
+     * So the trap wraps from any position that is not one of its own stops, and
+     * Escape no longer depends on the trap being perfect.
+     * `tests/e2e/announcement-lightbox.spec.ts` reproduces both halves in a real
+     * browser and owns the rest of that reasoning.
+     */
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeFlyer();
+        return;
+      }
+
+      if (event.key !== 'Tab') return;
+
+      const stops = Array.from(
+        dialogRef.current?.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+        ) ?? [],
+      );
+
+      if (!stops.length) return;
+
+      const active = document.activeElement;
+      const at = active instanceof HTMLElement ? stops.indexOf(active) : -1;
+
+      // -1 is the overlay root and anything on the page behind it alike: from
+      // either, the browser's own next stop is outside the lightbox.
+      const leaving = event.shiftKey ? at === 0 || at === -1 : at === stops.length - 1 || at === -1;
+
+      if (leaving) {
+        event.preventDefault();
+        (event.shiftKey ? stops[stops.length - 1] : stops[0]).focus();
+      }
+    }
+
+    document.addEventListener('keydown', onKeyDown);
+
     return () => {
+      document.removeEventListener('keydown', onKeyDown);
       window.cancelAnimationFrame(frame);
       document.body.style.overflow = previousOverflow;
       restoreFocusRef.current?.focus();
     };
-  }, [activeFlyer]);
-
-  function onDialogKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      closeFlyer();
-      return;
-    }
-
-    if (event.key !== 'Tab') return;
-
-    const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-    );
-
-    if (!focusable?.length) return;
-
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
-
-    if (event.shiftKey && document.activeElement === first) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && document.activeElement === last) {
-      event.preventDefault();
-      first.focus();
-    }
-  }
+  }, [activeFlyer, closeFlyer]);
 
   return (
     <>
@@ -220,10 +246,12 @@ export function AnnouncementFlyerGallery({ flyers }: AnnouncementFlyerGalleryPro
           role="dialog"
           aria-modal="true"
           aria-label={activeFlyer.title}
+          // Keeps a click on the flyer inside the dialog subtree - without it
+          // that click drops focus to <body>, outside the modal context
+          // `aria-modal` promises. The keys are handled on the document above.
           tabIndex={0}
           className="fixed inset-0 z-[100] flex cursor-zoom-out items-center justify-center bg-black/85 p-4 sm:p-8"
           onClick={closeFlyer}
-          onKeyDown={onDialogKeyDown}
         >
           <button
             ref={closeButtonRef}

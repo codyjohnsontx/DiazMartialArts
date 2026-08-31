@@ -290,6 +290,30 @@ marking work complete or CI fails on unformatted files.
   lookups working - and is why only the raw read can fail.
   `tests/e2e/public-pages.spec.ts` owns both guards.
 
+- A dialog's key handling must not be bound to the dialog element. A handler
+  there only runs while focus is inside it, and focus is not guaranteed to be:
+  `tabIndex={0}` on an overlay means a click on non-focusable content inside it
+  lands on the overlay ROOT, because Chrome gives such a click to the nearest
+  focusable ancestor - and a trap built from `querySelectorAll`, which returns
+  descendants only, does not list that root. The flyer lightbox shipped exactly
+  that pair. Clicking the flyer (the one click in the overlay that deliberately
+  does not close it) left focus on the root, which was neither the trap's first
+  stop nor its last, so Tab fell through to the browser and one Shift+Tab put
+  focus on the card behind an opaque scrim - where Escape, bound to the
+  overlay, reached nothing and the lightbox could not be closed from the
+  keyboard at all. Listen on the document for as long as the dialog is open,
+  and wrap the trap from any position that is not one of its own stops, not
+  only from its first and last. `components/AnnouncementFlyerGallery.tsx` is
+  the worked example; `tests/e2e/announcement-lightbox.spec.ts` owns the
+  reproduction and drives it with a real keyboard, which is the only place the
+  fall-through shows - jsdom does not model that focus rule, so a component
+  test has to place focus on the root itself.
+  Any e2e that reaches for `focus()` or `keyboard.press()` must first wait for
+  hydration. Neither carries an actionability check, so against `next dev` a
+  press can land before React has attached the handler and is swallowed with
+  nothing to retry. `waitForHydration` in `tests/fixtures/hydration.ts` is the
+  shared wait.
+
 ## Maintaining this file
 
 Keep this file for knowledge useful to almost every future agent session in this project.
