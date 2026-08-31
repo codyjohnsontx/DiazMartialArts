@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 import { formatCountdown, getUpcomingClassBlocks } from '@/lib/classSchedule';
 
@@ -171,5 +171,110 @@ test.describe('Home page hydration', () => {
     expect(
       errors.filter((text) => /hydrat|did not match|Minified React error/i.test(text)),
     ).toEqual([]);
+  });
+});
+
+/**
+ * The upcoming-classes card at the narrowest widths a phone actually has.
+ *
+ * Each row of the card's "Later" list pairs a class name with a time, and the
+ * name used to carry `truncate`, which sets `white-space: nowrap`. A row is a
+ * grid item whose track is sized `auto`, and neither that track nor the row's
+ * own `min-width: auto` may shrink below the row's min-content, so a name that
+ * refuses to wrap made the whole row 313px wide inside the 252px the card has
+ * at a 320px viewport. Nothing clipped it, so it pushed the document out
+ * instead: `document.scrollWidth` came back 350 against a 320px viewport and
+ * the home page scrolled sideways on the narrowest common phones. At 360px the
+ * document stayed put and the rows still painted out through the side of the
+ * sand card, which is why the second test here measures against the card and
+ * not the viewport - one of these failures does not imply the other.
+ *
+ * Clipping is not the fix, and this spec would pass if someone reintroduced it:
+ * the hero briefly clipped this overflow and cut times to `Tuesday 7:0`, with
+ * the AM/PM gone and no way to reveal it, which is worse than a scrollbar. The
+ * third test is the one that holds that line, by reading the times back.
+ *
+ * These are relations - a scroll width against a client width, an edge against
+ * an edge - rather than pixel counts, so they do not restate the measurements
+ * in components/HomeUpcomingClasses.tsx and do not depend on the platform's
+ * text shaping the way a wrap boundary would. See the note in
+ * tests/e2e/header-widths.spec.ts for what that distinction cost to learn.
+ */
+test.describe('Coming-up card fits the narrowest phones', () => {
+  // Tuesday night, after the last class of the day: every upcoming block is
+  // Wednesday, so the rows carry both the longest day name and the widest class
+  // names in content/schedule.ts. That is the worst case the week can produce.
+  const visitTime = new Date('2026-09-01T21:30:00');
+
+  // This spec drives the viewport itself, so running it under both configured
+  // projects would just do the same work twice.
+  test.beforeEach(async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === 'Mobile', 'This spec sets its own viewports.');
+    await page.clock.setFixedTime(visitTime);
+  });
+
+  /** The card, and the "Later" list inside it, once the clock-driven card is up. */
+  async function openCard(page: Page, width: number) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/');
+    // The card renders a time-free shell until it has mounted and read the
+    // clock, and that shell has no rows at all, so measuring before the
+    // countdown is on screen would measure the wrong markup.
+    await expect(page.getByText(/Starts in|Starting now/).first()).toBeVisible();
+    const card = page.locator('section:has(h1) .shadow-lift').first();
+    const list = card.locator('ul').filter({ hasText: /:\d\d/ }).last();
+    await expect(list.locator('li').first()).toBeVisible();
+    return { card, list };
+  }
+
+  for (const width of [320, 360, 390]) {
+    test(`the home page does not scroll sideways at ${width}px`, async ({ page }) => {
+      await openCard(page, width);
+      const doc = await page.evaluate(async () => {
+        // Measuring before webfonts settle would size the rows off fallback
+        // metrics rather than off the Manrope the page actually renders in.
+        await document.fonts.ready;
+        return {
+          scrollWidth: document.documentElement.scrollWidth,
+          clientWidth: document.documentElement.clientWidth,
+        };
+      });
+      expect(doc.scrollWidth, `home scrolls sideways at ${width}px`).toBe(doc.clientWidth);
+    });
+  }
+
+  for (const width of [320, 360]) {
+    test(`every Later row stays inside the card at ${width}px`, async ({ page }) => {
+      const { list } = await openCard(page, width);
+      const overhang = await list.evaluate((ul) => {
+        const card = ul.closest('.shadow-lift') as HTMLElement;
+        const limit = card.getBoundingClientRect().right;
+        // The spans as well as the rows: a row can sit inside the card while
+        // the text it refuses to shrink paints out through the side of it.
+        return Math.max(
+          ...[...ul.querySelectorAll('li, span')].map(
+            (el) => el.getBoundingClientRect().right - limit,
+          ),
+        );
+      });
+      expect(overhang, `Later rows paint past the card at ${width}px`).toBeLessThanOrEqual(0);
+    });
+  }
+
+  test('every Later row still shows its whole time at 320px', async ({ page }) => {
+    const { list } = await openCard(page, 320);
+    const [, ...later] = getUpcomingClassBlocks(visitTime, { limit: 4 });
+    expect(later.length).toBeGreaterThan(0);
+
+    for (const [index, block] of later.entries()) {
+      const time = list.locator('li').nth(index).locator('span').nth(1);
+      // The three-letter day is what buys the row the width its class name
+      // needs to wrap into; restoring the full name takes 42px back off it.
+      await expect(time).toHaveText(`${block.day.slice(0, 3)} ${block.startLabel}`);
+      // toHaveText reads the DOM, which a clipped element still fills, so the
+      // element has to say separately that it is showing all of it.
+      const clipped = await time.evaluate((el) => el.scrollWidth > el.clientWidth);
+      expect(clipped, 'the time is clipped rather than shown in full').toBe(false);
+    }
   });
 });
