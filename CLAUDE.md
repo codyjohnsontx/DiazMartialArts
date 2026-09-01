@@ -317,93 +317,40 @@ marking work complete or CI fails on unformatted files.
 - The npm the lockfile is written with is pinned, because without a pin any
   npm rewrites `package-lock.json` into its own format, and one already did:
   commit `a55222b` (2026-08-03) stripped `libc` from all 24 platform-specific
-  optional dependencies and left a stray `dev: true`, and `10aa81d` and
-  `5ffb730` carried that forward until it was restored from `6a982e4`. `libc`
-  marks which C library a prebuilt binary targets, which is how npm tells a
-  glibc artifact from a musl one.
-  The floor for writing `libc` is npm 11.11.0, bisected by regenerating this
-  lockfile from scratch with each release - 11.10.0 and below emit none. There
-  is no npm 10.10; the 10.x line ends at 10.9.9, so do not reach for a 10.x
-  pin. The pin stops at the newest 11.x because npm 12 requires Node
+  optional dependencies and left a stray `dev: true`, both restored here from
+  `6a982e4`. `libc` marks which C library a prebuilt binary targets, which is
+  how npm tells a glibc artifact from a musl one.
+  The floor for writing `libc` is npm 11.11.0. That number was measured rather
+  than assumed - bisected by regenerating this lockfile from scratch with each
+  release - and v24.14.1 is the first Node release of any line that bundles a
+  compliant npm, which is why `.nvmrc` pins that exact version and not a bare
+  `24`, whose earlier releases all bundle a below-floor npm. The pin stops at
+  the newest 11.x because npm 12 requires Node
   `^22.22.2 || ^24.15.0 || >=26.0.0` and cannot run on the Node 20 that
-  `.github/workflows/quality.yml` uses; raising the npm pin past 11 means
+  `.github/workflows/quality.yml` uses, so raising the npm pin past 11 means
   raising CI's Node first.
-  It takes three pieces to reach that floor, and each is inert alone.
-  `packageManager` in `package.json` names npm 11.19.1, but npm never reads
-  that field - only corepack does, and `corepack enable` on its own links yarn
-  and pnpm and writes no npm shim, so it has to be `corepack enable npm`,
-  which `.github/workflows/quality.yml` runs before installing and `README.md`
-  tells a contributor to run before `npm install`. `engines.npm` in
-  `package.json` states the floor, but on its own npm prints EBADENGINE, exits
-  0, and strips the 24 `libc` arrays anyway. Only `engine-strict` turns that
-  warning into `npm error notsup` and refuses the install.
-  That third piece is `NPM_CONFIG_ENGINE_STRICT` on the CI job and NOT a
-  committed `.npmrc`, which is a deliberate trade rather than an oversight. A
-  repo-root `.npmrc` is read by Vercel's install too, and that build image
-  ships npm 10.x, so committing one would refuse every Preview and Production
-  install until `ENABLE_EXPERIMENTAL_COREPACK=1` were set on the project - an
-  experimental flag only the repo owner can set, best known for yarn and pnpm,
-  and not confirmed to resolve npm from `packageManager` on that image. The
-  site is live, so the hard gate is kept where the pinned npm is guaranteed to
-  exist. The cost is that a local install is back to a warning - npm prints
-  EBADENGINE, exits 0, and strips the arrays on its way past - so `README.md`
-  is what tells a contributor to run `corepack enable npm` first. What fails if
-  they did not is `tests/unit/lockfileMetadata.test.ts` in the quality gate,
-  not CI's own install and not the drift step: CI installs with the pinned npm,
-  so it never meets a below-floor npm to refuse.
-  `engines.node` is deliberately absent, and re-adding any range - bounded or
-  not - is the one change this fix must not make. It takes precedence over the
-  Vercel dashboard's Node setting; this repository deploys a live site, has no
-  `vercel.json`, and cannot read which major that dashboard serves, so a range
-  here would move the production runtime as a side effect of a lockfile fix.
-  The `^20.17.0 || >=22.9.0` that `db3d458` briefly carried was npm 11.19.1's
-  own `engines` copied across: it said nothing about what this application
-  needs to run, and overrode the deployment setting silently all the same. The
-  Node floor is not thereby unconsidered - this dependency tree's real floor is
-  `>=20.19.0`, six non-optional packages declaring exactly that and seven more
-  on 20.19-based ranges, and `.nvmrc` is where it is expressed, because
-  `.nvmrc` only advises version managers and overrides nothing on Vercel.
-  `.nvmrc` is 24.14.1, neither 20.19 nor a bare 24. Production runs Node 24.x,
-  so a 20 line there manufactures a version skew for no reason, and a bare `24`
-  would reproduce one major up the trap this entry is about: the 20 releases
-  v24.0.0 through v24.14.0 bundle npm 11.3.0 to 11.9.0, every one of them below
-  the 11.11.0 floor. v24.14.1 is the first that clears it, bundling 11.11.0
-  exactly (v24.20.0 bundles 11.19.0), and it clears every dependency floor
-  above, `>=20.19.0` included. Read that as why `engines.npm` stays rather than
-  as a replacement for it: "Node 24 ships npm 11.x" is not sufficient, 11.x is
-  not automatically >=11.11.0, and no `.nvmrc` value can promise a compliant
-  npm across the whole 24.x line - so `engines.npm` is the only place the
-  requirement is actually stated, and both CI guards, the drift step and
-  `tests/unit/lockfileMetadata.test.ts`, stay for the same reason. The older
-  lines are no route to it either: Node 20.20.2 bundles npm 10.8.2 and Node
-  22.23.1 bundles npm 10.9.8, and 24.14.1 is the earliest Node of any line
-  bundling a compliant one. Corepack, not the Node version, is what supplies
-  the pinned npm - and 24.14.1 is itself below the `^24.15.0` npm 12 asks for,
-  so the npm 12 exclusion above holds locally too, not only on CI's Node 20.
-  `.github/workflows/quality.yml` still runs Node 20, deliberately for now:
-  corepack hands it the same npm 11.19.1, so the gate is unaffected either way
-  and moving CI's major is a separate call.
+  Corepack, not the Node version, is what supplies the pinned npm, and
+  `corepack enable` on its own does not: it links yarn and pnpm and writes no
+  npm shim at all. It has to be `corepack enable npm`, which the workflow runs
+  before installing and `README.md` tells a contributor to run before
+  `npm install`. `engines.npm` states the floor, and `NPM_CONFIG_ENGINE_STRICT`
+  on the CI job - deliberately not a committed `.npmrc` - is what enforces it.
+  `engines.node` is deliberately absent, and re-adding any range, bounded or
+  not, is the one change this fix must not make: it takes precedence over the
+  Vercel dashboard's Node setting, and this repository deploys a live site and
+  has no `vercel.json`, so a range here would move the production runtime as a
+  side effect of a lockfile fix. This dependency tree's real Node floor is
+  `>=20.19.0`, and `.nvmrc` is where it is expressed, because `.nvmrc` only
+  advises version managers and overrides nothing on Vercel.
   Note that `libc` does not heal on its own. npm reuses locked metadata, so no
-  version re-adds it on a plain `npm install` - run against b2f2045's stripped
-  lockfile, the pinned npm 11.19.1 left `libc` at 0 - which is why the damage
-  sat unnoticed through two later commits. Read CI's lockfile-drift step
-  (`npm install`, then `git diff --exit-code package-lock.json`) in that light:
-  it catches drift away from a good committed lockfile, meaning package.json
-  and the lock out of step or a compliant-but-different npm reformatting it,
-  and it cannot detect or repair a lockfile that arrives already stripped -
-  that state is a fixed point, so the step passes green over it. The guard for
-  that case is `tests/unit/lockfileMetadata.test.ts`, which asserts the
-  committed file's contents instead of inferring them from drift: every
-  `os: linux` entry carries a non-empty `libc`, bar four the registry publishes
-  bare (`@rolldown/binding-linux-arm-gnueabihf`, both `@unrs/resolver` arm
-  eabihf builds and `lightningcss-linux-arm-gnueabihf`, all four equally bare
-  at 6a982e4), and the nested `fsevents` carries no stray `dev`. The two checks
-  do not overlap and neither subsumes the other - drift catches a good lockfile
-  being CHANGED, content catches a damaged one being INTRODUCED - so read
-  either as covering only its own case. It is also why restoring
-  the 24 arrays by hand was essential rather than tidy-up: left alone, CI would
-  have sat green over a permanently damaged file. `npm ci` proves less still,
-  since it never writes the lockfile at all.
+  version re-adds it on a plain `npm install` - the pinned npm 11.19.1 left
+  b2f2045's stripped lockfile stripped - and it stays that way until restored
+  by hand. That is why there are two CI guards and why neither subsumes the
+  other: the lockfile-drift step in `.github/workflows/quality.yml` catches a
+  good lockfile being CHANGED, and `tests/unit/lockfileMetadata.test.ts`
+  catches a damaged one being INTRODUCED, which drift cannot see because an
+  already-stripped lockfile is a fixed point it passes green over. Those two
+  files own the detail.
 
 ## Maintaining this file
 
