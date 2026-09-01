@@ -314,6 +314,29 @@ marking work complete or CI fails on unformatted files.
   nothing to retry. `waitForHydration` in `tests/fixtures/hydration.ts` is the
   shared wait.
 
+- The toolchain is pinned three ways - `packageManager` and `engines.node` in
+  `package.json`, plus `.nvmrc` - because without them any npm rewrites
+  `package-lock.json` into its own format, and one already did: commit
+  `a55222b` (2026-08-03) stripped `libc` from all 24 platform-specific
+  optional dependencies and left a stray `dev: true`, and `10aa81d` and
+  `5ffb730` carried that forward until it was restored from `6a982e4`. `libc`
+  marks which C library a prebuilt binary targets, which is how npm tells a
+  glibc artifact from a musl one.
+  The floor for writing `libc` is npm 11.11.0, bisected by regenerating this
+  lockfile from scratch with each release - 11.10.0 and below emit none. There
+  is no npm 10.10; the 10.x line ends at 10.9.9, so do not reach for a 10.x
+  pin. The pin stops at the newest 11.x because npm 12 requires Node
+  `^22.22.2 || ^24.15.0 || >=26.0.0` and cannot run on the Node 20 that
+  `.github/workflows/quality.yml` uses; raising the npm pin past 11 means
+  raising CI's Node first.
+  Note that `libc` does not heal on its own. npm reuses locked metadata, so no
+  version re-adds it on a plain `npm install` - a stripped lockfile stays
+  stripped until the fields are put back deliberately, which is why the
+  damage sat unnoticed through two later commits. The check that catches all
+  of this is `npm install` on a clean checkout leaving `package-lock.json`
+  byte-unchanged; `npm ci` never writes the lockfile and so proves nothing
+  here.
+
 ## Maintaining this file
 
 Keep this file for knowledge useful to almost every future agent session in this project.
