@@ -345,9 +345,12 @@ marking work complete or CI fails on unformatted files.
   experimental flag only the repo owner can set, best known for yarn and pnpm,
   and not confirmed to resolve npm from `packageManager` on that image. The
   site is live, so the hard gate is kept where the pinned npm is guaranteed to
-  exist. The cost is that a local install is back to a warning; `README.md` is
-  what tells a contributor to run `corepack enable npm` first, and CI is what
-  fails if they did not.
+  exist. The cost is that a local install is back to a warning - npm prints
+  EBADENGINE, exits 0, and strips the arrays on its way past - so `README.md`
+  is what tells a contributor to run `corepack enable npm` first. What fails if
+  they did not is `tests/unit/lockfileMetadata.test.ts` in the quality gate,
+  not CI's own install and not the drift step: CI installs with the pinned npm,
+  so it never meets a below-floor npm to refuse.
   `engines.node` is deliberately absent. It takes precedence over the Vercel
   dashboard's Node setting, and which major that dashboard serves is account
   state this repository cannot read, so declaring a range here would move the
@@ -367,8 +370,16 @@ marking work complete or CI fails on unformatted files.
   it catches drift away from a good committed lockfile, meaning package.json
   and the lock out of step or a compliant-but-different npm reformatting it,
   and it cannot detect or repair a lockfile that arrives already stripped -
-  that state is a fixed point, so the step passes green over it. Prevention is
-  the guard against another a55222b, not that step. It is also why restoring
+  that state is a fixed point, so the step passes green over it. The guard for
+  that case is `tests/unit/lockfileMetadata.test.ts`, which asserts the
+  committed file's contents instead of inferring them from drift: every
+  `os: linux` entry carries a non-empty `libc`, bar four the registry publishes
+  bare (`@rolldown/binding-linux-arm-gnueabihf`, both `@unrs/resolver` arm
+  eabihf builds and `lightningcss-linux-arm-gnueabihf`, all four equally bare
+  at 6a982e4), and the nested `fsevents` carries no stray `dev`. The two checks
+  do not overlap and neither subsumes the other - drift catches a good lockfile
+  being CHANGED, content catches a damaged one being INTRODUCED - so read
+  either as covering only its own case. It is also why restoring
   the 24 arrays by hand was essential rather than tidy-up: left alone, CI would
   have sat green over a permanently damaged file. `npm ci` proves less still,
   since it never writes the lockfile at all.

@@ -25,9 +25,11 @@ npm install
 `corepack enable` links yarn and pnpm without writing an npm shim. Skip it and
 you get whatever npm your Node bundles, which is below the 11.11.0 floor
 `engines.npm` declares. Nothing stops you locally: npm prints an `EBADENGINE`
-warning, exits 0, and rewrites `package-lock.json` on its way past. CI refuses
-that install rather than warning, so the damage surfaces as a failed job on
-your branch instead.
+warning, exits 0, and strips the platform metadata out of `package-lock.json`
+on its way past. What catches that is `npm run test:unit`, which reads the
+committed lockfile and fails naming every entry that lost it - so the damage
+shows up on your branch rather than in `main`, but only after you have already
+made it. Running corepack first is what avoids it.
 
 2. Copy environment file and update values:
 

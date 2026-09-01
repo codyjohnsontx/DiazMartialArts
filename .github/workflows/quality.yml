@@ -75,8 +75,10 @@ jobs:
       # It is deliberately not the backstop against another a55222b. npm reuses
       # locked metadata, so a lockfile that arrives already stripped of `libc`
       # is a fixed point: npm writes nothing, the diff is empty, and this step
-      # passes green over the damage. Prevention - the corepack-supplied npm
-      # plus engine-strict - is what guards that, and it is also why the 24
+      # passes green over the damage. That case belongs to
+      # tests/unit/lockfileMetadata.test.ts, which the quality gate runs and
+      # which asserts the committed file's contents rather than inferring them
+      # from drift. Neither check subsumes the other, and it is why the 24
       # `libc` arrays had to be restored by hand rather than left to heal.
       - name: Check the lockfile does not drift
         run: |
