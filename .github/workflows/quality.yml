@@ -26,6 +26,18 @@ jobs:
           - member_app: unconfigured
             ondemand_url: https://replace-me.invalid
     env:
+      # Corepack asks for confirmation the first time it fetches a package
+      # manager, and a prompt on a runner is a hang. Every step below that
+      # shells out to npm or npx goes through the corepack shim, so this
+      # belongs to the job rather than to the install step.
+      COREPACK_ENABLE_DOWNLOAD_PROMPT: '0'
+      # `engines.npm` only warns on its own: npm prints EBADENGINE, exits 0,
+      # and rewrites the lockfile anyway. This is what refuses that install
+      # instead. It lives here rather than in a committed `.npmrc` because
+      # Vercel reads a repo-root `.npmrc` during its own install, and that
+      # build image's npm 10.x would fail this same check and block every
+      # deploy of a live site.
+      NPM_CONFIG_ENGINE_STRICT: 'true'
       NEXT_PUBLIC_SITE_URL: https://diaz-martial-arts.vercel.app
       NEXT_PUBLIC_ONDEMAND_URL: ${{ matrix.ondemand_url }}
       ONDEMAND_COMING_SOON: 'false'
@@ -41,8 +53,37 @@ jobs:
           node-version: 20
           cache: npm
 
+      # npm itself never reads `packageManager`; only corepack does, so the
+      # field is decorative until this runs. It has to name npm: a bare
+      # `corepack enable` links yarn and pnpm and writes no npm shim at all.
+      # The runner's bundled npm is 10.x, below the 11.11.0 floor that writes
+      # `libc` into the lockfile, so the engine-strict setting above would
+      # refuse `npm ci` outright without this step.
+      - name: Enable the pinned npm
+        run: |
+          corepack enable npm
+          npm --version
+
       - name: Install dependencies
         run: npm ci
+
+      # This catches drift away from a good committed lockfile - package.json
+      # and the lock out of step, or a compliant-but-different npm reformatting
+      # it. `npm ci` can catch none of it, because it never writes the lockfile
+      # at all.
+      #
+      # It is deliberately not the backstop against another a55222b. npm reuses
+      # locked metadata, so a lockfile that arrives already stripped of `libc`
+      # is a fixed point: npm writes nothing, the diff is empty, and this step
+      # passes green over the damage. That case belongs to
+      # tests/unit/lockfileMetadata.test.ts, which the quality gate runs and
+      # which asserts the committed file's contents rather than inferring them
+      # from drift. Neither check subsumes the other, and it is why the 24
+      # `libc` arrays had to be restored by hand rather than left to heal.
+      - name: Check the lockfile does not drift
+        run: |
+          npm install
+          git diff --exit-code package-lock.json
 
       # Browser revisions are pinned by the Playwright version, so resolve the
       # version that npm actually installed rather than trusting a hand-written

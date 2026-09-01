@@ -314,6 +314,44 @@ marking work complete or CI fails on unformatted files.
   nothing to retry. `waitForHydration` in `tests/fixtures/hydration.ts` is the
   shared wait.
 
+- The npm the lockfile is written with is pinned, because without a pin any
+  npm rewrites `package-lock.json` into its own format, and one already did:
+  commit `a55222b` (2026-08-03) stripped `libc` from all 24 platform-specific
+  optional dependencies and left a stray `dev: true`, both restored here from
+  `6a982e4`. `libc` marks which C library a prebuilt binary targets, which is
+  how npm tells a glibc artifact from a musl one.
+  The floor for writing `libc` is npm 11.11.0. That number was measured rather
+  than assumed - bisected by regenerating this lockfile from scratch with each
+  release - and v24.14.1 is the first Node release of any line that bundles a
+  compliant npm, which is why `.nvmrc` pins that exact version and not a bare
+  `24`, whose earlier releases all bundle a below-floor npm. The pin stops at
+  the newest 11.x because npm 12 requires Node
+  `^22.22.2 || ^24.15.0 || >=26.0.0` and cannot run on the Node 20 that
+  `.github/workflows/quality.yml` uses, so raising the npm pin past 11 means
+  raising CI's Node first.
+  Corepack, not the Node version, is what supplies the pinned npm, and
+  `corepack enable` on its own does not: it links yarn and pnpm and writes no
+  npm shim at all. It has to be `corepack enable npm`, which the workflow runs
+  before installing and `README.md` tells a contributor to run before
+  `npm install`. `engines.npm` states the floor, and `NPM_CONFIG_ENGINE_STRICT`
+  on the CI job - deliberately not a committed `.npmrc` - is what enforces it.
+  `engines.node` is deliberately absent, and re-adding any range, bounded or
+  not, is the one change this fix must not make: it takes precedence over the
+  Vercel dashboard's Node setting, and this repository deploys a live site and
+  has no `vercel.json`, so a range here would move the production runtime as a
+  side effect of a lockfile fix. This dependency tree's real Node floor is
+  `>=20.19.0`, and `.nvmrc` is where it is expressed, because `.nvmrc` only
+  advises version managers and overrides nothing on Vercel.
+  Note that `libc` does not heal on its own. npm reuses locked metadata, so no
+  version re-adds it on a plain `npm install` - the pinned npm 11.19.1 left
+  b2f2045's stripped lockfile stripped - and it stays that way until restored
+  by hand. That is why there are two CI guards and why neither subsumes the
+  other: the lockfile-drift step in `.github/workflows/quality.yml` catches a
+  good lockfile being CHANGED, and `tests/unit/lockfileMetadata.test.ts`
+  catches a damaged one being INTRODUCED, which drift cannot see because an
+  already-stripped lockfile is a fixed point it passes green over. Those two
+  files own the detail.
+
 ## Maintaining this file
 
 Keep this file for knowledge useful to almost every future agent session in this project.
