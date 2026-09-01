@@ -13,23 +13,27 @@ This repository is separate from the Diaz on Demand VOD product. The website lin
 
 ## Local Development
 
-1. Install dependencies with the pinned npm:
+1. Install dependencies with the pinned toolchain:
 
 ```bash
 corepack enable npm
 npm install
 ```
 
-`corepack enable npm` is what makes the `packageManager` field in
-`package.json` take effect - npm ignores that field itself, and a bare
-`corepack enable` links yarn and pnpm without writing an npm shim. Skip it and
-you get whatever npm your Node bundles, which is below the 11.11.0 floor
-`engines.npm` declares. Nothing stops you locally: npm prints an `EBADENGINE`
-warning, exits 0, and strips the platform metadata out of `package-lock.json`
-on its way past. What catches that is `npm run test:unit`, which reads the
-committed lockfile and fails naming every entry that lost it - so the damage
-shows up on your branch rather than in `main`, but only after you have already
-made it. Running corepack first is what avoids it.
+`.nvmrc` pins Node 24.14.1; run `nvm use`, or your version manager's
+equivalent, if it does not pick that up on its own. `corepack enable npm` is
+what makes the `packageManager` field in `package.json` take effect - npm
+ignores that field itself, and a bare `corepack enable` links yarn and pnpm
+without writing an npm shim. Skip it and you get whatever npm your Node
+bundles, which below Node 24.14.1 is under the 11.11.0 floor `engines.npm`
+declares - and 24.14.1 itself bundles 11.11.0 exactly, so corepack is still
+what gets you the 11.19.1 the lockfile was written with. Nothing stops you
+locally: npm prints an `EBADENGINE` warning, exits 0, and strips the platform
+metadata out of `package-lock.json` on its way past. What catches that is
+`npm run test:unit`, which reads the committed lockfile and fails naming
+every entry that lost it - so the damage shows up on your branch rather than in
+`main`, but only after you have already made it. Running corepack first is
+what avoids it.
 
 2. Copy environment file and update values:
 
