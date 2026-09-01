@@ -351,17 +351,38 @@ marking work complete or CI fails on unformatted files.
   they did not is `tests/unit/lockfileMetadata.test.ts` in the quality gate,
   not CI's own install and not the drift step: CI installs with the pinned npm,
   so it never meets a below-floor npm to refuse.
-  `engines.node` is deliberately absent. It takes precedence over the Vercel
-  dashboard's Node setting, and which major that dashboard serves is account
-  state this repository cannot read, so declaring a range here would move the
-  production runtime as a side effect of a lockfile fix. `.nvmrc` is 20.19,
-  which is not that range returning by another door: it is measured from this
-  dependency tree - six non-optional packages declare `engines.node` of
-  `>=20.19.0` and seven more use 20.19-based ranges - and it only advises
-  version managers, overriding nothing on Vercel. Nor is it a route to the npm
-  floor: Node 20.20.2 bundles npm 10.8.2 and Node 22.23.1 bundles npm 10.9.8,
-  both below it, and the earliest Node bundling a compliant npm is 24.14.1.
-  Corepack, not the Node version, is what supplies the pinned npm.
+  `engines.node` is deliberately absent, and re-adding any range - bounded or
+  not - is the one change this fix must not make. It takes precedence over the
+  Vercel dashboard's Node setting; this repository deploys a live site, has no
+  `vercel.json`, and cannot read which major that dashboard serves, so a range
+  here would move the production runtime as a side effect of a lockfile fix.
+  The `^20.17.0 || >=22.9.0` that `db3d458` briefly carried was npm 11.19.1's
+  own `engines` copied across: it said nothing about what this application
+  needs to run, and overrode the deployment setting silently all the same. The
+  Node floor is not thereby unconsidered - this dependency tree's real floor is
+  `>=20.19.0`, six non-optional packages declaring exactly that and seven more
+  on 20.19-based ranges, and `.nvmrc` is where it is expressed, because
+  `.nvmrc` only advises version managers and overrides nothing on Vercel.
+  `.nvmrc` is 24.14.1, neither 20.19 nor a bare 24. Production runs Node 24.x,
+  so a 20 line there manufactures a version skew for no reason, and a bare `24`
+  would reproduce one major up the trap this entry is about: the 20 releases
+  v24.0.0 through v24.14.0 bundle npm 11.3.0 to 11.9.0, every one of them below
+  the 11.11.0 floor. v24.14.1 is the first that clears it, bundling 11.11.0
+  exactly (v24.20.0 bundles 11.19.0), and it clears every dependency floor
+  above, `>=20.19.0` included. Read that as why `engines.npm` stays rather than
+  as a replacement for it: "Node 24 ships npm 11.x" is not sufficient, 11.x is
+  not automatically >=11.11.0, and no `.nvmrc` value can promise a compliant
+  npm across the whole 24.x line - so `engines.npm` is the only place the
+  requirement is actually stated, and both CI guards, the drift step and
+  `tests/unit/lockfileMetadata.test.ts`, stay for the same reason. The older
+  lines are no route to it either: Node 20.20.2 bundles npm 10.8.2 and Node
+  22.23.1 bundles npm 10.9.8, and 24.14.1 is the earliest Node of any line
+  bundling a compliant one. Corepack, not the Node version, is what supplies
+  the pinned npm - and 24.14.1 is itself below the `^24.15.0` npm 12 asks for,
+  so the npm 12 exclusion above holds locally too, not only on CI's Node 20.
+  `.github/workflows/quality.yml` still runs Node 20, deliberately for now:
+  corepack hands it the same npm 11.19.1, so the gate is unaffected either way
+  and moving CI's major is a separate call.
   Note that `libc` does not heal on its own. npm reuses locked metadata, so no
   version re-adds it on a plain `npm install` - run against b2f2045's stripped
   lockfile, the pinned npm 11.19.1 left `libc` at 0 - which is why the damage
