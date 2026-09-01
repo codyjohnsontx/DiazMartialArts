@@ -31,6 +31,13 @@ jobs:
       # shells out to npm or npx goes through the corepack shim, so this
       # belongs to the job rather than to the install step.
       COREPACK_ENABLE_DOWNLOAD_PROMPT: '0'
+      # `engines.npm` only warns on its own: npm prints EBADENGINE, exits 0,
+      # and rewrites the lockfile anyway. This is what refuses that install
+      # instead. It lives here rather than in a committed `.npmrc` because
+      # Vercel reads a repo-root `.npmrc` during its own install, and that
+      # build image's npm 10.x would fail this same check and block every
+      # deploy of a live site.
+      NPM_CONFIG_ENGINE_STRICT: 'true'
       NEXT_PUBLIC_SITE_URL: https://diaz-martial-arts.vercel.app
       NEXT_PUBLIC_ONDEMAND_URL: ${{ matrix.ondemand_url }}
       ONDEMAND_COMING_SOON: 'false'
@@ -50,8 +57,8 @@ jobs:
       # field is decorative until this runs. It has to name npm: a bare
       # `corepack enable` links yarn and pnpm and writes no npm shim at all.
       # The runner's bundled npm is 10.x, below the 11.11.0 floor that writes
-      # `libc` into the lockfile, so `.npmrc`'s engine-strict would refuse
-      # `npm ci` outright without this step.
+      # `libc` into the lockfile, so the engine-strict setting above would
+      # refuse `npm ci` outright without this step.
       - name: Enable the pinned npm
         run: |
           corepack enable npm
@@ -60,11 +67,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # The acceptance criterion for the toolchain pin: a plain `npm install`
-      # on a clean checkout leaves package-lock.json byte-unchanged. `npm ci`
-      # never writes the lockfile, which is why the a55222b damage survived a
-      # week of green CI, so the pin needs its own check rather than trusting
-      # the install step above to notice.
+      # This catches drift away from a good committed lockfile - package.json
+      # and the lock out of step, or a compliant-but-different npm reformatting
+      # it. `npm ci` can catch none of it, because it never writes the lockfile
+      # at all.
+      #
+      # It is deliberately not the backstop against another a55222b. npm reuses
+      # locked metadata, so a lockfile that arrives already stripped of `libc`
+      # is a fixed point: npm writes nothing, the diff is empty, and this step
+      # passes green over the damage. Prevention - the corepack-supplied npm
+      # plus engine-strict - is what guards that, and it is also why the 24
+      # `libc` arrays had to be restored by hand rather than left to heal.
       - name: Check the lockfile does not drift
         run: |
           npm install

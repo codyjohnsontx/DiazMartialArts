@@ -23,9 +23,11 @@ npm install
 `corepack enable npm` is what makes the `packageManager` field in
 `package.json` take effect - npm ignores that field itself, and a bare
 `corepack enable` links yarn and pnpm without writing an npm shim. Skip it and
-you get whatever npm your Node bundles, which is below the 11.11.0 floor this
-project needs; `.npmrc` sets `engine-strict=true`, so that install is refused
-rather than allowed to rewrite `package-lock.json`.
+you get whatever npm your Node bundles, which is below the 11.11.0 floor
+`engines.npm` declares. Nothing stops you locally: npm prints an `EBADENGINE`
+warning, exits 0, and rewrites `package-lock.json` on its way past. CI refuses
+that install rather than warning, so the damage surfaces as a failed job on
+your branch instead.
 
 2. Copy environment file and update values:
 
@@ -182,11 +184,7 @@ Use two review passes for design updates:
 1. Push this repo to GitHub.
 2. Import project into Vercel.
 3. Add environment variables from `.env.example` in Vercel project settings.
-4. Add `ENABLE_EXPERIMENTAL_COREPACK=1` to those variables. The build image
-   ships npm 10.x, which is below the floor `engines.npm` declares, and
-   `.npmrc`'s `engine-strict=true` refuses that install; corepack is what
-   supplies the pinned npm there, exactly as it does in CI.
-5. Deploy.
+4. Deploy.
 
 ## Preview-to-Production Release Checklist
 
