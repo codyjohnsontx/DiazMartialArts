@@ -314,10 +314,9 @@ marking work complete or CI fails on unformatted files.
   nothing to retry. `waitForHydration` in `tests/fixtures/hydration.ts` is the
   shared wait.
 
-- The toolchain is pinned three ways - `packageManager` and `engines.node` in
-  `package.json`, plus `.nvmrc` - because without them any npm rewrites
-  `package-lock.json` into its own format, and one already did: commit
-  `a55222b` (2026-08-03) stripped `libc` from all 24 platform-specific
+- The npm the lockfile is written with is pinned, because without a pin any
+  npm rewrites `package-lock.json` into its own format, and one already did:
+  commit `a55222b` (2026-08-03) stripped `libc` from all 24 platform-specific
   optional dependencies and left a stray `dev: true`, and `10aa81d` and
   `5ffb730` carried that forward until it was restored from `6a982e4`. `libc`
   marks which C library a prebuilt binary targets, which is how npm tells a
@@ -329,13 +328,36 @@ marking work complete or CI fails on unformatted files.
   `^22.22.2 || ^24.15.0 || >=26.0.0` and cannot run on the Node 20 that
   `.github/workflows/quality.yml` uses; raising the npm pin past 11 means
   raising CI's Node first.
+  It takes three pieces to make that floor real, and each is inert alone.
+  `packageManager` in `package.json` names npm 11.19.1, but npm never reads
+  that field - only corepack does, and `corepack enable` on its own links yarn
+  and pnpm and writes no npm shim, so it has to be `corepack enable npm`,
+  which `.github/workflows/quality.yml` runs before installing and `README.md`
+  tells a contributor to run before `npm install`. `engines.npm` in
+  `package.json` states the floor, but on its own npm prints EBADENGINE, exits
+  0, and strips the 24 `libc` arrays anyway. `.npmrc`'s `engine-strict=true`
+  is what turns that warning into `npm error notsup` and refuses the install.
+  `.nvmrc` is 20 and stays 20: it carries the Node the app runs, not the npm
+  floor, and moving it would not reach the floor anyway - Node 20.20.2 bundles
+  npm 10.8.2 and Node 22.23.1 bundles npm 10.9.8, both below it, and the
+  earliest Node bundling a compliant npm is 24.14.1. Corepack, not the Node
+  version, is what supplies the pinned npm.
+  `engines.node` is deliberately absent. It takes precedence over the Vercel
+  dashboard's Node setting, and which major that dashboard serves is account
+  state this repository cannot read, so declaring a range here would move the
+  production runtime as a side effect of a lockfile fix. The `.npmrc` does
+  reach Vercel's install, though, and that build image ships npm 10.x, so the
+  deploy needs `ENABLE_EXPERIMENTAL_COREPACK=1` set as a project environment
+  variable to get the pinned npm there too; the "Vercel Deploy" section of
+  `README.md` carries that step.
   Note that `libc` does not heal on its own. npm reuses locked metadata, so no
   version re-adds it on a plain `npm install` - a stripped lockfile stays
   stripped until the fields are put back deliberately, which is why the
   damage sat unnoticed through two later commits. The check that catches all
   of this is `npm install` on a clean checkout leaving `package-lock.json`
   byte-unchanged; `npm ci` never writes the lockfile and so proves nothing
-  here.
+  here, which is why CI runs the plain install and a `git diff --exit-code`
+  on the lockfile as their own step.
 
 ## Maintaining this file
 
