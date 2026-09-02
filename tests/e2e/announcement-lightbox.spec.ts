@@ -3,8 +3,9 @@ import { test, expect, type Page } from '@playwright/test';
 import { waitForHydration } from '../fixtures/hydration';
 
 /**
- * The flyer lightbox, driven the way a visitor who does not use a mouse has to
- * drive it.
+ * The flyer lightbox, driven the way a visitor actually drives it - by keyboard
+ * for the group below, and by a real mouse at a real pixel for the group after
+ * it.
  *
  * This matters more here than the same dialog would elsewhere. On
  * /announcements the flyer IS the announcement - the price, what it includes,
@@ -34,6 +35,13 @@ import { waitForHydration } from '../fixtures/hydration';
  * belt-and-braces guards are deliberate and named as such: the trap is what
  * keeps focus in, and Escape working from anywhere is what stops a single
  * stray focus from trapping the visitor instead.
+ *
+ * The second describe block covers the pointer, and was written for a defect
+ * with the opposite shape: every keyboard path above passed while the Close
+ * button - the one control a visitor with a mouse reaches for - was painted
+ * underneath the sticky header and could not be clicked at all. Issue #46 and
+ * the portal docblock in `components/AnnouncementFlyerGallery.tsx` own the
+ * mechanism.
  */
 
 const TRIGGER = 'button[aria-label^="Enlarge "]';
@@ -54,19 +62,22 @@ function focusState(page: Page) {
   });
 }
 
+/**
+ * Not the default `waitUntil: 'load'`: this feed puts three flyers through the
+ * on-request image optimizer, and `load` waits for all of them, which makes the
+ * navigation cost the box's rather than the page's. See the note at the top of
+ * tests/e2e/home.spec.ts. Hydration is the readiness these tests actually need,
+ * and it is waited for by name below - `focus()` and `keyboard.press()` carry
+ * no actionability check, so without it a press can land before React has
+ * attached the handler and be swallowed with nothing to retry.
+ */
+async function openAnnouncements({ page }: { page: Page }) {
+  await page.goto('/announcements', { waitUntil: 'domcontentloaded' });
+  await waitForHydration(page, TRIGGER);
+}
+
 test.describe('Announcement flyer lightbox - keyboard', () => {
-  test.beforeEach(async ({ page }) => {
-    // Not the default `waitUntil: 'load'`: this feed puts three flyers through
-    // the on-request image optimizer, and `load` waits for all of them, which
-    // makes the navigation cost the box's rather than the page's. See the note
-    // at the top of tests/e2e/home.spec.ts. Hydration is the readiness these
-    // tests actually need, and it is waited for by name on the next line.
-    await page.goto('/announcements', { waitUntil: 'domcontentloaded' });
-    // `focus()` and `keyboard.press()` carry no actionability check, so without
-    // this a press can land before React has attached the handler and be
-    // swallowed with nothing to retry.
-    await waitForHydration(page, TRIGGER);
-  });
+  test.beforeEach(openAnnouncements);
 
   test('a Tab walk reaches a flyer, and opening it moves focus into the lightbox', async ({
     page,
@@ -193,5 +204,124 @@ test.describe('Announcement flyer lightbox - keyboard', () => {
       await view.evaluate((el) => el === document.activeElement),
       'focus did not return to the "View" control that opened the lightbox',
     ).toBe(true);
+  });
+});
+
+/**
+ * The pointer half, and the assertion whose absence let issue #46 ship.
+ *
+ * A `z-index` is only ever compared with siblings in the same stacking
+ * context, so "the overlay declares 100 and the header declares 40" is not a
+ * statement about what a visitor can click. `main { isolation: isolate }` in
+ * `app/globals.css` made `<main>` a stacking context of its own, the lightbox
+ * was rendered inside it, and the header - a positioned sibling at the root -
+ * painted over the whole of it. Every keyboard test above passed the entire
+ * time: Escape closed the dialog and so did a backdrop click, so the only
+ * symptom was that the X did nothing.
+ *
+ * Nothing that reads the DOM can see it. The button is in the tree, visible,
+ * enabled, correctly named, and at the right coordinates; only the pixel is
+ * wrong. `document.elementFromPoint` at the button's own centre is the cheapest
+ * question that has the right answer, and it is asked here rather than left to
+ * Playwright's hit-target check so that a failure names what is covering the
+ * button instead of reporting an unstable click.
+ *
+ * Both Playwright projects run this file, so each test below is really two: a
+ * desktop width, where the covering element was the `<header>` itself, and a
+ * 390px width, where it was the header's "Toggle menu" button. The two differ
+ * because the header's own contents differ across `min-[1035px]`, so covering
+ * one width would have left the other unguarded.
+ */
+test.describe('Announcement flyer lightbox - pointer', () => {
+  test.beforeEach(openAnnouncements);
+
+  /** What a real cursor at the centre of `locator` would actually hit. */
+  async function topmostAtCentre(locator: ReturnType<Page['locator']>) {
+    return locator.evaluate((el) => {
+      const rect = el.getBoundingClientRect();
+      const top = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      return {
+        isTheElement: top === el || el.contains(top),
+        // Named on failure, because "something covers it" is the finding and
+        // which something it is is the whole of the diagnosis.
+        covering: top
+          ? `${top.tagName.toLowerCase()}${top.className ? `.${String(top.className).trim().split(/\s+/).join('.')}` : ''}`
+          : 'nothing (outside the viewport)',
+      };
+    });
+  }
+
+  test('nothing is painted over the Close button at its own centre', async ({ page }) => {
+    await page.locator(TRIGGER).first().click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+
+    const close = dialog.getByRole('button', { name: 'Close' });
+    const hit = await topmostAtCentre(close);
+
+    expect(
+      hit.isTheElement,
+      `the Close button is painted under ${hit.covering}, so a click never reaches it`,
+    ).toBe(true);
+  });
+
+  test('a real click at the pixel the Close button occupies closes it', async ({ page }) => {
+    await page.locator(TRIGGER).first().click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+
+    const box = await dialog.getByRole('button', { name: 'Close' }).boundingBox();
+    expect(box, 'the Close button has no box to click').not.toBeNull();
+
+    // Dispatched at the coordinate rather than through the locator: a click
+    // aimed at a pixel is what a visitor performs, and it is the only kind that
+    // can be swallowed by whatever else is painted there.
+    await page.mouse.click(box!.x + box!.width / 2, box!.y + box!.height / 2);
+
+    await expect(dialog).toHaveCount(0);
+    expect((await focusState(page)).scrollLock, 'the page scroll lock outlived the flyer').toBe('');
+  });
+
+  test('a click on the flyer keeps it open, and a click on the scrim closes it', async ({
+    page,
+  }) => {
+    const trigger = page.locator(TRIGGER).first();
+    const dialog = page.getByRole('dialog');
+
+    await trigger.click();
+    await expect(dialog).toBeVisible();
+
+    // The flyer stops the overlay's click on purpose: it is the content, and
+    // reading it is not a request to close. Asserted first so the scrim clicks
+    // below are proof of the overlay's own handler rather than of any click
+    // anywhere closing the dialog.
+    await dialog.locator('img').click();
+    await expect(dialog).toBeVisible();
+
+    // Two scrim pixels, not one, because they were not equally broken. The
+    // flyer is centred and Close is top-right, so both corners of the overlay
+    // are scrim - but only the lower one was reachable before the portal. The
+    // upper one sits inside the sticky header's own band and was swallowed by
+    // exactly the paint order that swallowed the Close button, so the pair
+    // covers the behaviour this move must not regress and the behaviour it
+    // fixes. Playwright's hit-target check makes either click fail rather than
+    // pass silently if something else is painted there.
+    const box = await dialog.boundingBox();
+    expect(box, 'the lightbox has no box to click').not.toBeNull();
+
+    for (const [where, y] of [
+      ['below the header', box!.height - 5],
+      ['inside the header band', 5],
+    ] as const) {
+      await expect(dialog, `the lightbox was not open before the click ${where}`).toBeVisible();
+      await dialog.click({ position: { x: 5, y } });
+      await expect(dialog, `a scrim click ${where} did not close the lightbox`).toHaveCount(0);
+      await trigger.click();
+    }
+
+    // The reopen at the end of the last pass leaves it open; close it the way
+    // the rest of the suite does so the test ends on a closed dialog.
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
   });
 });
