@@ -165,6 +165,11 @@ marking work complete or CI fails on unformatted files.
   timeout PR #35 saw and re-ran rather than fixed. Navigate with
   `waitUntil: 'domcontentloaded'` and let each assertion wait for the thing it
   actually needs, by name; `tests/e2e/home.spec.ts` owns that reasoning.
+  Most of the suite still navigates with the default, so that cost is live
+  wherever a spec has not been converted. Checking the served file also leaves
+  nothing asserting that `/_next/image` itself answers, so one spec asks that
+  alone and cheaply: `tests/e2e/image-optimizer.spec.ts` loads no page at all
+  and is in the `test:smoke` list, and its docblock owns why it is separate.
   Note too that an extension does not decide a format here - `public/bjj.jpg`
   and `public/lil-dragon.jpg` are both WebP - so `tests/fixtures/imageSize.ts`
   reads JPEG, PNG and WebP, pinned by `tests/unit/imageSize.test.ts`.
