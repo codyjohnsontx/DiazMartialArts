@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 import { cn } from '@/lib/utils';
 
@@ -257,38 +258,77 @@ export function AnnouncementFlyerGallery({ flyers }: AnnouncementFlyerGalleryPro
         </p>
       )}
 
-      {activeFlyer && (
-        <div
-          ref={dialogRef}
-          role="dialog"
-          aria-modal="true"
-          aria-label={activeFlyer.title}
-          // Keeps a click on the flyer inside the dialog subtree - without it
-          // that click drops focus to <body>, outside the modal context
-          // `aria-modal` promises. The keys are handled on the document above.
-          tabIndex={0}
-          className="fixed inset-0 z-[100] flex cursor-zoom-out items-center justify-center bg-black/85 p-4 sm:p-8"
-          onClick={closeFlyer}
-        >
-          <button
-            ref={closeButtonRef}
-            type="button"
-            className="absolute right-4 top-4 rounded-full bg-white px-4 py-2 text-sm font-semibold text-ink shadow-soft sm:right-6 sm:top-6"
+      {/**
+       * Portalled to `document.body` rather than left where it is written,
+       * because `z-[100]` is only ever compared against siblings in the same
+       * stacking context, and in the tree this markup sits in it never reaches
+       * the one the header is in.
+       *
+       * `main { isolation: isolate }` in `app/globals.css` makes `<main>` a
+       * stacking context. It is unpositioned, so it takes part in the root
+       * stacking context as though its z-index were 0, and everything inside it
+       * - this overlay's 100 included - is painted within that single layer. The
+       * header is `sticky top-0 z-40`, a positioned sibling at the root with a
+       * z-index of 40, so it paints over the whole of `<main>` and therefore
+       * over the lightbox. The Close button sits under the header's own box: at
+       * a desktop width `document.elementFromPoint` at the button's centre
+       * returned the `<header>`, and at a phone width the header's "Toggle menu"
+       * button. Escape and a backdrop click still closed the dialog, so the
+       * symptom was one inert control rather than a trapped visitor.
+       *
+       * Raising the number does nothing - 100 and 40 are not compared - and
+       * dropping the `isolation` would fix this one overlay by letting every
+       * page's content compete with the header site-wide. Portalling moves the
+       * node to a child of `<body>`, where `z-[100]` is finally measured against
+       * the header's 40, and it stays correct if some future ancestor grows a
+       * `transform`, `filter` or `will-change` and forms a stacking context of
+       * its own.
+       *
+       * Nothing about the dialog's behaviour is portable-by-luck here: the keys
+       * are already bound to the document, the scroll lock already writes to
+       * `document.body`, and the focus grab and the Tab trap already work
+       * through refs, all of which are indifferent to where the node lives.
+       * `tests/e2e/announcement-lightbox.spec.ts` re-checks each of them from
+       * the new position, and pins the hit test that a unit test cannot see.
+       *
+       * `document.body` is read only inside this branch, and the branch is
+       * unreachable on the server: `activeId` starts null, so the first render
+       * on both sides renders no dialog and only a visitor's click opens one.
+       */}
+      {activeFlyer &&
+        createPortal(
+          <div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={activeFlyer.title}
+            // Keeps a click on the flyer inside the dialog subtree - without it
+            // that click drops focus to <body>, outside the modal context
+            // `aria-modal` promises. The keys are handled on the document above.
+            tabIndex={0}
+            className="fixed inset-0 z-[100] flex cursor-zoom-out items-center justify-center bg-black/85 p-4 sm:p-8"
             onClick={closeFlyer}
           >
-            Close
-          </button>
-          <Image
-            src={activeFlyer.src}
-            alt={activeFlyer.alt}
-            width={activeFlyer.width}
-            height={activeFlyer.height}
-            loading="eager"
-            className="max-h-full w-auto max-w-full rounded-lg bg-white object-contain shadow-[0_30px_90px_rgba(0,0,0,0.45)]"
-            onClick={(event) => event.stopPropagation()}
-          />
-        </div>
-      )}
+            <button
+              ref={closeButtonRef}
+              type="button"
+              className="absolute right-4 top-4 rounded-full bg-white px-4 py-2 text-sm font-semibold text-ink shadow-soft sm:right-6 sm:top-6"
+              onClick={closeFlyer}
+            >
+              Close
+            </button>
+            <Image
+              src={activeFlyer.src}
+              alt={activeFlyer.alt}
+              width={activeFlyer.width}
+              height={activeFlyer.height}
+              loading="eager"
+              className="max-h-full w-auto max-w-full rounded-lg bg-white object-contain shadow-[0_30px_90px_rgba(0,0,0,0.45)]"
+              onClick={(event) => event.stopPropagation()}
+            />
+          </div>,
+          document.body,
+        )}
     </>
   );
 }

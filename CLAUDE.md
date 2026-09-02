@@ -346,6 +346,29 @@ marking work complete or CI fails on unformatted files.
   press can land before React has attached the handler and is swallowed with
   nothing to retry. `waitForHydration` in `tests/fixtures/hydration.ts` is the
   shared wait.
+  An overlay must also be portalled out of the page content it is written
+  in. `main { isolation: isolate }` in `app/globals.css` makes `<main>` a
+  stacking context, so a z-index inside it is only ever compared with its
+  siblings there and the whole of `<main>` paints as one layer beneath the
+  header, which is `sticky top-0 z-40` at the root. The lightbox declared
+  `z-[100]` and was painted under the header regardless: its Close button
+  sat inside the header's box, and `document.elementFromPoint` at that
+  button's centre returned the `<header>` at a desktop width and the
+  header's "Toggle menu" button at 390px. Escape and a backdrop click still
+  closed it, so the only symptom was one inert control. Raising the number
+  cannot help - 100 and 40 are never compared - and dropping the `isolation`
+  would fix one overlay by letting every page's content compete with the
+  header site-wide. `createPortal` to `document.body` is the fix, and it
+  also survives a future ancestor growing a `transform`, `filter` or
+  `will-change`. Nothing that reads the DOM can see this: the control is
+  present, visible, enabled, correctly named and at the right coordinates,
+  and only the pixel is wrong, so guard it with `document.elementFromPoint`
+  at the control's own centre rather than any DOM assertion - and guard it
+  at both Playwright projects, because the covering element differs across
+  `min-[1035px]` exactly as the header's own contents do. The portal
+  docblock in `components/AnnouncementFlyerGallery.tsx` and the "pointer"
+  block in `tests/e2e/announcement-lightbox.spec.ts` own the mechanism, and
+  issue #46 the record.
 
 - The npm the lockfile is written with is pinned, because without a pin any
   npm rewrites `package-lock.json` into its own format, and one already did:
