@@ -311,7 +311,7 @@ test.describe('Announcements page details', () => {
       );
 
       const actual = imageSize(await response.body());
-      expect(actual, `${source} is not a readable JPEG or PNG`).not.toBeNull();
+      expect(actual, `${source} is not a readable image`).not.toBeNull();
       expect(
         actual,
         `${source} is ${actual?.width}x${actual?.height} but the page declares it otherwise`,

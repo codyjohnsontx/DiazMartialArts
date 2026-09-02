@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -65,15 +65,33 @@ export function AnnouncementFlyerGallery({ flyers }: AnnouncementFlyerGalleryPro
   // opens or closes, rather than on every render.
   const closeFlyer = useCallback(() => setActiveId(null), []);
 
-  useEffect(() => {
+  /**
+   * A layout effect, and the focus move is direct rather than deferred to a
+   * frame, because both halves of opening a modal have to be atomic with the
+   * dialog entering the DOM.
+   *
+   * React runs the mutation phase and layout effects in one synchronous block,
+   * so nothing outside - not a paint, not a keystroke, not a test's DOM read -
+   * can observe the dialog present with focus still behind it. A
+   * `requestAnimationFrame` inside `useEffect` broke that: it left a whole
+   * frame (measured at 2-22ms, and unbounded when frames throttle) in which the
+   * lightbox was open, opaque and `aria-modal`, with focus still on the page
+   * behind it. Worse, the grab was unconditional, so a focus move made by
+   * anything else during that frame - the visitor's own Tab, a screen reader,
+   * an extension - was silently overridden a frame later.
+   *
+   * That single window is what made `tests/e2e/announcement-lightbox.spec.ts`
+   * flake from both sides: the Tab-walk test read focus before the frame
+   * arrived, and the Escape-from-anywhere test had its own `focus()` stolen
+   * back by a frame that arrived just after it. Issue #44 has the measurements.
+   */
+  useLayoutEffect(() => {
     if (!activeFlyer) return undefined;
 
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
-    const frame = window.requestAnimationFrame(() => {
-      closeButtonRef.current?.focus();
-    });
+    closeButtonRef.current?.focus();
 
     /**
      * Bound to the document, not to the overlay, and handling both keys in one
@@ -129,7 +147,6 @@ export function AnnouncementFlyerGallery({ flyers }: AnnouncementFlyerGalleryPro
 
     return () => {
       document.removeEventListener('keydown', onKeyDown);
-      window.cancelAnimationFrame(frame);
       document.body.style.overflow = previousOverflow;
       restoreFocusRef.current?.focus();
     };
