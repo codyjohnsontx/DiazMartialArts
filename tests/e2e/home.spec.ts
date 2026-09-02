@@ -2,6 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 
 import { formatCountdown, getUpcomingClassBlocks } from '@/lib/classSchedule';
 import { imageSize } from '../fixtures/imageSize';
+import { fetchServedImage } from '../fixtures/servedImage';
 
 /**
  * Every `goto` in this file stops at `domcontentloaded` rather than Playwright's
@@ -55,18 +56,20 @@ test.describe('Home page', () => {
 
     // Deliberately not `complete`/`naturalWidth`: those wait on the optimizer's
     // WebAssembly encoder, whose cost is the box's rather than the page's (see
-    // the note at the top of this file). Fetch the underlying file instead -
-    // that still fails on a hero that is missing, unserved or corrupt, which is
-    // everything the decode check actually protected, and it fails saying which.
-    const rendered = new URL((await heroImage.getAttribute('src'))!, 'http://localhost');
-    const source = rendered.searchParams.get('url') ?? rendered.pathname;
-
-    const response = await request.get(source);
-    expect(response.status(), `${source} is not served`).toBe(200);
-    expect(response.headers()['content-type'], `${source} is not served as an image`).toMatch(
-      /^image\//,
+    // the note at the top of this file). Fetch the underlying file instead,
+    // which says that the hero's source is served and really is an image, and
+    // says which file when it is not.
+    //
+    // That is less than the decode check covered, and knowingly so: it says
+    // nothing about whether /_next/image itself answers. Asking that here would
+    // put a cold encode back on this test's critical path, which is the defect
+    // this file was just fixed for - so it is asked where it costs nothing, in
+    // tests/e2e/image-optimizer.spec.ts, which loads no page at all.
+    const { source, body } = await fetchServedImage(
+      request,
+      (await heroImage.getAttribute('src'))!,
     );
-    const actual = imageSize(await response.body());
+    const actual = imageSize(body);
     expect(actual, `${source} is not a readable image`).not.toBeNull();
     // Not redundant: only the WebP branches derive a size that is always at
     // least 1, so a truncated JPEG or PNG can still parse to a zero here.

@@ -264,11 +264,14 @@ describe('AnnouncementFlyerGallery', () => {
         screen.getByRole('heading', { name: 'Open Mat Night' }).closest('article')!,
       ).getByRole('button', { name: /^View/ });
       await user.click(view);
-      await waitFor(() =>
-        expect(
-          within(screen.getByRole('dialog')).getByRole('button', { name: 'Close' }),
-        ).toHaveFocus(),
-      );
+      // Synchronous for the reason `openFlyer` above is: a focus assertion
+      // wrapped in `waitFor` cannot fail for a focus that arrives a frame late,
+      // which is the exact regression this file guards. This test builds its
+      // own open path, so without this it would be the one lightbox test that
+      // kept passing against a reintroduced `requestAnimationFrame`.
+      expect(
+        within(screen.getByRole('dialog')).getByRole('button', { name: 'Close' }),
+      ).toHaveFocus();
 
       await user.keyboard('{Escape}');
 
