@@ -156,6 +156,23 @@ marking work complete or CI fails on unformatted files.
   owns the measurement and the reasoning, and the header reader is
   `tests/fixtures/imageSize.ts`. Note also that Playwright discards the
   webServer's output, so the dev server's own errors never reach the CI log.
+  That cost also reaches specs that never mention an image, because
+  Playwright's `page.goto` defaults to `waitUntil: 'load'` and `load` does not
+  fire until the optimiser has answered: the default navigation quietly puts a
+  decode deadline on every test in the file. On `/` the hero photo was 1179ms
+  of an 1181ms `load` at load average 18 and 4134ms of 4206ms at 39, against a
+  `domcontentloaded` of 131ms either way - which is the cold-start `goto`
+  timeout PR #35 saw and re-ran rather than fixed. Navigate with
+  `waitUntil: 'domcontentloaded'` and let each assertion wait for the thing it
+  actually needs, by name; `tests/e2e/home.spec.ts` owns that reasoning.
+  Most of the suite still navigates with the default, so that cost is live
+  wherever a spec has not been converted. Checking the served file also leaves
+  nothing asserting that `/_next/image` itself answers, so one spec asks that
+  alone and cheaply: `tests/e2e/image-optimizer.spec.ts` loads no page at all
+  and is in the `test:smoke` list, and its docblock owns why it is separate.
+  Note too that an extension does not decide a format here - `public/bjj.jpg`
+  and `public/lil-dragon.jpg` are both WebP - so `tests/fixtures/imageSize.ts`
+  reads JPEG, PNG and WebP, pinned by `tests/unit/imageSize.test.ts`.
 - The `prefers-reduced-motion: reduce` block in `app/globals.css` does not stop
   a scroll-driven animation. It only neutralises `animation-duration`, and an
   `animation-timeline` animation takes its position from the scroller, so
@@ -308,6 +325,22 @@ marking work complete or CI fails on unformatted files.
   reproduction and drives it with a real keyboard, which is the only place the
   fall-through shows - jsdom does not model that focus rule, so a component
   test has to place focus on the root itself.
+  Move that focus synchronously as well. The same lightbox opened with
+  `requestAnimationFrame(() => close.focus())` inside a `useEffect`, which
+  leaves a whole frame in which the dialog is in the DOM, opaque and
+  `aria-modal`, with focus still behind it; and because that grab is
+  unconditional it then overrides whatever moved focus during the frame. React
+  runs the mutation phase and layout effects in one synchronous block, so a
+  `useLayoutEffect` with a direct `.focus()` cannot be caught half-done by a
+  paint, a keystroke or a test's DOM read. The scroll lock belongs in the same
+  place for the same reason. The `useLayoutEffect` docblock in
+  `components/AnnouncementFlyerGallery.tsx` owns the measured window and the
+  mechanism, and issue #44 the full record of which tests flaked and how. The
+  wrong turn is worth carrying here: both flaking tests shared the
+  `waitForHydration` beforeEach so the shared wait looked like the cause, but
+  all six tests in that file share it and only two ever flaked - what failing
+  tests have in common is a candidate, not a finding, until it also explains
+  why their neighbours pass.
   Any e2e that reaches for `focus()` or `keyboard.press()` must first wait for
   hydration. Neither carries an actionability check, so against `next dev` a
   press can land before React has attached the handler and is swallowed with

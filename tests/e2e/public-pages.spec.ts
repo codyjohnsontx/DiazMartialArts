@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 import { imageSize } from '../fixtures/imageSize';
+import { fetchServedImage } from '../fixtures/servedImage';
 import { PUBLIC_PAGES } from '../fixtures/site';
 
 test.describe('Public pages - HTTP 200 + heading + footer', () => {
@@ -299,19 +300,14 @@ test.describe('Announcements page details', () => {
       const src = await flyer.getAttribute('src');
       expect(src, `flyer ${i} renders without a src`).toBeTruthy();
 
-      // Recover the underlying public path from the optimizer URL
-      // (/_next/image?url=<path>&w=..&q=..), then fetch that path directly.
-      const rendered = new URL(src!, 'http://localhost');
-      const source = rendered.searchParams.get('url') ?? rendered.pathname;
+      // Recovering the underlying public path from the optimizer URL and
+      // fetching that, rather than the optimized URL, is the whole point here;
+      // tests/fixtures/servedImage.ts carries it and the wording of its
+      // failures, shared with tests/e2e/home.spec.ts.
+      const { source, body } = await fetchServedImage(request, src!);
 
-      const response = await request.get(source);
-      expect(response.status(), `${source} is not served`).toBe(200);
-      expect(response.headers()['content-type'], `${source} is not served as an image`).toMatch(
-        /^image\//,
-      );
-
-      const actual = imageSize(await response.body());
-      expect(actual, `${source} is not a readable JPEG or PNG`).not.toBeNull();
+      const actual = imageSize(body);
+      expect(actual, `${source} is not a readable image`).not.toBeNull();
       expect(
         actual,
         `${source} is ${actual?.width}x${actual?.height} but the page declares it otherwise`,

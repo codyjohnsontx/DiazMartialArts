@@ -209,10 +209,19 @@ describe('AnnouncementFlyerGallery', () => {
 
       const dialog = screen.getByRole('dialog');
       const close = within(dialog).getByRole('button', { name: 'Close' });
-      // Focus crosses on the next frame, so it is waited for rather than
-      // assumed - and it has to cross at all: left on the trigger, focus is
-      // behind the scrim and every key the lightbox listens for is aimed at it.
-      await waitFor(() => expect(close).toHaveFocus());
+      // Asserted with no `waitFor`, deliberately. Focus has to cross at all -
+      // left on the trigger it is behind the scrim, and every key the lightbox
+      // listens for is aimed at it - but it also has to cross in the same
+      // commit that puts the dialog in the DOM. This used to be a
+      // `requestAnimationFrame` inside a `useEffect`, which left a frame in
+      // which the dialog was open with focus still behind it, and an
+      // unconditional grab that then took focus back from anything that moved
+      // it during that frame. That flaked
+      // `tests/e2e/announcement-lightbox.spec.ts` from both sides (issue #44).
+      // `act()` flushes React's effects but not a frame, so a synchronous
+      // assertion here fails on any return to a deferred focus, which a
+      // `waitFor` would have gone on passing through.
+      expect(close).toHaveFocus();
 
       return { trigger, dialog, close };
     }
@@ -255,11 +264,14 @@ describe('AnnouncementFlyerGallery', () => {
         screen.getByRole('heading', { name: 'Open Mat Night' }).closest('article')!,
       ).getByRole('button', { name: /^View/ });
       await user.click(view);
-      await waitFor(() =>
-        expect(
-          within(screen.getByRole('dialog')).getByRole('button', { name: 'Close' }),
-        ).toHaveFocus(),
-      );
+      // Synchronous for the reason `openFlyer` above is: a focus assertion
+      // wrapped in `waitFor` cannot fail for a focus that arrives a frame late,
+      // which is the exact regression this file guards. This test builds its
+      // own open path, so without this it would be the one lightbox test that
+      // kept passing against a reintroduced `requestAnimationFrame`.
+      expect(
+        within(screen.getByRole('dialog')).getByRole('button', { name: 'Close' }),
+      ).toHaveFocus();
 
       await user.keyboard('{Escape}');
 
