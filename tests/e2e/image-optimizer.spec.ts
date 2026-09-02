@@ -24,6 +24,17 @@ import { test, expect } from '@playwright/test';
  * tests/e2e/home.spec.ts: "does the home page render" and "does the optimizer
  * answer" are two questions, and blocking the first on the second is precisely
  * the defect that spec was just fixed for.
+ *
+ * It is also in the `test:smoke` list in package.json, which the optimizer
+ * assertion was in while it lived in tests/e2e/home.spec.ts, so that path has
+ * this coverage relocated rather than lost. That list matters more here than
+ * the ordinary run does: `test:smoke` builds and runs against `next start` with
+ * PLAYWRIGHT_USE_START=1, and `next build` pre-generates no image variants, so
+ * a production server is exactly where the optimizer is first exercised and
+ * where a broken endpoint would otherwise reach the site unnoticed. This spec
+ * is the right shape for that list too, driving the `request` fixture alone: it
+ * costs one cheap encode and no navigation. package.json cannot carry a
+ * comment, which is why that pairing is written down here.
  */
 test.describe('Next image optimizer', () => {
   test('serves an optimized variant of the hero photo', async ({ request }, testInfo) => {
@@ -31,15 +42,17 @@ test.describe('Next image optimizer', () => {
     // under the second project would only pay for the encode twice.
     test.skip(testInfo.project.name === 'Mobile', 'Viewport-independent HTTP assertion.');
 
-    // `w=640` is deliberate: it is the smallest configured deviceSize and a
-    // width the hero genuinely serves to phones for its `sizes="100vw"` fill
-    // image, so this exercises the real route, its width validation and the
-    // encoder at the cheapest encode available - measured cold on this branch
-    // at 0.29s idle and 0.58s under 24-way CPU contention, against 4.1s for the
-    // w=1920 variant. The residual, stated rather than hidden: the accepted
-    // widths come from images.deviceSizes/imageSizes, so a config change that
-    // drops 640 fails this test even though the hero still renders. For a smoke
-    // assertion that is a loud and correct signal, not a false alarm.
+    // `w=640` is deliberate: it is the smallest deviceSize in Next's own
+    // defaults, which is what applies here because next.config.mjs sets no
+    // `images` block at all, and it is a width the hero genuinely serves to
+    // phones for its `sizes="100vw"` fill image. So this exercises the real
+    // route, its width validation and the encoder at the cheapest encode
+    // available - measured cold on this branch at 0.29s idle and 0.58s under
+    // 24-way CPU contention, against 4.1s for the w=1920 variant. The residual,
+    // stated rather than hidden: the accepted widths come from
+    // images.deviceSizes/imageSizes, so adding an `images` block that drops 640
+    // fails this test even though the hero still renders. For a smoke assertion
+    // that is a loud and correct signal, not a false alarm.
     const response = await request.get('/_next/image?url=%2Fbjj.jpg&w=640&q=75');
 
     // Status and content type, and nothing else. The bytes are left alone on
