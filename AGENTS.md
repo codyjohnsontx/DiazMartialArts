@@ -327,22 +327,18 @@ marking work complete or CI fails on unformatted files.
   test has to place focus on the root itself.
   Move that focus synchronously as well. The same lightbox opened with
   `requestAnimationFrame(() => close.focus())` inside a `useEffect`, which
-  leaves a whole frame - measured at 2-22ms here, and unbounded once frames
-  throttle - in which the dialog is in the DOM, opaque and `aria-modal`, with
-  focus still behind it; and because that grab is unconditional it then
-  overrides whatever moved focus during the frame. React runs the mutation
-  phase and layout effects in one synchronous block, so a `useLayoutEffect`
-  with a direct `.focus()` cannot be caught half-done by a paint, a keystroke
-  or a test's DOM read. The scroll lock belongs in the same place for the same
-  reason.
-  That one window made `tests/e2e/announcement-lightbox.spec.ts` flake from
-  both sides at once, which is why it read as two unrelated failures: the
-  Tab-walk test read focus before the frame arrived, and the
-  Escape-from-anywhere test had its own `focus()` taken back by a frame
-  arriving just after it. Issue #44 carries the measurements, and the wrong
-  turn it records is worth keeping: both failing tests shared the
-  `waitForHydration` beforeEach, so the shared wait looked like the cause - but
-  all six tests in that file share it and only two ever flaked. What failing
+  leaves a whole frame in which the dialog is in the DOM, opaque and
+  `aria-modal`, with focus still behind it; and because that grab is
+  unconditional it then overrides whatever moved focus during the frame. React
+  runs the mutation phase and layout effects in one synchronous block, so a
+  `useLayoutEffect` with a direct `.focus()` cannot be caught half-done by a
+  paint, a keystroke or a test's DOM read. The scroll lock belongs in the same
+  place for the same reason. The `useLayoutEffect` docblock in
+  `components/AnnouncementFlyerGallery.tsx` owns the measured window and the
+  mechanism, and issue #44 the full record of which tests flaked and how. The
+  wrong turn is worth carrying here: both flaking tests shared the
+  `waitForHydration` beforeEach so the shared wait looked like the cause, but
+  all six tests in that file share it and only two ever flaked - what failing
   tests have in common is a candidate, not a finding, until it also explains
   why their neighbours pass.
   Any e2e that reaches for `focus()` or `keyboard.press()` must first wait for
