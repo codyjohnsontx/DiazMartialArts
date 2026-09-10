@@ -10,6 +10,34 @@ import { resolveOndemandComingSoon, resolveOndemandUrl } from './lib/ondemand-ur
 const ondemandUrl = resolveOndemandUrl(process.env.NEXT_PUBLIC_ONDEMAND_URL);
 const ondemandComingSoon = resolveOndemandComingSoon(process.env.ONDEMAND_COMING_SOON);
 
+/**
+ * The Vercel-assigned project host that serves the same production deployment
+ * as the custom domain. Both answered 200 with byte-identical HTML - same
+ * ETag, same Content-Length - over an open robots.txt and no X-Robots-Tag, so
+ * every page of this site existed twice for a crawler. The canonical tag names
+ * the custom domain, but that is a hint a search engine may disregard, not a
+ * directive, and it does nothing for a visitor who lands on the wrong host.
+ *
+ * Only the exact production alias is listed. Per-deployment preview hosts
+ * (diaz-martial-arts-<hash>-<scope>.vercel.app) do not match it and keep
+ * serving previews normally, which is what makes a literal host safer here
+ * than "any host that is not the canonical one".
+ */
+const DUPLICATE_PRODUCTION_HOST = 'diaz-martial-arts.vercel.app';
+
+/**
+ * NEXT_PUBLIC_SITE_URL is the single source of the canonical origin, so the
+ * redirect below reads it rather than restating the domain. Trailing slashes
+ * come off because the destination is built by concatenation and Next would
+ * emit `https://host//:path*` otherwise; the fuller validation lives in
+ * `normaliseConfiguredSiteUrl` (lib/env.ts), which cannot be imported here
+ * because next.config is loaded before any TypeScript is compiled.
+ *
+ * When the variable is unset there is no canonical origin to send anyone to,
+ * so no rule is emitted at all - the same shape as the /ondemand rule below.
+ */
+const canonicalSiteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/+$/, '');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -40,6 +68,24 @@ const nextConfig = {
     // /ondemand falls through to the page component, which renders coming soon.
     if (ondemandUrl && !ondemandComingSoon) {
       redirects.push({ source: '/ondemand', destination: ondemandUrl, permanent: false });
+    }
+
+    // Collapse the duplicate host onto the canonical one. Permanent (308)
+    // rather than temporary because the point is to retire the copy: a
+    // temporary redirect asks a search engine to keep the duplicate URL on
+    // file, which is the state being closed. It matches every path, robots.txt
+    // and sitemap.xml included, so nothing on the duplicate host answers 200.
+    //
+    // The guard skips the rule when the canonical origin IS the duplicate host,
+    // which is what a deployment with no custom domain would look like;
+    // redirecting that host to itself would loop.
+    if (canonicalSiteUrl && !canonicalSiteUrl.includes(`//${DUPLICATE_PRODUCTION_HOST}`)) {
+      redirects.push({
+        source: '/:path*',
+        has: [{ type: 'host', value: DUPLICATE_PRODUCTION_HOST }],
+        destination: `${canonicalSiteUrl}/:path*`,
+        permanent: true,
+      });
     }
 
     return redirects;

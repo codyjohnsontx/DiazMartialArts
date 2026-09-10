@@ -105,6 +105,47 @@ marking work complete or CI fails on unformatted files.
   page component is downgraded to a client-side redirect (HTTP 200 plus a
   `NEXT_REDIRECT` marker) that crawlers and non-JS clients never follow. When a
   path needs a real HTTP redirect, declare it in `next.config.mjs` instead.
+  That file also owns the host-level rule collapsing the Vercel project alias
+  onto the custom domain. Without it both hosts answered 200 with
+  byte-identical HTML over an open robots.txt, so every page of the site
+  existed twice for a crawler; the canonical tag names the right domain but is
+  a hint rather than a directive. `tests/unit/duplicateHostRedirect.test.ts` is
+  the only thing that would notice that rule going missing, because the symptom
+  is visible to a search engine and to nothing else.
+
+- That same `app/loading.tsx` is the nearest Suspense boundary to every page,
+  which decides how much of a route one `useSearchParams()` call destroys. The
+  call opts a statically rendered route out of prerendering up to that
+  boundary, so a client component calling it with no boundary of its own does
+  not ship a smaller page - it ships none of `<main>` at all, and the route
+  serves HTML containing the word "Loading...". `/programs` did exactly that:
+  601 characters, no `<h1>`, and none of the twelve links to the program pages,
+  which left every one of them with no internal inbound link anywhere on the
+  site. Give the `useSearchParams` call a component of its own and wrap that in
+  `<Suspense>` with the real unfiltered page as the fallback, so the fallback is
+  what prerenders; `app/programs/page.tsx` is the worked example. Note the
+  fallback then renders outside the boundary, where no navigation hands it new
+  search params, so an interactive control there must set its own state as well
+  as push the URL.
+  `next dev` renders every request dynamically and so cannot see any of this.
+  On the broken tree the two /programs guards PASSED against `next dev` and
+  only failed against `npm run build` plus `PLAYWRIGHT_USE_START=1`, which is
+  why `tests/e2e/program-discoverability.spec.ts` is in the `test:smoke` list.
+  Read the served HTML through Playwright's `request` fixture rather than the
+  rendered DOM: the component hydrates and fills the page in, so every DOM
+  assertion passed throughout the period the markup was empty. Grepping a built
+  page for `BAILOUT_TO_CLIENT_SIDE_RENDERING` is the quickest check.
+
+- Structured data here can be present, validator-clean and still unreadable.
+  schema.org types `openingHours` as Text, so the display strings this site
+  emitted into it ("Mon-Fri: 7:00 AM - 9:00 PM") pass validator.schema.org with
+  zero errors and zero warnings while carrying nothing a consumer can parse -
+  the documented format is `Mo-Fr 07:00-21:00`. A clean validator run is
+  therefore not evidence that markup works; read the emitted values. Hours now
+  come from one list in `content/site.ts` through `lib/openingHours.ts`, which
+  renders both the visible lines and the `openingHoursSpecification`, so what
+  the page says and what the markup says cannot drift;
+  `tests/unit/openingHours.test.ts` guards both halves.
 - A Tailwind utility whose value misses its theme scale generates no CSS rule
   and no build error, so the element silently keeps its old styling. A colour
   opacity modifier resolves against `theme.opacity`, whose scale is 0, 5, 10 ...

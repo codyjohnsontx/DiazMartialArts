@@ -1,6 +1,18 @@
 import { getPublicEnv } from '@/lib/env';
+import { formatOpeningHours, type OpeningHoursRule } from '@/lib/openingHours';
 
 const publicEnv = getPublicEnv();
+
+const openingHours: OpeningHoursRule[] = [
+  {
+    days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+    label: 'Mon-Fri',
+    opens: '07:00',
+    closes: '21:00',
+  },
+  { days: ['Saturday'], label: 'Sat', opens: '08:00', closes: '13:00' },
+  { days: ['Sunday'], label: 'Sun', opens: null, closes: null },
+];
 
 export const site = {
   name: 'Diaz Martial Arts',
@@ -28,7 +40,10 @@ export const site = {
     facebook: 'https://www.facebook.com/diazmasm',
     youtube: '',
   },
-  hours: ['Mon-Fri: 7:00 AM - 9:00 PM', 'Sat: 8:00 AM - 1:00 PM', 'Sun: Closed'],
+  // The lines a reader sees. `openingHours` is the same information as data,
+  // for the markup; both come from the one list above.
+  hours: formatOpeningHours(openingHours),
+  openingHours,
   ctas: {
     primary: {
       label: 'Book a Free Trial',
