@@ -10,7 +10,13 @@ export type DayOfWeek =
 /**
  * One opening-hours rule, held as data rather than as the sentence a reader
  * sees. `opens`/`closes` are 24-hour `HH:MM`, which is the only form
- * schema.org accepts; `null` means closed that day.
+ * schema.org accepts; a `null` `hours` means closed that day.
+ *
+ * The two times are one field rather than two nullable ones so that a
+ * half-filled rule cannot be written. Held separately, `opens: '10:00',
+ * closes: null` was a state each consumer below read differently - "Closed" on
+ * the page against 10:00-00:00 in the markup - which is the page-and-markup
+ * drift this module exists to make impossible.
  *
  * `label` is the visible shorthand for the days the rule covers ("Mon-Fri").
  * It is stated rather than derived because the grouping is an editorial choice
@@ -20,8 +26,7 @@ export type DayOfWeek =
 export type OpeningHoursRule = {
   days: DayOfWeek[];
   label: string;
-  opens: string | null;
-  closes: string | null;
+  hours: { opens: string; closes: string } | null;
 };
 
 function to12Hour(value: string): string {
@@ -39,11 +44,13 @@ function to12Hour(value: string): string {
  */
 export function formatOpeningHours(rules: OpeningHoursRule[]): string[] {
   return rules.map((rule) =>
-    rule.opens && rule.closes
-      ? `${rule.label}: ${to12Hour(rule.opens)} - ${to12Hour(rule.closes)}`
+    rule.hours
+      ? `${rule.label}: ${to12Hour(rule.hours.opens)} - ${to12Hour(rule.hours.closes)}`
       : `${rule.label}: Closed`,
   );
 }
+
+const CLOSED_ALL_DAY = { opens: '00:00', closes: '00:00' };
 
 /**
  * schema.org `openingHours` takes a strict format - `Mo-Fr 07:00-21:00`, with
@@ -63,7 +70,6 @@ export function toOpeningHoursSpecification(rules: OpeningHoursRule[]) {
   return rules.map((rule) => ({
     '@type': 'OpeningHoursSpecification',
     dayOfWeek: rule.days,
-    opens: rule.opens ?? '00:00',
-    closes: rule.closes ?? '00:00',
+    ...(rule.hours ?? CLOSED_ALL_DAY),
   }));
 }

@@ -7,11 +7,10 @@ const openingHours: OpeningHoursRule[] = [
   {
     days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
     label: 'Mon-Fri',
-    opens: '07:00',
-    closes: '21:00',
+    hours: { opens: '07:00', closes: '21:00' },
   },
-  { days: ['Saturday'], label: 'Sat', opens: '08:00', closes: '13:00' },
-  { days: ['Sunday'], label: 'Sun', opens: null, closes: null },
+  { days: ['Saturday'], label: 'Sat', hours: { opens: '08:00', closes: '13:00' } },
+  { days: ['Sunday'], label: 'Sun', hours: null },
 ];
 
 export const site = {
