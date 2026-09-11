@@ -207,9 +207,17 @@ export default function HomePage() {
               const lastRow = i >= programs.length - 2;
               const isLeft = i % 2 === 0;
               return (
-                <div
+                // Each card carries a `→` and reads as clickable, but the row
+                // was a plain div, so the home page - the page with the most
+                // authority to pass on - linked to none of the twelve program
+                // pages. Together with /programs prerendering its own links
+                // again, that took those pages from no internal inbound links
+                // at all to one from each of the two pages a visitor actually
+                // arrives on.
+                <Link
                   key={p.title}
-                  className={`grid grid-cols-[40px_1fr_auto] items-start gap-4 p-7 ${
+                  href={`/programs/${p.slug}`}
+                  className={`grid grid-cols-[40px_1fr_auto] items-start gap-4 p-7 transition hover:bg-sand/50 ${
                     isLeft ? 'sm:border-r sm:border-black/10' : ''
                   } ${lastRow ? '' : 'border-b border-black/10'}`}
                 >
@@ -227,7 +235,7 @@ export default function HomePage() {
                   <div className="text-2xl font-light text-black/30" aria-hidden="true">
                     →
                   </div>
-                </div>
+                </Link>
               );
             })}
           </div>

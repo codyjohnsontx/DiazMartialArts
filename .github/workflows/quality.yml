@@ -38,7 +38,7 @@ jobs:
       # build image's npm 10.x would fail this same check and block every
       # deploy of a live site.
       NPM_CONFIG_ENGINE_STRICT: 'true'
-      NEXT_PUBLIC_SITE_URL: https://diaz-martial-arts.vercel.app
+      NEXT_PUBLIC_SITE_URL: https://www.diazmartialarts.com
       NEXT_PUBLIC_ONDEMAND_URL: ${{ matrix.ondemand_url }}
       ONDEMAND_COMING_SOON: 'false'
     steps:

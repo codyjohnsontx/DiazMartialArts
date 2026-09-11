@@ -26,8 +26,14 @@ export async function generateMetadata({
   const program = programs.find((p) => p.slug === params.slug);
   if (!program) return {};
 
+  // Every one of these pages is a door for a different discipline, and the
+  // search that finds each one is local ("bjj san marcos"), never the bare
+  // discipline name. The title carried no locality at all, so the strongest
+  // relevance signal on the page said nothing about where the class is. The
+  // city comes from the site's own address rather than being written per
+  // program, so it stays one fact in one place.
   return pageMetadata({
-    title: program.title,
+    title: `${program.title} in ${site.address.city}, ${site.address.state}`,
     description: program.description,
     path: `/programs/${program.slug}`,
     image: program.image,

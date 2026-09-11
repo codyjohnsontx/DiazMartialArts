@@ -48,16 +48,32 @@ const onboardingSteps = [
   },
 ];
 
-export function ProgramsContent() {
+/**
+ * Reads the `?tag=` filter and hands it to `ProgramsContent`.
+ *
+ * `useSearchParams` is the one call that opts a statically rendered route out
+ * of prerendering, and it does so up to the nearest Suspense boundary. With no
+ * boundary of its own the nearest was the root app/loading.tsx, which wraps the
+ * whole of <main>, so /programs shipped HTML containing the word "Loading..."
+ * and nothing else: no <h1>, no program copy, and none of the twelve links to
+ * the program pages, which left every one of them with zero internal inbound
+ * links anywhere on the site. Keeping the call in a component of its own lets
+ * app/programs/page.tsx wrap just this much in Suspense and prerender the rest.
+ */
+export function ProgramsContentWithFilter() {
+  const searchParams = useSearchParams();
+  return <ProgramsContent tag={searchParams.get('tag')} />;
+}
+
+export function ProgramsContent({ tag }: { tag: string | null }) {
   const pathname = usePathname();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const initial = parseTag(searchParams.get('tag'));
+  const initial = parseTag(tag);
   const [filter, setFilter] = useState<'All' | ProgramTag>(initial);
 
   useEffect(() => {
-    setFilter(parseTag(searchParams.get('tag')));
-  }, [searchParams]);
+    setFilter(parseTag(tag));
+  }, [tag]);
 
   const filtered = useMemo<Program[]>(
     () => (filter === 'All' ? programs : programs.filter((p) => p.tag === filter)),
@@ -65,16 +81,13 @@ export function ProgramsContent() {
   );
 
   function updateFilter(next: 'All' | ProgramTag) {
-    const params = new URLSearchParams(searchParams.toString());
-
-    if (next === 'All') {
-      params.delete('tag');
-    } else {
-      params.set('tag', next);
-    }
-
-    const query = params.toString();
-    router.push(query ? `${pathname}?${query}` : pathname, { scroll: false });
+    // The URL is the only thing this writes, so a filtered view stays shareable
+    // and `filter` keeps one writer - the effect above, fed by the `tag` prop.
+    // The push is what produces that prop: the mounted component is always
+    // ProgramsContentWithFilter, which reads the search params.
+    router.push(next === 'All' ? pathname : `${pathname}?tag=${encodeURIComponent(next)}`, {
+      scroll: false,
+    });
   }
 
   return (

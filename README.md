@@ -53,7 +53,10 @@ Environment validation notes:
 
 - `NEXT_PUBLIC_SITE_URL` must be a full absolute URL in Preview/Production, using
   `http:` or `https:` and carrying no query string or fragment. Trailing slashes
-  are stripped, so the URLs the site builds never double up.
+  are stripped, so the URLs the site builds never double up. In Production it
+  also has to name the custom domain, not the Vercel project alias, or the
+  duplicate-host redirect in `next.config.mjs` is skipped with no error; the
+  comment in `.env.example` explains why.
 - `NEXT_PUBLIC_ONDEMAND_URL`, if set, must also be a full absolute URL.
 - Invalid site/on-demand URL env vars fail early with explicit messages.
 - No environment variable is required to boot the public site locally.
