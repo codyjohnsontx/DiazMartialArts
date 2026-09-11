@@ -123,10 +123,15 @@ marking work complete or CI fails on unformatted files.
   which left every one of them with no internal inbound link anywhere on the
   site. Give the `useSearchParams` call a component of its own and wrap that in
   `<Suspense>` with the real unfiltered page as the fallback, so the fallback is
-  what prerenders; `app/programs/page.tsx` is the worked example. Note the
-  fallback then renders outside the boundary, where no navigation hands it new
-  search params, so an interactive control there must set its own state as well
-  as push the URL.
+  what prerenders; `app/programs/page.tsx` is the worked example. The fallback
+  is markup and nothing else: React discards the prerendered fallback DOM and
+  client-renders the boundary's children rather than hydrating it, measured by
+  marking the twelve server-rendered cards before React ran and finding 0 of
+  them left in the live DOM afterwards. So the mounted component is always the
+  one that reads the search params, it receives a fresh value from every
+  `router.push`, and an interactive control in the fallback needs no local state
+  of its own - state set alongside the push is a second writer for a value the
+  navigation already delivers.
   `next dev` renders every request dynamically and so cannot see any of this.
   On the broken tree the two /programs guards PASSED against `next dev` and
   only failed against `npm run build` plus `PLAYWRIGHT_USE_START=1`, which is

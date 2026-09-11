@@ -81,11 +81,10 @@ export function ProgramsContent({ tag }: { tag: string | null }) {
   );
 
   function updateFilter(next: 'All' | ProgramTag) {
-    // Reflected in the URL so a filtered view stays shareable. Setting state as
-    // well as pushing keeps the buttons responsive on the prerendered HTML,
-    // where this component renders outside the Suspense boundary and so never
-    // receives a new `tag` prop from the navigation.
-    setFilter(next);
+    // The URL is the only thing this writes, so a filtered view stays shareable
+    // and `filter` keeps one writer - the effect above, fed by the `tag` prop.
+    // The push is what produces that prop: the mounted component is always
+    // ProgramsContentWithFilter, which reads the search params.
     router.push(next === 'All' ? pathname : `${pathname}?tag=${encodeURIComponent(next)}`, {
       scroll: false,
     });

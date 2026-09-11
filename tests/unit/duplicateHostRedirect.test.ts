@@ -1,8 +1,31 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { RedirectRule } from '../../next.config.mjs';
 
 const DUPLICATE_HOST = 'diaz-martial-arts.vercel.app';
+
+/**
+ * `.env.example` parsed into the key/value map its consumers see, rather than
+ * read as text: what matters is the value an operator copies out, not how the
+ * file spells it.
+ */
+function exampleEnv(): Record<string, string> {
+  const raw = readFileSync(path.join(process.cwd(), '.env.example'), 'utf8');
+
+  return Object.fromEntries(
+    raw
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line && !line.startsWith('#'))
+      .map((line) => {
+        const eq = line.indexOf('=');
+        return [line.slice(0, eq), line.slice(eq + 1)];
+      }),
+  );
+}
 
 async function loadRedirects(siteUrl?: string): Promise<RedirectRule[]> {
   vi.resetModules();
@@ -83,5 +106,19 @@ describe('duplicate production host', () => {
     // What a deployment with no custom domain looks like. Redirecting that host
     // to itself would loop.
     expect(hostRule(await loadRedirects(`https://${DUPLICATE_HOST}`))).toBeUndefined();
+  });
+
+  it('ships an example origin that emits the rule rather than skipping it', async () => {
+    // The guard above is correct and the reason this is a separate test: the
+    // repository used to ship the duplicate host as its one example value, so
+    // the guard fired against the very host the rule retires. A build from
+    // .env.example - or from CI, which sets the same value - then contained no
+    // rule, raised no error, and served both hosts at 200. The example is the
+    // value an operator copies into .env.local or into Vercel, so it has to be
+    // one that produces the rule.
+    const configured = exampleEnv().NEXT_PUBLIC_SITE_URL;
+
+    expect(configured).toBeTruthy();
+    expect(hostRule(await loadRedirects(configured))?.destination).toBe(`${configured}/:path*`);
   });
 });

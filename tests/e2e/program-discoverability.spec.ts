@@ -32,11 +32,13 @@ const FILTER_BUTTON = 'button[aria-pressed]';
  * is the property under test, so that test has to be a fetch.
  *
  * The second block is the other half of the same change and does need a
- * browser: prerendering the unfiltered grid as the Suspense fallback means the
- * filter buttons now render outside the boundary, where no navigation hands
- * them a new `tag` prop, so ProgramsContent has to set its own state as well as
- * push the URL. Deleting that one line looks like a tidy-up and silently leaves
- * a row of buttons that do nothing.
+ * browser, because prerendering the unfiltered grid means the served markup now
+ * satisfies a card count on its own. React discards that prerendered fallback
+ * DOM and client-renders the boundary's children rather than hydrating it -
+ * marking the twelve server-rendered cards before React ran left 0 of them in
+ * the live DOM afterwards - so the grid a visitor ends up interacting with is
+ * drawn by ProgramsContentWithFilter, and only a real click proves the filter
+ * survived that handover.
  *
  * The list comes from content/programs.ts rather than being written out here so
  * that a thirteenth program is covered the day it is added - a new discipline
@@ -113,11 +115,10 @@ test.describe('the program filter still works on the prerendered page', () => {
     await page.getByRole('button', { name: 'Youth', exact: true }).click();
 
     await expect(page.locator(cards)).toHaveCount(youthCount);
-    // Waited for rather than read off page.url(). The grid is redrawn by local
-    // state the instant the button is clicked and the URL is pushed a moment
-    // later, so reading it straight after the count assertion is a race that
-    // resolves differently on each project - it passed on Desktop Chrome and
-    // failed on Mobile. waitForURL still fails if the push never happens.
+    // Waited for rather than read off page.url(). The push is what feeds the new
+    // `tag` prop that narrows the grid, so the count above already implies it
+    // landed; waiting is still what makes a missing push a failure rather than a
+    // read of whatever the URL happened to be at that instant.
     await page.waitForURL(/\?tag=Youth$/);
 
     await page.getByRole('button', { name: 'All', exact: true }).click();
