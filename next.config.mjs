@@ -38,6 +38,37 @@ const DUPLICATE_PRODUCTION_HOST = 'diaz-martial-arts.vercel.app';
  */
 const canonicalSiteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/+$/, '');
 
+/**
+ * Collapse the duplicate host onto the canonical one. Permanent (308) rather
+ * than temporary because the point is to retire the copy: a temporary redirect
+ * asks a search engine to keep the duplicate URL on file, which is the state
+ * being closed. It matches every path, robots.txt and sitemap.xml included, so
+ * nothing on the duplicate host answers 200.
+ *
+ * Next matches redirects in array order and the first match wins, so this rule
+ * has to come before every path rule - the ones above it all have relative
+ * destinations, which resolve back onto whichever host the request arrived on.
+ * With it last, `https://<duplicate>/sign-in` answered `307 /ondemand` on the
+ * duplicate host, and once NEXT_PUBLIC_ONDEMAND_URL is set that second hop
+ * leaves for the member app, so the duplicate URL was never collapsed at all.
+ *
+ * The guard skips the rule when the canonical origin IS the duplicate host,
+ * which is what a deployment with no custom domain would look like;
+ * redirecting that host to itself would loop.
+ */
+function duplicateHostRedirect() {
+  if (!canonicalSiteUrl || canonicalSiteUrl.includes(`//${DUPLICATE_PRODUCTION_HOST}`)) return [];
+
+  return [
+    {
+      source: '/:path*',
+      has: [{ type: 'host', value: DUPLICATE_PRODUCTION_HOST }],
+      destination: `${canonicalSiteUrl}/:path*`,
+      permanent: true,
+    },
+  ];
+}
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -56,6 +87,7 @@ const nextConfig = {
   // client-side one that crawlers and non-JS clients never follow.
   async redirects() {
     const redirects = [
+      ...duplicateHostRedirect(),
       { source: '/sign-in', destination: '/ondemand', permanent: false },
       { source: '/sign-in/:path*', destination: '/ondemand', permanent: false },
       { source: '/sign-up', destination: '/ondemand', permanent: false },
@@ -68,24 +100,6 @@ const nextConfig = {
     // /ondemand falls through to the page component, which renders coming soon.
     if (ondemandUrl && !ondemandComingSoon) {
       redirects.push({ source: '/ondemand', destination: ondemandUrl, permanent: false });
-    }
-
-    // Collapse the duplicate host onto the canonical one. Permanent (308)
-    // rather than temporary because the point is to retire the copy: a
-    // temporary redirect asks a search engine to keep the duplicate URL on
-    // file, which is the state being closed. It matches every path, robots.txt
-    // and sitemap.xml included, so nothing on the duplicate host answers 200.
-    //
-    // The guard skips the rule when the canonical origin IS the duplicate host,
-    // which is what a deployment with no custom domain would look like;
-    // redirecting that host to itself would loop.
-    if (canonicalSiteUrl && !canonicalSiteUrl.includes(`//${DUPLICATE_PRODUCTION_HOST}`)) {
-      redirects.push({
-        source: '/:path*',
-        has: [{ type: 'host', value: DUPLICATE_PRODUCTION_HOST }],
-        destination: `${canonicalSiteUrl}/:path*`,
-        permanent: true,
-      });
     }
 
     return redirects;

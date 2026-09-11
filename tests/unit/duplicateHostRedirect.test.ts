@@ -41,6 +41,20 @@ describe('duplicate production host', () => {
     expect(rule?.destination).toBe('https://www.diazmartialarts.com/:path*');
   });
 
+  it('is matched before the path rules, so one hop leaves the duplicate host', async () => {
+    // Next matches redirects in array order and the first match wins, and every
+    // other rule here has a relative destination, which resolves back onto the
+    // host the request arrived on. Ordered last, this rule never saw
+    // https://<duplicate>/sign-in at all: that answered 307 /ondemand on the
+    // duplicate host, and with NEXT_PUBLIC_ONDEMAND_URL set the next hop leaves
+    // for the member app, so the duplicate URL was never collapsed.
+    const rules = await loadRedirects('https://www.diazmartialarts.com');
+    const hostAgnostic = rules.findIndex((r) => !r.has?.length);
+
+    expect(rules.indexOf(hostRule(rules)!)).toBe(0);
+    expect(hostAgnostic).toBeGreaterThan(0);
+  });
+
   it('is permanent, because the duplicate is being retired rather than moved', async () => {
     // A 307 asks a search engine to keep the duplicate URL on file, which is
     // the state this rule exists to close.
