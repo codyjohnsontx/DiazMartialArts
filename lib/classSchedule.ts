@@ -1,4 +1,5 @@
 import { type ClassBlock, type WeeklySchedule, weeklySchedule } from '@/content/schedule';
+import { readSchoolClock, SCHOOL_TIME_ZONE, schoolWallTime } from '@/lib/schoolTime';
 
 export type UpcomingClassBlock = {
   day: WeeklySchedule['day'];
@@ -19,7 +20,10 @@ const DAYS: WeeklySchedule['day'][] = [
   'Saturday',
 ];
 
+// Class times are the gym's, so they print on the gym's clock whatever zone the
+// visitor's device is set to.
 const startTimeFormatter = new Intl.DateTimeFormat('en-US', {
+  timeZone: SCHOOL_TIME_ZONE,
   hour: 'numeric',
   minute: '2-digit',
   hour12: true,
@@ -88,11 +92,23 @@ function inferStartPeriod(
   return endPeriod;
 }
 
-function dateForDayOffset(now: Date, dayOffset: number, minutes: number): Date {
-  const date = new Date(now);
-  date.setDate(now.getDate() + dayOffset);
-  date.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0);
-  return date;
+// The instant a class starts, `dayOffset` gym days after `today`. Stepping the gym's
+// calendar date rather than adding 24 hours is what keeps a class on the far side
+// of a daylight-saving change at its printed time.
+function classStart(
+  today: ReturnType<typeof readSchoolClock>,
+  dayOffset: number,
+  minutes: number,
+): Date {
+  return new Date(
+    schoolWallTime(
+      today.year,
+      today.month,
+      today.day + dayOffset,
+      Math.floor(minutes / 60),
+      minutes % 60,
+    ),
+  );
 }
 
 function formatDuration(minutes: number): string {
@@ -111,7 +127,9 @@ export function formatCountdown(start: Date, now: Date): string {
 }
 
 export function getScheduleLabel(block: UpcomingClassBlock): string {
-  if (block.dayOffset === 0) return block.start.getHours() >= 17 ? 'Tonight' : 'Today';
+  if (block.dayOffset === 0) {
+    return readSchoolClock(block.start.getTime()).hour >= 17 ? 'Tonight' : 'Today';
+  }
   if (block.dayOffset === 1) return 'Tomorrow';
   return `Next up ${block.day}`;
 }
@@ -138,11 +156,13 @@ export function getUpcomingClassBlocks(
 ): UpcomingClassBlock[] {
   const limit = options.limit ?? 4;
   const schedule = options.schedule ?? weeklySchedule;
-  const currentDay = now.getDay();
+  // "Now" is read on the gym's clock, not the visitor's: a visitor in another zone
+  // is on a different hour, and near midnight on a different day, from the gym.
+  const today = readSchoolClock(now.getTime());
   const blocks: UpcomingClassBlock[] = [];
 
   for (let offset = 0; offset < DAYS.length && blocks.length < limit; offset += 1) {
-    const day = DAYS[(currentDay + offset) % DAYS.length];
+    const day = DAYS[(today.weekday + offset) % DAYS.length];
     const daySchedule = schedule.find((entry) => entry.day === day);
     if (!daySchedule) continue;
 
@@ -151,7 +171,7 @@ export function getUpcomingClassBlocks(
     for (const classBlock of daySchedule.classes) {
       const parsed = parseClassTimeRange(classBlock.time);
       if (!parsed) continue;
-      if (offset === 0 && dateForDayOffset(now, offset, parsed.startMinutes) <= now) {
+      if (offset === 0 && classStart(today, offset, parsed.startMinutes) <= now) {
         continue;
       }
 
@@ -170,7 +190,7 @@ export function getUpcomingClassBlocks(
     const dayBlocks = Array.from(grouped.entries())
       .sort(([a], [b]) => a - b)
       .map(([startMinutes, group]) => {
-        const start = dateForDayOffset(now, offset, startMinutes);
+        const start = classStart(today, offset, startMinutes);
         const duration = group.endMinutes - startMinutes;
         return {
           day,

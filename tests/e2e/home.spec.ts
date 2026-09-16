@@ -218,6 +218,30 @@ test.describe('Home page hydration', () => {
   });
 });
 
+test.describe('Coming-up card for a visitor in another time zone', () => {
+  // Tuesday 12:30 PM at the gym. On a Tokyo phone that is already Wednesday
+  // 2:30 AM, and a card reading the phone's clock offered Wednesday's 7:00 AM
+  // class as "Today". tests/unit/classScheduleVisitorZone.test.ts covers the
+  // rule itself; this checks the browser bundle reads the gym's clock too.
+  test.use({ timezoneId: 'Asia/Tokyo' });
+  const visitTime = new Date('2026-05-26T17:30:00Z');
+
+  test("shows the gym's next class, not the one on the visitor's clock", async ({ page }) => {
+    await page.clock.setFixedTime(visitTime);
+    await page.goto('/', DOM_READY);
+
+    // Without this the test could pass in the gym's own zone and prove nothing.
+    expect(await page.evaluate(() => Intl.DateTimeFormat().resolvedOptions().timeZone)).toBe(
+      'Asia/Tokyo',
+    );
+
+    const card = page.locator('section:has(h1) .shadow-lift').first();
+    await expect(card.getByText('Starts in 4h 30m', { exact: true })).toBeVisible();
+    await expect(card.getByText('Tonight', { exact: true })).toBeVisible();
+    await expect(card.getByText('5:00 PM', { exact: true }).first()).toBeVisible();
+  });
+});
+
 /**
  * The upcoming-classes card at the narrowest widths a phone actually has.
  *
@@ -253,7 +277,9 @@ test.describe('Coming-up card fits the narrowest phones', () => {
   // Tuesday night, after the last class of the day: every upcoming block is
   // Wednesday, so the rows carry both the longest day name and the widest class
   // names in content/schedule.ts. That is the worst case the week can produce.
-  const visitTime = new Date('2026-09-01T21:30:00');
+  // The offset is the gym's (CDT), because the card reads the gym's clock and a
+  // bare local time would mean an earlier hour there on a runner set to UTC.
+  const visitTime = new Date('2026-09-01T21:30:00-05:00');
 
   // This spec drives the viewport itself, so running it under both configured
   // projects would just do the same work twice.
