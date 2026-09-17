@@ -246,9 +246,10 @@ marking work complete or CI fails on unformatted files.
   runs, so reproduce production-only hydration issues with dev stopped.
 
 - Class times are the gym's, on America/Chicago, and `lib/schoolTime.ts` holds
-  that zone and its wall-clock arithmetic. The coming-up class is computed
-  there: the card runs in the visitor's browser, and it picked classes on the
-  visitor's own clock until that was fixed. New schedule code should read days
+  that zone and its wall-clock arithmetic. The coming-up class
+  (`lib/classSchedule.ts`) is computed on it: the card runs in the visitor's
+  browser, and it picked classes on the visitor's own clock until that was
+  fixed. New schedule code should read days
   and hours through it, never through `getDay`/`getHours`/`setDate` or a
   formatter with no `timeZone`. That is not yet true of everything: timed
   events on /schedule (`components/ScheduleContent.tsx`) still render their
