@@ -1,6 +1,17 @@
 export type UpcomingItem = {
   id: string;
   title: string;
+  /**
+   * A timed entry is an instant, so write it with the offset the gym was on
+   * that day: `-05:00` in daylight saving time, `-06:00` in the winter. A value
+   * with neither an offset nor a trailing Z is read on whatever clock the
+   * server happens to run - UTC on Vercel - so a 7:00 PM class would print as
+   * 2:00 PM. The calendar feed resolves such a value on the gym's clock, as
+   * RFC 5545 floating time, but `new Date` has no such rule and this file goes
+   * through `new Date`. tests/unit/upcoming-content.test.ts fails on one.
+   *
+   * All-day entries are floating calendar dates instead - see `allDay`.
+   */
   start: string;
   end?: string;
   location?: string;

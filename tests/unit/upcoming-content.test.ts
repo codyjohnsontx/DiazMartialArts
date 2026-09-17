@@ -96,6 +96,30 @@ describe('content/upcoming.ts staleness guard', () => {
     ).toEqual([]);
   });
 
+  // A timed entry reaches the page through `new Date`, which reads a string
+  // carrying no zone on the server's own clock rather than the gym's. The
+  // convention that stops that is invisible in the file, so pin it here.
+  it('gives every timed entry an explicit zone', () => {
+    const zoned = /(Z|[+-]\d{2}:?\d{2})$/;
+    const floating: string[] = [];
+
+    for (const item of upcomingItems) {
+      if (item.allDay) continue;
+
+      for (const value of [item.start, item.end]) {
+        if (value && !zoned.test(value)) floating.push(`${item.id} (${value})`);
+      }
+    }
+
+    expect(
+      floating,
+      'These entries name a time with no zone, so they are read on whatever clock the ' +
+        'server runs - UTC on Vercel, which prints a 7:00 PM class as 2:00 PM. Write the ' +
+        "offset the gym was on that day: '-05:00' in daylight saving time, '-06:00' in " +
+        'the winter.',
+    ).toEqual([]);
+  });
+
   it('carries no placeholder entries', () => {
     const placeholders = upcomingItems.filter((item) =>
       /^(fallback|example|placeholder)-/.test(item.id),

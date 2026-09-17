@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 async function loadUpcoming() {
   vi.resetModules();
@@ -436,5 +436,102 @@ describe('end of the school day across DST transitions', () => {
     expect(hasUpcomingEventEnded(fallBack, new Date('2026-11-02T06:30:00Z'))).toBe(true);
     expect(hasUpcomingEventEnded(springForward, new Date('2026-03-09T04:30:00Z'))).toBe(false);
     expect(hasUpcomingEventEnded(springForward, new Date('2026-03-09T05:30:00Z'))).toBe(true);
+  });
+});
+
+/**
+ * A DATE-TIME in an ICS feed states its zone outside the value: a trailing Z is
+ * UTC, a TZID parameter names the zone, and a value with neither is floating
+ * wall time. Google Calendar - the documented feed source - exports timed events
+ * in the TZID form, which the property-key parse used to discard before building
+ * the instant in the server's own zone.
+ *
+ * vitest.config.ts pins the suite to the gym's zone, where the server's clock and
+ * the gym's agree, so the mistake is invisible from Chicago. Every case here runs
+ * with the process moved to Tokyo, and the guard in `beforeAll` checks the move
+ * took effect so a runtime that ignored it fails rather than quietly passing.
+ */
+describe('ICS date-times carry the zone the feed states', () => {
+  const pinnedZone = process.env.TZ;
+
+  beforeAll(() => {
+    process.env.TZ = 'Asia/Tokyo';
+    expect(Intl.DateTimeFormat().resolvedOptions().timeZone).toBe('Asia/Tokyo');
+  });
+
+  afterAll(() => {
+    process.env.TZ = pinnedZone;
+  });
+
+  it('resolves TZID, floating and Z date-times without reading the server zone', async () => {
+    process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL = 'https://calendar.example/feed.ics';
+    const ics = [
+      'BEGIN:VCALENDAR',
+      'BEGIN:VEVENT',
+      'UID:tzid-chicago',
+      'SUMMARY:Belt Testing',
+      // The form Google Calendar exports a timed event in.
+      'DTSTART;TZID=America/Chicago:20260620T190000',
+      'DTEND;TZID=America/Chicago:20260620T203000',
+      'END:VEVENT',
+      'BEGIN:VEVENT',
+      'UID:floating',
+      'SUMMARY:Open Mat',
+      // No Z and no TZID: floating wall time, which for this calendar is the gym's.
+      'DTSTART:20260620T190000',
+      'END:VEVENT',
+      'BEGIN:VEVENT',
+      'UID:tzid-elsewhere',
+      'SUMMARY:Away Seminar',
+      // A TZID naming another zone is honoured as written, not reread as Chicago.
+      'DTSTART;TZID=America/New_York:20260620T190000',
+      'END:VEVENT',
+      'BEGIN:VEVENT',
+      'UID:utc',
+      'SUMMARY:Already Instants',
+      'DTSTART:20260621T000000Z',
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ].join('\r\n');
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, text: async () => ics }));
+    const { getUpcomingEvents } = await loadUpcoming();
+
+    const result = await getUpcomingEvents();
+
+    // 7:00 PM at the gym on a June evening is CDT, so 00:00 UTC the next day; the
+    // same wall time in New York is an hour earlier as an instant.
+    expect(result.events.map((event) => [event.id, event.start.toISOString()])).toEqual([
+      ['tzid-elsewhere', '2026-06-20T23:00:00.000Z'],
+      ['tzid-chicago', '2026-06-21T00:00:00.000Z'],
+      ['floating', '2026-06-21T00:00:00.000Z'],
+      ['utc', '2026-06-21T00:00:00.000Z'],
+    ]);
+    // DTEND takes its own TZID the same way.
+    expect(result.events[1].end?.toISOString()).toBe('2026-06-21T01:30:00.000Z');
+  });
+
+  it("falls back to the gym's clock for a TZID this runtime cannot resolve", async () => {
+    // Intl throws on a name it does not know, and parseIcs runs inside the fetch
+    // try/catch, so without this one bad event would drop the whole feed to the
+    // hand-maintained list.
+    process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL = 'https://calendar.example/feed.ics';
+    const ics = [
+      'BEGIN:VCALENDAR',
+      'BEGIN:VEVENT',
+      'UID:nonsense-zone',
+      'SUMMARY:Belt Testing',
+      'DTSTART;TZID=Mars/Olympus_Mons:20260620T190000',
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ].join('\r\n');
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, text: async () => ics }));
+    const { getUpcomingEvents } = await loadUpcoming();
+
+    const result = await getUpcomingEvents();
+
+    expect(result.source).toBe('ics');
+    expect(result.events.map((event) => [event.id, event.start.toISOString()])).toEqual([
+      ['nonsense-zone', '2026-06-21T00:00:00.000Z'],
+    ]);
   });
 });
