@@ -1,6 +1,12 @@
 import { type UpcomingItem, upcomingItems } from '@/content/upcoming';
 import { getPublicEnv } from '@/lib/env';
-import { readSchoolClock, schoolWallTime } from '@/lib/schoolTime';
+import {
+  isSupportedTimeZone,
+  readSchoolClock,
+  SCHOOL_TIME_ZONE,
+  schoolWallTime,
+  wallTimeInZone,
+} from '@/lib/schoolTime';
 
 export type UpcomingEvent = {
   id: string;
@@ -64,7 +70,14 @@ function unfoldIcsLines(content: string): string[] {
   return unfolded;
 }
 
-function parseIcsDate(raw: string): Date | null {
+// RFC 5545 spells a DATE-TIME's zone in two places, and both live outside the
+// value: a trailing Z means UTC, and a TZID parameter on the property names the
+// zone the wall time is written in. A value with neither is floating wall time,
+// which for this calendar means the gym's clock - as does a TZID this runtime
+// cannot resolve, since the alternative is dropping the whole feed. Reading any
+// of them with the server's own zone is what turned a 7:00 PM Central event
+// into 2:00 PM on a Vercel box in UTC.
+function parseIcsDate(raw: string, timeZone?: string): Date | null {
   if (!raw) return null;
 
   // A date-only value is a floating calendar date, not an instant, so anchor it
@@ -91,15 +104,23 @@ function parseIcsDate(raw: string): Date | null {
     return new Date(Date.UTC(year, month, day, hour, minute, second));
   }
 
-  return new Date(year, month, day, hour, minute, second);
+  const zone = timeZone && isSupportedTimeZone(timeZone) ? timeZone : SCHOOL_TIME_ZONE;
+  return new Date(wallTimeInZone(zone, year, month + 1, day, hour, minute, second));
+}
+
+// The zone a property's value is written in, as named by its own parameters.
+// The name goes to Intl exactly as the feed wrote it, and anything Intl cannot
+// resolve falls back to the gym's clock in parseIcsDate.
+function icsTimeZone(params: string): string | undefined {
+  return /(?:^|;)TZID=([^;]*)/i.exec(params)?.[1];
 }
 
 // A date-only DTEND is exclusive per RFC 5545, and Google Calendar exports a
 // one-day all-day event as DTEND = the following day. content/upcoming.ts instead
 // writes `end` as the last day the event runs, so normalise the feed to that and
 // both sources mean the same thing by the same field.
-function parseIcsEnd(raw: string, start: Date): Date | undefined {
-  const parsed = parseIcsDate(raw);
+function parseIcsEnd(raw: string, start: Date, timeZone?: string): Date | undefined {
+  const parsed = parseIcsDate(raw, timeZone);
   if (!parsed) return undefined;
   if (!/^\d{8}$/.test(raw)) return parsed;
 
@@ -112,18 +133,39 @@ function parseIcs(icsText: string): UpcomingEvent[] {
   const events: UpcomingEvent[] = [];
 
   let inEvent = false;
+  // A VEVENT may contain components of its own, and their properties are not
+  // the event's: Google Calendar nests a VALARM in every event carrying a
+  // reminder, whose DESCRIPTION is the reminder text and whose SUMMARY, on an
+  // email reminder, is the reminder's subject. Collected flat they would win by
+  // being last, and the card would print the reminder in place of the event.
+  let nested = 0;
   let raw: Record<string, string> = {};
+  let params: Record<string, string> = {};
 
   for (const line of lines) {
     if (line === 'BEGIN:VEVENT') {
       inEvent = true;
+      nested = 0;
       raw = {};
+      params = {};
       continue;
     }
 
-    if (line === 'END:VEVENT' && inEvent) {
+    if (!inEvent) continue;
+
+    if (line.startsWith('BEGIN:')) {
+      nested += 1;
+      continue;
+    }
+
+    if (line.startsWith('END:') && line !== 'END:VEVENT') {
+      if (nested > 0) nested -= 1;
+      continue;
+    }
+
+    if (line === 'END:VEVENT' && nested === 0) {
       inEvent = false;
-      const start = parseIcsDate(raw.DTSTART || '');
+      const start = parseIcsDate(raw.DTSTART || '', icsTimeZone(params.DTSTART || ''));
       if (!start) continue;
 
       // A date-only DTSTART (VALUE=DATE) is how ICS spells an all-day event.
@@ -132,7 +174,9 @@ function parseIcs(icsText: string): UpcomingEvent[] {
       // it starts, so say so here. A hand-written entry means something else by an
       // absent end - see endsAt - and spelling the feed's meaning out at the parse
       // site keeps the two sources from having to share one default.
-      const end = parseIcsEnd(raw.DTEND || '', start) ?? (allDay ? undefined : start);
+      const end =
+        parseIcsEnd(raw.DTEND || '', start, icsTimeZone(params.DTEND || '')) ??
+        (allDay ? undefined : start);
       events.push({
         id: raw.UID || `${raw.SUMMARY || 'event'}-${start.toISOString()}`,
         title: raw.SUMMARY || 'Untitled Event',
@@ -145,18 +189,23 @@ function parseIcs(icsText: string): UpcomingEvent[] {
       continue;
     }
 
-    if (!inEvent) continue;
+    if (nested > 0) continue;
 
     const sepIdx = line.indexOf(':');
     if (sepIdx <= 0) continue;
 
-    const key = line.slice(0, sepIdx).split(';')[0];
+    const property = line.slice(0, sepIdx);
+    const paramIdx = property.indexOf(';');
+    const key = paramIdx < 0 ? property : property.slice(0, paramIdx);
     const value = line
       .slice(sepIdx + 1)
       .replace(/\\n/g, '\n')
       .trim();
 
-    if (key) raw[key] = value;
+    if (key) {
+      raw[key] = value;
+      params[key] = paramIdx < 0 ? '' : property.slice(paramIdx + 1);
+    }
   }
 
   return events;

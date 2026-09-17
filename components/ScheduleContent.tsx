@@ -14,6 +14,7 @@ import {
   weeklySchedule,
 } from '@/content/schedule';
 import { parseClassTimeRange } from '@/lib/classSchedule';
+import { readSchoolClock, SCHOOL_TIME_ZONE } from '@/lib/schoolTime';
 import type { UpcomingEvent } from '@/lib/upcoming';
 import { cn } from '@/lib/utils';
 
@@ -97,13 +98,17 @@ const monthShort = [
 
 // An all-day event is a floating calendar date rather than an instant, so it is
 // stored at UTC midnight and read back in UTC. Using local accessors would print
-// a different day for a visitor whose zone straddles that midnight.
+// a different day for a visitor whose zone straddles that midnight. A timed
+// event is a real instant, and the gym's calendar day for it is read on the
+// gym's own clock, the same as class times, rather than the visitor's.
 function eventMonthIndex(event: UpcomingEvent): number {
-  return event.allDay ? event.start.getUTCMonth() : event.start.getMonth();
+  return event.allDay
+    ? event.start.getUTCMonth()
+    : readSchoolClock(event.start.getTime()).month - 1;
 }
 
 function eventDayOfMonth(event: UpcomingEvent): number {
-  return event.allDay ? event.start.getUTCDate() : event.start.getDate();
+  return event.allDay ? event.start.getUTCDate() : readSchoolClock(event.start.getTime()).day;
 }
 
 function isSameUtcDay(a: Date, b: Date): boolean {
@@ -132,6 +137,7 @@ function formatEventTiming(event: UpcomingEvent): string {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
+    timeZone: SCHOOL_TIME_ZONE,
   });
 }
 
