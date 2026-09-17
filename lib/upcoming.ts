@@ -108,13 +108,11 @@ function parseIcsDate(raw: string, timeZone?: string): Date | null {
   return new Date(wallTimeInZone(zone, year, month + 1, day, hour, minute, second));
 }
 
-// The zone a property's value is written in, as named by its own parameters. A
-// TZID may be quoted (RFC 5545 allows it; Google Calendar does not do it), so
-// the quotes come off before the name reaches Intl.
+// The zone a property's value is written in, as named by its own parameters.
+// The name goes to Intl exactly as the feed wrote it, and anything Intl cannot
+// resolve falls back to the gym's clock in parseIcsDate.
 function icsTimeZone(params: string): string | undefined {
-  const tzid = /(?:^|;)TZID=([^;]*)/i.exec(params)?.[1];
-
-  return tzid ? tzid.replace(/^"(.*)"$/, '$1') : undefined;
+  return /(?:^|;)TZID=([^;]*)/i.exec(params)?.[1];
 }
 
 // A date-only DTEND is exclusive per RFC 5545, and Google Calendar exports a
@@ -135,18 +133,37 @@ function parseIcs(icsText: string): UpcomingEvent[] {
   const events: UpcomingEvent[] = [];
 
   let inEvent = false;
+  // A VEVENT may contain components of its own, and their properties are not
+  // the event's: Google Calendar nests a VALARM in every event carrying a
+  // reminder, whose DESCRIPTION is the reminder text and whose SUMMARY, on an
+  // email reminder, is the reminder's subject. Collected flat they would win by
+  // being last, and the card would print the reminder in place of the event.
+  let nested = 0;
   let raw: Record<string, string> = {};
   let params: Record<string, string> = {};
 
   for (const line of lines) {
     if (line === 'BEGIN:VEVENT') {
       inEvent = true;
+      nested = 0;
       raw = {};
       params = {};
       continue;
     }
 
-    if (line === 'END:VEVENT' && inEvent) {
+    if (!inEvent) continue;
+
+    if (line.startsWith('BEGIN:')) {
+      nested += 1;
+      continue;
+    }
+
+    if (line.startsWith('END:') && line !== 'END:VEVENT') {
+      if (nested > 0) nested -= 1;
+      continue;
+    }
+
+    if (line === 'END:VEVENT' && nested === 0) {
       inEvent = false;
       const start = parseIcsDate(raw.DTSTART || '', icsTimeZone(params.DTSTART || ''));
       if (!start) continue;
@@ -172,7 +189,7 @@ function parseIcs(icsText: string): UpcomingEvent[] {
       continue;
     }
 
-    if (!inEvent) continue;
+    if (nested > 0) continue;
 
     const sepIdx = line.indexOf(':');
     if (sepIdx <= 0) continue;

@@ -440,6 +440,93 @@ describe('end of the school day across DST transitions', () => {
 });
 
 /**
+ * A VEVENT carries components of its own, and their properties belong to them
+ * rather than to the event. Google Calendar's export nests a VALARM in every
+ * event that has a reminder set, so this is the ordinary shape of the feed the
+ * site reads, not a malformed one.
+ */
+describe('a reminder nested in an event keeps its text to itself', () => {
+  const eventWithAlarm = (alarm: string[]) =>
+    [
+      'BEGIN:VCALENDAR',
+      'BEGIN:VEVENT',
+      'UID:belt-testing',
+      'SUMMARY:Belt Testing',
+      'DESCRIPTION:Bring your gi and a mouthguard.',
+      'LOCATION:Main Mat',
+      'DTSTART:20260620T230000Z',
+      ...alarm,
+      'END:VEVENT',
+      'BEGIN:VEVENT',
+      'UID:open-mat',
+      'SUMMARY:Open Mat',
+      'DTSTART:20260621T230000Z',
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ].join('\r\n');
+
+  it('keeps a display reminder out of the event description', async () => {
+    process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL = 'https://calendar.example/feed.ics';
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        text: async () =>
+          eventWithAlarm([
+            'BEGIN:VALARM',
+            'ACTION:DISPLAY',
+            'DESCRIPTION:This is an event reminder',
+            'TRIGGER:-P0DT0H30M0S',
+            'END:VALARM',
+          ]),
+      }),
+    );
+    const { getUpcomingEvents } = await loadUpcoming();
+
+    const result = await getUpcomingEvents();
+
+    expect(result.events[0]).toMatchObject({
+      id: 'belt-testing',
+      title: 'Belt Testing',
+      notes: 'Bring your gi and a mouthguard.',
+      location: 'Main Mat',
+    });
+    // The event after the alarm still parses, so the nesting closes where it should.
+    expect(result.events.map((event) => event.id)).toEqual(['belt-testing', 'open-mat']);
+  });
+
+  it('keeps an email reminder out of the event title and description', async () => {
+    process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL = 'https://calendar.example/feed.ics';
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        text: async () =>
+          eventWithAlarm([
+            'BEGIN:VALARM',
+            'ACTION:EMAIL',
+            'SUMMARY:Event reminder',
+            'DESCRIPTION:This is an event reminder',
+            'ATTENDEE:mailto:owner@example.com',
+            'TRIGGER:-P0DT1H0M0S',
+            'END:VALARM',
+          ]),
+      }),
+    );
+    const { getUpcomingEvents } = await loadUpcoming();
+
+    const result = await getUpcomingEvents();
+
+    expect(result.events[0]).toMatchObject({
+      id: 'belt-testing',
+      title: 'Belt Testing',
+      notes: 'Bring your gi and a mouthguard.',
+    });
+    expect(result.events[0].start.toISOString()).toBe('2026-06-20T23:00:00.000Z');
+  });
+});
+
+/**
  * A DATE-TIME in an ICS feed states its zone outside the value: a trailing Z is
  * UTC, a TZID parameter names the zone, and a value with neither is floating
  * wall time. Google Calendar - the documented feed source - exports timed events
