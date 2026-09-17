@@ -55,6 +55,12 @@ function schoolOffsetAt(instant: number): number {
  * partway through, which is why stepping a day cannot just add 24 hours:
  * 2026-11-01 lasts 25 hours here and 2026-03-08 lasts 23, so a fixed step lands
  * an hour off on the far side of either.
+ *
+ * A wall time the clock skips (2:00-2:59 AM on 2026-03-08) never occurs, and
+ * solving for it lands an hour early, before times that come earlier that night.
+ * It is read on the offset in force before the jump instead, which moves it
+ * forward by the gap (2:30 AM becomes 3:30 AM CDT), as the clock itself does. A
+ * time the clock repeats in the fall resolves to its first occurrence.
  */
 export function schoolWallTime(
   year: number,
@@ -64,6 +70,8 @@ export function schoolWallTime(
   minute = 0,
 ): number {
   const wall = Date.UTC(year, month - 1, day, hour, minute);
+  const instant = wall - schoolOffsetAt(wall - schoolOffsetAt(wall));
+  const offset = schoolOffsetAt(instant);
 
-  return wall - schoolOffsetAt(wall - schoolOffsetAt(wall));
+  return wall - instant === offset ? instant : wall - offset;
 }

@@ -110,4 +110,22 @@ describe.each(VISITOR_ZONES)('coming-up classes for a visitor in %s', (zone) => 
     expect(springForward).toMatchObject({ day: 'Sunday', dayOffset: 1, startLabel: '7:00 PM' });
     expect(springForward.start.toISOString()).toBe('2026-03-09T00:00:00.000Z');
   });
+
+  it('moves a class in the skipped spring-forward hour to where the clock jumps', () => {
+    // Sunday 1:45 AM CST, 15 minutes before the clock skips 2:00-2:59 AM. A class
+    // printed at 2:30 AM has not started; it begins at 3:30 AM CDT, not 1:30 AM.
+    const now = new Date('2026-03-08T07:45:00Z');
+    const [next] = getUpcomingClassBlocks(now, {
+      schedule: [
+        {
+          day: 'Sunday',
+          classes: [{ time: '2:30-3:30 AM', program: 'Gap Test Class', coach: 'Test' }],
+        },
+      ],
+    });
+
+    expect(next).toMatchObject({ day: 'Sunday', dayOffset: 0, startLabel: '3:30 AM' });
+    expect(next.start.toISOString()).toBe('2026-03-08T08:30:00.000Z');
+    expect(formatCountdown(next.start, now)).toBe('Starts in 45m');
+  });
 });
