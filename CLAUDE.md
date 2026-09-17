@@ -245,6 +245,21 @@ marking work complete or CI fails on unformatted files.
   server beside a production server makes every chunk 500 and React never
   runs, so reproduce production-only hydration issues with dev stopped.
 
+- Class times are the gym's, on America/Chicago, and `lib/schoolTime.ts` holds
+  that zone and its wall-clock arithmetic. The coming-up class
+  (`lib/classSchedule.ts`) is computed on it: the card runs in the visitor's
+  browser, and it picked classes on the visitor's own clock until that was
+  fixed. New schedule code should read days
+  and hours through it, never through `getDay`/`getHours`/`setDate` or a
+  formatter with no `timeZone`. That is not yet true of everything: timed
+  events on /schedule (`components/ScheduleContent.tsx`) still render their
+  date and time in the visitor's zone, which is tracked as a separate fix.
+  `vitest.config.ts` pins the suite to Chicago, where local time and gym time
+  agree, so a test of such a rule proves nothing unless it also runs in
+  another zone;
+  `tests/unit/classScheduleVisitorZone.test.ts` switches `process.env.TZ` at
+  runtime and asserts that the switch took effect.
+
 - Gate a wide layout on the width the layout measurably needs, not on the
   nearest standard breakpoint above it. The header's desktop navigation is
   gated at `min-[1035px]`, and 1035 is a measurement: it was read off a

@@ -1,5 +1,6 @@
 import { type UpcomingItem, upcomingItems } from '@/content/upcoming';
 import { getPublicEnv } from '@/lib/env';
+import { readSchoolClock, schoolWallTime } from '@/lib/schoolTime';
 
 export type UpcomingEvent = {
   id: string;
@@ -26,63 +27,10 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 export const UPCOMING_WINDOW_DAYS = 60;
 const MAX_ITEMS = 15;
 
-/**
- * The gym's own time zone. An entry that runs through the end of a day ends when
- * that day is over *here*, so the rule reads the same whether the page renders on
- * a Vercel box in UTC or on a laptop in Chicago.
- */
-const SCHOOL_TIME_ZONE = 'America/Chicago';
-
-const schoolClock = new Intl.DateTimeFormat('en-US', {
-  timeZone: SCHOOL_TIME_ZONE,
-  hourCycle: 'h23',
-  year: 'numeric',
-  month: '2-digit',
-  day: '2-digit',
-  hour: '2-digit',
-  minute: '2-digit',
-  second: '2-digit',
-});
-
-function readSchoolClock(instant: number) {
-  const parts = schoolClock.formatToParts(new Date(instant));
-  const read = (type: string) => Number(parts.find((part) => part.type === type)?.value ?? 0);
-
-  return {
-    year: read('year'),
-    month: read('month'),
-    day: read('day'),
-    hour: read('hour'),
-    minute: read('minute'),
-    second: read('second'),
-  };
-}
-
-// How far the gym's clock sits from UTC at a given instant, read off the zone
-// itself rather than hard-coded, so it follows the zone's own rules.
-function schoolOffsetAt(instant: number): number {
-  const at = readSchoolClock(instant);
-
-  return (
-    Date.UTC(at.year, at.month - 1, at.day, at.hour, at.minute, at.second) -
-    Math.floor(instant / 1000) * 1000
-  );
-}
-
-// The instant a calendar date begins at the gym. Solving for the offset a second
-// time settles the days that change offset partway through, which is why this
-// cannot just add a fixed day: 2026-11-01 lasts 25 hours here and 2026-03-08
-// lasts 23, so a fixed step ends an entry an hour early or an hour late.
-function schoolDayStart(year: number, month: number, day: number): number {
-  const wall = Date.UTC(year, month - 1, day);
-
-  return wall - schoolOffsetAt(wall - schoolOffsetAt(wall));
-}
-
 function endOfSchoolDay(start: Date): number {
   const at = readSchoolClock(start.getTime());
 
-  return schoolDayStart(at.year, at.month, at.day + 1) - 1;
+  return schoolWallTime(at.year, at.month, at.day + 1) - 1;
 }
 
 // An all-day entry is a floating calendar date stored as UTC midnight, so its day
