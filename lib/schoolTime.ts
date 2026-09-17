@@ -119,7 +119,6 @@ export function schoolWallTime(
   day: number,
   hour = 0,
   minute = 0,
-  second = 0,
 ): number {
-  return wallTimeInZone(SCHOOL_TIME_ZONE, year, month, day, hour, minute, second);
+  return wallTimeInZone(SCHOOL_TIME_ZONE, year, month, day, hour, minute);
 }
