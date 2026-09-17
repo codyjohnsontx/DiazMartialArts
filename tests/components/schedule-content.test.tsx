@@ -132,6 +132,44 @@ describe('ScheduleContent', () => {
     expect(screen.getByText(/^Main Mat · \d{1,2}:\d{2} (AM|PM)$/)).toBeVisible();
   });
 
+  describe("a timed event's date and time, for a visitor outside the gym's zone", () => {
+    // vitest.config.ts pins TZ to America/Chicago, the gym's own zone, so a rule
+    // reading local accessors and a rule reading the gym's zone agree there and a
+    // test running only in Chicago cannot tell them apart. Move the process to a
+    // visitor zone the way tests/unit/classScheduleVisitorZone.test.ts does.
+    const pinnedZone = process.env.TZ;
+
+    afterEach(() => {
+      process.env.TZ = pinnedZone;
+    });
+
+    it("renders on the gym's clock, not a visitor's in Tokyo", () => {
+      process.env.TZ = 'Asia/Tokyo';
+      expect(Intl.DateTimeFormat().resolvedOptions().timeZone).toBe('Asia/Tokyo');
+
+      // 7:00 PM CDT on June 20 is 9:00 AM the next day, June 21, in Tokyo.
+      render(
+        <ScheduleContent
+          upcoming={[
+            {
+              id: 'evening-class',
+              title: 'Evening Open Mat',
+              start: new Date('2026-06-20T19:00:00-05:00'),
+              location: 'Main Mat',
+            },
+          ]}
+          windowDays={WINDOW_DAYS}
+        />,
+      );
+
+      expect(screen.getByText('JUN')).toBeVisible();
+      expect(screen.getByText('20')).toBeVisible();
+      expect(screen.getByText('Main Mat · 7:00 PM')).toBeVisible();
+      expect(screen.queryByText('21')).toBeNull();
+      expect(screen.queryByText('Main Mat · 9:00 AM')).toBeNull();
+    });
+  });
+
   it('points visitors at regular classes when no events are scheduled', () => {
     render(<ScheduleContent upcoming={[]} windowDays={WINDOW_DAYS} />);
 

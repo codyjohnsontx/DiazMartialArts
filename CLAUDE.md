@@ -251,9 +251,10 @@ marking work complete or CI fails on unformatted files.
   browser, and it picked classes on the visitor's own clock until that was
   fixed. New schedule code should read days
   and hours through it, never through `getDay`/`getHours`/`setDate` or a
-  formatter with no `timeZone`. That is not yet true of everything: timed
-  events on /schedule (`components/ScheduleContent.tsx`) still render their
-  date and time in the visitor's zone, which is tracked as a separate fix.
+  formatter with no `timeZone`. Timed events on /schedule
+  (`components/ScheduleContent.tsx`) read the same way, through
+  `readSchoolClock` for their calendar day and `SCHOOL_TIME_ZONE` on the
+  `toLocaleTimeString` call for their clock time.
   `vitest.config.ts` pins the suite to Chicago, where local time and gym time
   agree, so a test of such a rule proves nothing unless it also runs in
   another zone;
