@@ -1,7 +1,7 @@
 /**
- * The gym's own time zone. Class times and event days are the gym's, so every
- * rule that reads a wall clock reads this one, and the answer is the same whether
- * the code runs on a Vercel box in UTC, on a laptop in Chicago, or in a visitor's
+ * The gym's own time zone. Class times and the end-of-day rule for upcoming
+ * events read their wall clock here, so those answers are the same whether the
+ * code runs on a Vercel box in UTC, on a laptop in Chicago, or in a visitor's
  * browser anywhere else.
  */
 export const SCHOOL_TIME_ZONE = 'America/Chicago';
