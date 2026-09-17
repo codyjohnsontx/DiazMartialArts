@@ -245,14 +245,17 @@ marking work complete or CI fails on unformatted files.
   server beside a production server makes every chunk 500 and React never
   runs, so reproduce production-only hydration issues with dev stopped.
 
-- Class times and event days are the gym's, on America/Chicago, and
-  `lib/schoolTime.ts` is the one place that zone and its wall-clock arithmetic
-  live. Anything that reads a day or an hour for the schedule reads it there,
-  never through `getDay`/`getHours`/`setDate` or a formatter with no
-  `timeZone`: the coming-up card runs in the visitor's browser, and it picked
-  classes on the visitor's own clock until that was fixed. `vitest.config.ts`
-  pins the suite to Chicago, where local time and gym time agree, so a test of
-  such a rule proves nothing unless it also runs in another zone;
+- Class times are the gym's, on America/Chicago, and `lib/schoolTime.ts` holds
+  that zone and its wall-clock arithmetic. The coming-up class is computed
+  there: the card runs in the visitor's browser, and it picked classes on the
+  visitor's own clock until that was fixed. New schedule code should read days
+  and hours through it, never through `getDay`/`getHours`/`setDate` or a
+  formatter with no `timeZone`. That is not yet true of everything: timed
+  events on /schedule (`components/ScheduleContent.tsx`) still render their
+  date and time in the visitor's zone, which is tracked as a separate fix.
+  `vitest.config.ts` pins the suite to Chicago, where local time and gym time
+  agree, so a test of such a rule proves nothing unless it also runs in
+  another zone;
   `tests/unit/classScheduleVisitorZone.test.ts` switches `process.env.TZ` at
   runtime and asserts that the switch took effect.
 
