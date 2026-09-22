@@ -49,13 +49,17 @@ const flyers: AnnouncementFlyer[] = [
   {
     id: 'beginner-special',
     src: '/announcements/beginner-special.jpg',
-    alt: 'Beginner special: $130 to get started, gi included.',
+    alt: 'Two students grappling in blue and white gis.',
     title: 'Beginner Special',
     tag: 'BJJ',
     date: 'No end date listed',
     category: 'Promos',
     width: 1200,
     height: 900,
+    priceUsd: 130,
+    includes: ['a jiu jitsu gi', 'two private lessons'],
+    ages: ['Adults, ages 16 and up'],
+    phone: '512-392-4763',
   },
 ];
 
@@ -162,13 +166,72 @@ describe('AnnouncementFlyerGallery', () => {
     expect(within(dialog).getByAltText(flyers[1].alt)).toBeVisible();
   });
 
+  /**
+   * The offer itself - price, what it includes, ages, phone - is page text
+   * under the title, so what a card says depends on the fields the flyer was
+   * transcribed into and on nothing else: a field the flyer does not print is
+   * left off, and the card must then render nothing in its place rather than a
+   * bare label, an empty line or a stray "Includes".
+   */
+  describe('the offer as page text', () => {
+    function card(title: string) {
+      return within(screen.getByRole('heading', { name: title }).closest('article')!);
+    }
+
+    it('renders the price, what it includes, the ages and a callable phone number', () => {
+      render(<AnnouncementFlyerGallery flyers={flyers} />);
+      const special = card('Beginner Special');
+
+      expect(special.getByText('$130')).toBeVisible();
+      expect(special.getByText('Includes a jiu jitsu gi and two private lessons')).toBeVisible();
+      expect(special.getByText('Adults, ages 16 and up')).toBeVisible();
+      const phone = special.getByRole('link', { name: '512-392-4763' });
+      expect(phone).toHaveAttribute('href', 'tel:+15123924763');
+      // The whole offer reads as ordinary text, in order, before the date row.
+      const body = special.getByRole('heading', { name: 'Beginner Special' }).parentElement!;
+      expect(body).toHaveTextContent(
+        /^Beginner Special\$130Includes a jiu jitsu gi and two private lessonsAdults, ages 16 and upCall 512-392-4763No end date listedView/,
+      );
+    });
+
+    it('renders a flyer with no offer fields cleanly, with nothing empty or dangling', () => {
+      render(<AnnouncementFlyerGallery flyers={flyers} />);
+      const closure = card('Holiday Closure');
+
+      expect(closure.queryByText(/\$\d/)).not.toBeInTheDocument();
+      expect(closure.queryByText(/Includes/)).not.toBeInTheDocument();
+      expect(closure.queryByText(/^Call/)).not.toBeInTheDocument();
+      expect(closure.queryByRole('link')).not.toBeInTheDocument();
+      // The title is followed directly by the date row: no empty block between.
+      const heading = closure.getByRole('heading', { name: 'Holiday Closure' });
+      expect(heading.nextElementSibling).toContainElement(closure.getByText('November 26'));
+      const body = heading.parentElement!;
+      expect(body.querySelectorAll('p, li, dd')).toHaveLength(0);
+      expect(body).toHaveTextContent(/^Holiday ClosureNovember 26View/);
+    });
+
+    it('renders a price on its own when that is all the flyer prints', () => {
+      render(
+        <AnnouncementFlyerGallery
+          flyers={[{ ...flyers[0], id: 'seminar', title: 'Seminar', priceUsd: 125, includes: [] }]}
+        />,
+      );
+      const seminar = card('Seminar');
+
+      expect(seminar.getByText('$125')).toBeVisible();
+      expect(seminar.queryByText(/Includes/)).not.toBeInTheDocument();
+      expect(seminar.queryByText(/^Call/)).not.toBeInTheDocument();
+    });
+  });
+
   // The two halves below have to hold together. An `aria-label` wins the
   // accessible name outright and assistive technology presents a button as a
   // single node, so the alt on the nested image is not announced: naming the
-  // control after the flyer without describing it elsewhere silently drops the
-  // offer - the price, what it includes, the ages, the phone number - from the
-  // card, and these flyers ARE the announcement.
-  it('keeps the enlarge control short-named while still describing the offer', () => {
+  // control after the flyer without describing it elsewhere silently drops
+  // the picture's description from the card. The offer itself is page text
+  // now, so the alt describes the image and nothing depends on it carrying
+  // the price.
+  it('keeps the enlarge control short-named while still describing the image', () => {
     render(<AnnouncementFlyerGallery flyers={flyers} />);
 
     for (const flyer of flyers) {

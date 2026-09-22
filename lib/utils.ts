@@ -18,6 +18,14 @@ export function formatPriceUsd(price: number): string {
   }).format(price);
 }
 
+/**
+ * Items as a sentence lists them: `a gi`, `a gi and two lessons`,
+ * `gloves, a gi, and two lessons`. An empty list is an empty string.
+ */
+export function formatList(items: readonly string[]): string {
+  return new Intl.ListFormat('en-US', { style: 'long', type: 'conjunction' }).format(items);
+}
+
 export function formatDateTimeRange(start: Date, end?: Date): string {
   const dateFmt = new Intl.DateTimeFormat('en-US', {
     weekday: 'short',

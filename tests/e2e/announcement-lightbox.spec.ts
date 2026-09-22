@@ -8,12 +8,12 @@ import { waitForHydration } from '../fixtures/hydration';
  * it.
  *
  * This matters more here than the same dialog would elsewhere. On
- * /announcements the flyer IS the announcement - the price, what it includes,
- * the ages, the phone number are printed inside the image and exist nowhere
- * else on the page - so the lightbox is the whole of that content at full
- * size, and a dialog that cannot be closed from the keyboard, or that lets
- * focus wander onto the page behind an opaque scrim, is a barrier rather than
- * a missing unit test.
+ * /announcements the flyer IS the announcement - the card repeats the price,
+ * what it includes, the ages and the phone number as text, but everything
+ * else the flyer prints exists only inside the image - so the lightbox is the
+ * whole of that content at full size, and a dialog that cannot be closed from
+ * the keyboard, or that lets focus wander onto the page behind an opaque
+ * scrim, is a barrier rather than a missing unit test.
  *
  * What was broken when this spec was written, reproduced in a real browser
  * before anything was changed:

@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-import { cn } from '@/lib/utils';
+import { cn, formatList, formatPriceUsd } from '@/lib/utils';
 
 export type FlyerCategory = 'Events' | 'Promos' | 'Testings' | 'Closures';
 
@@ -24,6 +24,23 @@ export type AnnouncementFlyer = {
    */
   width: number;
   height: number;
+  /**
+   * What the flyer prints, as structured fields, so the card can say it as
+   * page text under the title: a phone visitor reads the price without opening
+   * the image, a screen reader gets it as text rather than through the alt,
+   * and a search engine can index it. Each is transcribed from the image and
+   * nothing else, and left off when the flyer does not print it - a missing
+   * field renders nothing, never a placeholder. `alt` then describes the
+   * picture rather than carrying the offer.
+   */
+  /** The price the flyer prints, in US dollars. */
+  priceUsd?: number;
+  /** What that price includes, one item per entry, as the flyer lists them. */
+  includes?: string[];
+  /** The age brackets the flyer prints, one line per entry. */
+  ages?: string[];
+  /** The phone number the flyer prints, as it prints it. */
+  phone?: string;
 };
 
 type AnnouncementFlyerGalleryProps = {
@@ -36,6 +53,42 @@ type AnnouncementFlyerGalleryProps = {
 // empty state, and a feed that carries a single category renders no row at all
 // - every button there would select the whole feed.
 const categoryOrder: FlyerCategory[] = ['Events', 'Promos', 'Testings', 'Closures'];
+
+/**
+ * The flyer's offer as page text: price, what it includes, ages and phone, in
+ * that order, each line present only when the flyer prints it. A flyer that
+ * prints none of them renders no block at all, so nothing sits empty between
+ * the title and the date row.
+ */
+function FlyerDetails({ flyer }: { flyer: AnnouncementFlyer }) {
+  const price = flyer.priceUsd;
+  const includes = flyer.includes?.length ? flyer.includes : null;
+  const ages = flyer.ages?.length ? flyer.ages : null;
+  const phone = flyer.phone?.trim() || null;
+
+  if (price === undefined && !includes && !ages && !phone) return null;
+
+  return (
+    <div className="mt-2 space-y-1 text-xs leading-relaxed text-black/70">
+      {price !== undefined && (
+        <p className="text-sm font-extrabold tabular-nums text-ink">{formatPriceUsd(price)}</p>
+      )}
+      {includes && <p>{`Includes ${formatList(includes)}`}</p>}
+      {ages?.map((line) => <p key={line}>{line}</p>)}
+      {phone && (
+        <p>
+          Call {/* The flyers print a US number; the href is the same digits in E.164. */}
+          <a
+            href={`tel:+1${phone.replace(/\D/g, '')}`}
+            className="font-semibold text-ink underline decoration-black/30 underline-offset-2 hover:text-ember"
+          >
+            {phone}
+          </a>
+        </p>
+      )}
+    </div>
+  );
+}
 
 export function AnnouncementFlyerGallery({ flyers }: AnnouncementFlyerGalleryProps) {
   const [filter, setFilter] = useState<'All' | FlyerCategory>('All');
@@ -236,6 +289,7 @@ export function AnnouncementFlyerGallery({ flyers }: AnnouncementFlyerGalleryPro
                 >
                   {flyer.title}
                 </h3>
+                <FlyerDetails flyer={flyer} />
                 <div className="mt-2 flex items-center justify-between">
                   <span className="text-xs font-semibold text-black/60">{flyer.date}</span>
                   <button

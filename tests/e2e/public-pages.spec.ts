@@ -318,7 +318,7 @@ test.describe('Announcements page details', () => {
     }
   });
 
-  test('every flyer card names its control briefly and still announces the offer', async ({
+  test('every flyer card names its control briefly and still describes the image', async ({
     page,
   }) => {
     await page.goto('/announcements');
@@ -334,14 +334,13 @@ test.describe('Announcements page details', () => {
       const alt = await card.locator('img').first().getAttribute('alt');
       expect(alt, `flyer ${i} renders without alt text`).toBeTruthy();
 
-      // These flyers are the announcement - the offer, the price, what it
-      // includes, the phone number exist only inside the image - so the alt
-      // carries all of it. An aria-label wins the accessible name outright and
-      // assistive technology presents a button as one node, so that alt is not
-      // announced on the card and the description relationship is the only
-      // thing keeping it reachable without opening the lightbox. Read against
-      // the browser's own accessibility tree, which is what actually settles
-      // whether a visually hidden node still announces.
+      // The offer - price, what it includes, ages, phone - is page text under
+      // the title, so the alt describes the picture. An aria-label wins the
+      // accessible name outright and assistive technology presents a button as
+      // one node, so that alt is not announced on the card and the description
+      // relationship is the only thing keeping it reachable without opening the
+      // lightbox. Read against the browser's own accessibility tree, which is
+      // what actually settles whether a visually hidden node still announces.
       await expect(enlarge).toHaveAccessibleName(`Enlarge ${title}`);
       await expect(enlarge).toHaveAccessibleDescription(alt!);
     }
