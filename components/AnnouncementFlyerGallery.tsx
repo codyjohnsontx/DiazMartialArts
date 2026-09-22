@@ -25,23 +25,14 @@ export type AnnouncementFlyer = {
    */
   width: number;
   height: number;
-  /**
-   * What the flyer prints, as structured fields, so the card can say it as
-   * page text under the title: a phone visitor reads the price without opening
-   * the image, a screen reader gets it as text rather than through the alt,
-   * and a search engine can index it. Each is transcribed from the image and
-   * left off when the flyer does not print it - a missing field renders
-   * nothing, never a placeholder. `alt` then describes the picture rather than
-   * carrying the offer.
-   *
-   * The phone number is the one thing not transcribed, because the number on
-   * every flyer so far is the gym line that content/site.ts already owns:
-   * re-typing it here would give the site a second spelling of its own number
-   * and a second rule for building its `tel:` target. `callForAppointment`
-   * says the flyer prints that line, and the card renders site.phone /
-   * site.phoneHref. A flyer printing a DIFFERENT number is not this field -
-   * that one would need its own entry, with a comment saying why.
-   */
+  // The five fields below are what the flyer prints, structured so the card can
+  // say it as page text under the title: a phone visitor reads the price
+  // without opening the image, a screen reader gets it as text rather than
+  // through the alt, and a search engine can index it. Each is transcribed from
+  // the image - `callForAppointment` is the one exception, and says why - and
+  // left off when the flyer does not print it, a missing field rendering
+  // nothing rather than a placeholder. `alt` then describes the picture rather
+  // than carrying the offer.
   /** The price the flyer prints, in US dollars. */
   priceUsd?: number;
   /**
@@ -54,7 +45,17 @@ export type AnnouncementFlyer = {
   includes?: string[];
   /** The age brackets the flyer prints, one line per entry. */
   ages?: string[];
-  /** Set when the flyer prints "call to make an appointment" above the gym line. */
+  /**
+   * Set when the flyer prints "call to make an appointment" above the gym line;
+   * the card then renders site.phone and site.phoneHref.
+   *
+   * The number itself is deliberately not transcribed the way the fields above
+   * are, because the one on every flyer so far is the gym line that
+   * content/site.ts already owns: re-typing it here would give the site a
+   * second spelling of its own number and a second rule for building its `tel:`
+   * target. A flyer printing a DIFFERENT number is not this field - that one
+   * would need its own entry, with a comment saying why.
+   */
   callForAppointment?: boolean;
 };
 
