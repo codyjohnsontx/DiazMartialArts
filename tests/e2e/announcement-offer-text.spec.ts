@@ -37,6 +37,20 @@ import { test, expect } from '@playwright/test';
  * because that pair is the claim: `$60` alone under a kids karate heading
  * reads as a monthly rate, and it is the served HTML a crawler indexes.
  *
+ * Read against the served markup with every `<script>` block removed, because
+ * the document carries a second copy of some of this text that no visitor ever
+ * sees. The flyer feed is a prop of a client component, so Next serialises it
+ * verbatim into the `self.__next_f` flight payload in the same response, and
+ * any pinned line that happens to be a whole prop value is satisfied by that
+ * payload whether or not a card rendered. Measured on this build: the two age
+ * brackets appear twice each - once as `<p>Lil Dragons Karate, ages 4-6</p>`
+ * and once inside `\"ages\":[...]` - while every other line appears once,
+ * because the rest are composed at render time from `formatPriceUsd`,
+ * `formatList` and `CALL_LABEL` rather than passed through. Without the strip,
+ * deleting the age rendering outright would leave this spec green, and so
+ * would the client-side-rendering bailout the spec exists to catch, since the
+ * payload survives it.
+ *
  * One candidate is deliberately absent, because finding it would say nothing
  * about whether the card rendered: the phone number itself now comes from
  * content/site.ts, which the footer renders on every page of the site in the
@@ -72,12 +86,13 @@ test.describe('the announcements offer is served as text', () => {
     const response = await request.get('/announcements');
     expect(response.status()).toBe(200);
     const html = await response.text();
+    const markup = html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
 
     // A bailout serves the root app/loading.tsx shell instead of the page, so
     // say which failure this is when every line below is missing at once.
-    expect(html, '/announcements serves a loading shell rather than the page').toContain('<h1');
+    expect(markup, '/announcements serves a loading shell rather than the page').toContain('<h1');
 
-    const missing = OFFER_LINES.filter((line) => !html.includes(line));
+    const missing = OFFER_LINES.filter((line) => !markup.includes(line));
     expect(missing, 'the served /announcements HTML is missing offer text').toEqual([]);
   });
 });

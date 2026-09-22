@@ -47,10 +47,15 @@ export type AnnouncementFlyer = {
    * when the flyer prints the amount bare, as the Cleber Luciano one does.
    */
   priceNote?: string;
-  /** What that price includes, one item per entry, as the flyer lists them. */
-  includes?: string[];
-  /** The age brackets the flyer prints, one line per entry. */
-  ages?: string[];
+  /**
+   * What that price includes, one item per entry, as the flyer lists them. A
+   * flyer that bundles nothing leaves the field off, which is what the
+   * non-empty shape says: `includes: []` would render the word "Includes" with
+   * nothing after it.
+   */
+  includes?: [string, ...string[]];
+  /** The age brackets the flyer prints, one line per entry, or no field. */
+  ages?: [string, ...string[]];
   /**
    * Set when the flyer prints "call to make an appointment" above the gym line;
    * the card then renders site.phone and site.phoneHref.
