@@ -13,7 +13,7 @@ export function UpcomingEventsSchema({ events }: { events: UpcomingEvent[] }) {
     <script
       type="application/ld+json"
       dangerouslySetInnerHTML={{
-        __html: JSON.stringify(events.map(toEventSchema)),
+        __html: JSON.stringify(events.map(toEventSchema)).replace(/</g, '\\u003c'),
       }}
     />
   );

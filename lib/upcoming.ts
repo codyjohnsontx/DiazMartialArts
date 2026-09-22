@@ -208,7 +208,9 @@ function parseIcs(icsText: string): UpcomingEvent[] {
     const key = paramIdx < 0 ? property : property.slice(0, paramIdx);
     const value = line
       .slice(sepIdx + 1)
-      .replace(/\\n/g, '\n')
+      .replace(/\\([\\;,nN])/g, (_, escaped: string) =>
+        escaped === 'n' || escaped === 'N' ? '\n' : escaped,
+      )
       .trim();
 
     if (key) {
