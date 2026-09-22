@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 import { upcomingItems } from '../../content/upcoming';
-import { isWithinUpcomingWindow, toUpcomingEvent } from '../../lib/upcoming';
+import { isWithinUpcomingWindow, MAX_SHOWN_EVENTS, toUpcomingEvent } from '../../lib/upcoming';
 
 test.describe('Schedule page', () => {
   test.beforeEach(async ({ page }) => {
@@ -49,7 +49,7 @@ test.describe('Schedule page', () => {
     }
 
     await expect(emptyState).toHaveCount(0);
-    for (const item of inWindow.slice(0, 4)) {
+    for (const item of inWindow.slice(0, MAX_SHOWN_EVENTS)) {
       await expect(section.getByText(item.title, { exact: true })).toBeVisible();
     }
   });

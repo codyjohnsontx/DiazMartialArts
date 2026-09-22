@@ -16,7 +16,7 @@ import {
 import { parseClassTimeRange } from '@/lib/classSchedule';
 import { readSchoolClock, SCHOOL_TIME_ZONE } from '@/lib/schoolTime';
 import type { UpcomingEvent } from '@/lib/upcoming';
-import { cn } from '@/lib/utils';
+import { cn, formatPriceUsd } from '@/lib/utils';
 
 const dayShort: Record<WeeklySchedule['day'], string> = {
   Monday: 'Mon',
@@ -68,6 +68,11 @@ function startTime(time: string): string {
 }
 
 type Props = {
+  /**
+   * The events to show, every one of them. The page cuts the list to
+   * MAX_SHOWN_EVENTS before handing it over, and hands the same cut to the
+   * Event markup, so a card and its markup never describe different events.
+   */
   upcoming: UpcomingEvent[];
   /**
    * The forward window the page filtered `upcoming` on, so the eyebrow states the
@@ -78,8 +83,6 @@ type Props = {
    */
   windowDays: number;
 };
-
-const MAX_SHOWN_EVENTS = 4;
 
 const monthShort = [
   'JAN',
@@ -119,6 +122,49 @@ function isSameUtcDay(a: Date, b: Date): boolean {
   );
 }
 
+// A clock time on the gym's wall, split so a range can share one AM/PM. Built
+// from the clock's own hour and minute rather than a locale formatter, whose
+// "7:00 PM" carries a narrow no-break space before the period that a split on
+// ' ' would not find.
+function schoolClockParts(date: Date): { clock: string; period: 'AM' | 'PM' } {
+  const at = readSchoolClock(date.getTime());
+  const hour = at.hour % 12 === 0 ? 12 : at.hour % 12;
+
+  return {
+    clock: `${hour}:${String(at.minute).padStart(2, '0')}`,
+    period: at.hour < 12 ? 'AM' : 'PM',
+  };
+}
+
+function isSameSchoolDay(a: Date, b: Date): boolean {
+  const at = readSchoolClock(a.getTime());
+  const other = readSchoolClock(b.getTime());
+  return at.year === other.year && at.month === other.month && at.day === other.day;
+}
+
+// "7:00 - 9:00 PM" when the end shares the start's period, "11:00 AM - 1:00 PM"
+// when it does not, and the end's date as well when it falls on another day at
+// the gym. An end at or before the start is no range at all: the feed writes an
+// event with no DTEND as ending where it starts, and printing "7:00 - 7:00 PM"
+// for that would read as a mistake.
+function formatTimedRange(start: Date, end?: Date): string {
+  const from = schoolClockParts(start);
+  if (!end || end.getTime() <= start.getTime()) return `${from.clock} ${from.period}`;
+
+  const to = schoolClockParts(end);
+  if (!isSameSchoolDay(start, end)) {
+    const endDay = end.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      timeZone: SCHOOL_TIME_ZONE,
+    });
+    return `${from.clock} ${from.period} - ${endDay}, ${to.clock} ${to.period}`;
+  }
+
+  if (from.period === to.period) return `${from.clock} - ${to.clock} ${to.period}`;
+  return `${from.clock} ${from.period} - ${to.clock} ${to.period}`;
+}
+
 // All-day events carry a date but no clock time, so showing one would mean
 // inventing it. Say when the event runs instead.
 function formatEventTiming(event: UpcomingEvent): string {
@@ -133,12 +179,7 @@ function formatEventTiming(event: UpcomingEvent): string {
     return 'All day';
   }
 
-  return event.start.toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-    timeZone: SCHOOL_TIME_ZONE,
-  });
+  return formatTimedRange(event.start, event.end);
 }
 
 function formatEventLocation(event: UpcomingEvent): string {
@@ -160,7 +201,6 @@ function eventGridLayout(count: number): string {
 export function ScheduleContent({ upcoming, windowDays }: Props) {
   const [activeDay, setActiveDay] = useState<WeeklySchedule['day']>('Monday');
   const dayData = weeklySchedule.find((d) => d.day === activeDay) ?? weeklySchedule[0];
-  const shownEvents = upcoming.slice(0, MAX_SHOWN_EVENTS);
 
   return (
     <>
@@ -350,8 +390,8 @@ export function ScheduleContent({ upcoming, windowDays }: Props) {
               </Button>
             </div>
           ) : (
-            <div className={cn('grid gap-px bg-white/10', eventGridLayout(shownEvents.length))}>
-              {shownEvents.map((e) => {
+            <div className={cn('grid gap-px bg-white/10', eventGridLayout(upcoming.length))}>
+              {upcoming.map((e) => {
                 const m = monthShort[eventMonthIndex(e)];
                 const d = String(eventDayOfMonth(e)).padStart(2, '0');
                 return (
@@ -365,6 +405,16 @@ export function ScheduleContent({ upcoming, windowDays }: Props) {
                     <div className="mt-auto">
                       <h3 className="text-lg font-extrabold tracking-tight">{e.title}</h3>
                       <p className="mt-1.5 text-[13px] text-white/65">{formatEventLocation(e)}</p>
+                      {e.priceUsd !== undefined && (
+                        <p className="mt-2 text-sm font-bold text-gold [font-variant-numeric:tabular-nums]">
+                          {formatPriceUsd(e.priceUsd)}
+                        </p>
+                      )}
+                      {e.notes && (
+                        <p className="mt-2 whitespace-pre-line text-[13px] leading-relaxed text-white/65">
+                          {e.notes}
+                        </p>
+                      )}
                     </div>
                   </div>
                 );

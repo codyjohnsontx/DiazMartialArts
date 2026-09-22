@@ -15,6 +15,8 @@ export type UpcomingEvent = {
   end?: Date;
   location?: string;
   notes?: string;
+  /** The price in US dollars, when one is known. See `UpcomingItem.priceUsd`. */
+  priceUsd?: number;
   /**
    * True when the source gives a date but no clock time, so callers render the
    * date span instead of the midnight that `start` would otherwise imply.
@@ -32,6 +34,13 @@ const DAY_MS = 24 * 60 * 60 * 1000;
  */
 export const UPCOMING_WINDOW_DAYS = 60;
 const MAX_ITEMS = 15;
+
+/**
+ * How many events /schedule shows. The page cuts the list here before handing
+ * it to both the card grid and the Event markup, so the markup describes only
+ * events a reader can see on the page.
+ */
+export const MAX_SHOWN_EVENTS = 4;
 
 function endOfSchoolDay(start: Date): number {
   const at = readSchoolClock(start.getTime());
@@ -219,6 +228,7 @@ export function toUpcomingEvent(item: UpcomingItem): UpcomingEvent {
     end: item.end ? new Date(item.end) : undefined,
     location: item.location,
     notes: item.notes,
+    priceUsd: item.priceUsd,
     allDay: item.allDay,
   };
 }

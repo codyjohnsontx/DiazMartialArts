@@ -1,6 +1,7 @@
 import { ScheduleContent } from '@/components/ScheduleContent';
+import { UpcomingEventsSchema } from '@/components/UpcomingEventsSchema';
 import { pageMetadata } from '@/lib/seo';
-import { getUpcomingEvents, UPCOMING_WINDOW_DAYS } from '@/lib/upcoming';
+import { getUpcomingEvents, MAX_SHOWN_EVENTS, UPCOMING_WINDOW_DAYS } from '@/lib/upcoming';
 
 // The upcoming list is filtered against the current time, so a page frozen at build
 // time keeps announcing an event that is already over until someone redeploys.
@@ -21,5 +22,12 @@ export const metadata = pageMetadata({
 
 export default async function SchedulePage() {
   const { events } = await getUpcomingEvents();
-  return <ScheduleContent upcoming={events} windowDays={UPCOMING_WINDOW_DAYS} />;
+  // Cut once, here, so the cards and the Event markup describe the same events.
+  const shown = events.slice(0, MAX_SHOWN_EVENTS);
+  return (
+    <>
+      <UpcomingEventsSchema events={shown} />
+      <ScheduleContent upcoming={shown} windowDays={UPCOMING_WINDOW_DAYS} />
+    </>
+  );
 }
