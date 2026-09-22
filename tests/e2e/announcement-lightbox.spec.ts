@@ -63,7 +63,7 @@ function focusState(page: Page) {
 }
 
 /**
- * Not the default `waitUntil: 'load'`: this feed puts three flyers through the
+ * Not the default `waitUntil: 'load'`: this feed puts every flyer through the
  * on-request image optimizer, and `load` waits for all of them, which makes the
  * navigation cost the box's rather than the page's. See the note at the top of
  * tests/e2e/home.spec.ts. Hydration is the readiness these tests actually need,
