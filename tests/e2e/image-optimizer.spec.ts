@@ -18,7 +18,7 @@ import { test, expect } from '@playwright/test';
  * event and inherits none of the cold-start exposure that comes with one.
  * Keeping that property is the whole reason this is not simply added to
  * tests/e2e/public-pages.spec.ts, which navigates thirteen times, seven of them
- * to /announcements, whose feed already puts three flyers through this same
+ * to /announcements, whose feed already puts every flyer through this same
  * encoder - adding encoder pressure there would move the flake rather than
  * remove it. For the same reason the assertion does not go back into
  * tests/e2e/home.spec.ts: "does the home page render" and "does the optimizer

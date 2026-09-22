@@ -7,6 +7,7 @@ import {
   toUpcomingEvent,
   UPCOMING_WINDOW_DAYS,
 } from '@/lib/upcoming';
+import { readSchoolClock } from '@/lib/schoolTime';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -83,10 +84,20 @@ describe('content/upcoming.ts staleness guard', () => {
     }
   });
 
+  // Two different midnights matter here, and UTC midnight on its own is neither:
+  // 7:00 PM in Chicago daylight time IS UTC midnight, so a plain modulo on the
+  // instant flagged a real evening event. /schedule prints a timed entry on the
+  // gym's clock, so "12:00 AM" appears only for midnight at the gym; and an entry
+  // written in the all-day form ('...T00:00:00Z') is an all-day date whose flag
+  // was forgotten, which would print the evening before.
   it('flags every midnight-anchored entry as all-day', () => {
-    const untagged = upcomingItems.filter(
-      (item) => !item.allDay && new Date(item.start).getTime() % DAY_MS === 0,
-    );
+    const allDayForm = /T00:00(:00(\.0+)?)?Z$/;
+    const untagged = upcomingItems.filter((item) => {
+      if (item.allDay) return false;
+      const clock = readSchoolClock(new Date(item.start).getTime());
+      const gymMidnight = clock.hour === 0 && clock.minute === 0 && clock.second === 0;
+      return gymMidnight || allDayForm.test(item.start);
+    });
 
     expect(
       untagged.map((item) => `${item.id} (${item.start})`),
