@@ -1,8 +1,8 @@
 import {
   AnnouncementFlyerGallery,
-  NO_END_DATE,
   type AnnouncementFlyer,
 } from '@/components/AnnouncementFlyerGallery';
+import { NO_END_DATE } from '@/content/announcements';
 import { pageMetadata } from '@/lib/seo';
 
 // Every entry below is transcribed from the flyer image it points at. The

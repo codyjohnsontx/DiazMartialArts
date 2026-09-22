@@ -4,9 +4,9 @@ import { describe, expect, it } from 'vitest';
 
 import {
   AnnouncementFlyerGallery,
-  NO_END_DATE,
   type AnnouncementFlyer,
 } from '@/components/AnnouncementFlyerGallery';
+import { NO_END_DATE } from '@/content/announcements';
 import { site } from '@/content/site';
 
 // The live feed is whatever the gym is currently running, and it is routinely a

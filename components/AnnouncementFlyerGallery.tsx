@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
+import { NO_END_DATE } from '@/content/announcements';
 import { site } from '@/content/site';
 import { cn, formatList, formatPriceUsd } from '@/lib/utils';
 
@@ -82,13 +83,6 @@ type AnnouncementFlyerGalleryProps = {
 const categoryOrder: FlyerCategory[] = ['Events', 'Promos', 'Testings', 'Closures'];
 
 const CALL_LABEL = 'Call to make an appointment:';
-
-/**
- * What a flyer's date row says when the flyer prints no start date or expiry.
- * Defined once and imported by the feed, so the one place that has to tell a
- * real date from this placeholder can compare rather than re-spell it.
- */
-export const NO_END_DATE = 'No end date listed';
 
 /**
  * The offer's wording, in one place, because two views render it: the card
