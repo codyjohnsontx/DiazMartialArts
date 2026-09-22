@@ -51,8 +51,10 @@ export function toEventSchema(event: UpcomingEvent): Record<string, unknown> {
     },
   };
 
-  if (event.end) {
-    schema.endDate = event.allDay ? floatingDate(event.end) : formatSchoolIso(event.end.getTime());
+  if (event.allDay && event.end) {
+    schema.endDate = floatingDate(event.end);
+  } else if (event.end && event.end.getTime() > event.start.getTime()) {
+    schema.endDate = formatSchoolIso(event.end.getTime());
   }
 
   if (event.notes) {

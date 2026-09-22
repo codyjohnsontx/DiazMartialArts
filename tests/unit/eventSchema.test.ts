@@ -110,4 +110,10 @@ describe('toEventSchema', () => {
     expect(schema.startDate).toBe('2026-08-26');
     expect(schema.endDate).toBe('2026-08-27');
   });
+
+  it('omits endDate for a timed event that ends where it starts', () => {
+    const schema = toEventSchema({ ...timed, end: timed.start });
+
+    expect(schema).not.toHaveProperty('endDate');
+  });
 });
