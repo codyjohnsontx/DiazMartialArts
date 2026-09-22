@@ -2,7 +2,6 @@ import {
   AnnouncementFlyerGallery,
   type AnnouncementFlyer,
 } from '@/components/AnnouncementFlyerGallery';
-import { Eyebrow } from '@/components/Eyebrow';
 import { pageMetadata } from '@/lib/seo';
 
 // Every entry below is transcribed from the flyer image it points at: the
@@ -78,7 +77,6 @@ export default function AnnouncementsPage() {
       <section className="border-b border-black/10">
         <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
           <div>
-            <Eyebrow>What&apos;s happening</Eyebrow>
             {/*
               ANNOUNCEMENTS is one thirteen-character word with nowhere to
               break, and in Manrope 800 at the `.display` tracking it measures
@@ -109,7 +107,7 @@ export default function AnnouncementsPage() {
               assertions in tests/e2e/public-pages.spec.ts match unchanged.
               That spec owns the regression guard.
             */}
-            <h1 className="display mt-5 text-5xl sm:text-7xl lg:text-[80px]">Announce&shy;ments</h1>
+            <h1 className="display text-5xl sm:text-7xl lg:text-[80px]">Announce&shy;ments</h1>
           </div>
         </div>
       </section>
