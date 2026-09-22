@@ -4,7 +4,9 @@ import Image from 'next/image';
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-import { cn } from '@/lib/utils';
+import { NO_END_DATE } from '@/content/announcements';
+import { site } from '@/content/site';
+import { cn, formatList, formatPriceUsd } from '@/lib/utils';
 
 export type FlyerCategory = 'Events' | 'Promos' | 'Testings' | 'Closures';
 
@@ -14,6 +16,12 @@ export type AnnouncementFlyer = {
   alt: string;
   title: string;
   tag: string;
+  /**
+   * When the flyer runs, as the card's date row prints it. A promo that names
+   * no expiry says `NO_END_DATE`, which is a statement that there is nothing to
+   * report rather than a date, and the lightbox description leaves it out on
+   * exactly that ground.
+   */
   date: string;
   category: FlyerCategory;
   /**
@@ -24,6 +32,43 @@ export type AnnouncementFlyer = {
    */
   width: number;
   height: number;
+  // The five fields below are what the flyer prints, structured so the card can
+  // say it as page text under the title: a phone visitor reads the price
+  // without opening the image, a screen reader gets it as text rather than
+  // through the alt, and a search engine can index it. Each is transcribed from
+  // the image - `callForAppointment` is the one exception, and says why - and
+  // left off when the flyer does not print it, a missing field rendering
+  // nothing rather than a placeholder. `alt` then describes the picture rather
+  // than carrying the offer.
+  /** The price the flyer prints, in US dollars. */
+  priceUsd?: number;
+  /**
+   * The words the flyer prints beside that price - "to get started", "to get
+   * them started" - so the amount does not read as a monthly rate. Left off
+   * when the flyer prints the amount bare, as the Cleber Luciano one does.
+   */
+  priceNote?: string;
+  /**
+   * What that price includes, one item per entry, as the flyer lists them. A
+   * flyer that bundles nothing leaves the field off, which is what the
+   * non-empty shape says: `includes: []` would render the word "Includes" with
+   * nothing after it.
+   */
+  includes?: [string, ...string[]];
+  /** The age brackets the flyer prints, one line per entry, or no field. */
+  ages?: [string, ...string[]];
+  /**
+   * Set when the flyer prints "call to make an appointment" above the gym line;
+   * the card then renders site.phone and site.phoneHref.
+   *
+   * The number itself is deliberately not transcribed the way the fields above
+   * are, because the one on every flyer so far is the gym line that
+   * content/site.ts already owns: re-typing it here would give the site a
+   * second spelling of its own number and a second rule for building its `tel:`
+   * target. A flyer printing a DIFFERENT number is not this field - that one
+   * would need its own entry, with a comment saying why.
+   */
+  callForAppointment?: boolean;
 };
 
 type AnnouncementFlyerGalleryProps = {
@@ -36,6 +81,79 @@ type AnnouncementFlyerGalleryProps = {
 // empty state, and a feed that carries a single category renders no row at all
 // - every button there would select the whole feed.
 const categoryOrder: FlyerCategory[] = ['Events', 'Promos', 'Testings', 'Closures'];
+
+const CALL_LABEL = 'Call to make an appointment:';
+
+/**
+ * The offer's wording, in one place, because two views render it: the card
+ * below the title and the lightbox's accessible description. The label and the
+ * number are kept apart so the card can wrap the number in a `tel:` link while
+ * the description says the same words as plain text.
+ */
+function offerParts(flyer: AnnouncementFlyer) {
+  const { priceUsd, priceNote, includes, ages, callForAppointment } = flyer;
+  const amount = priceUsd === undefined ? null : formatPriceUsd(priceUsd);
+
+  return {
+    price: amount && priceNote ? `${amount} ${priceNote}` : amount,
+    details: [...(includes ? [`Includes ${formatList(includes)}`] : []), ...(ages ?? [])],
+    call: callForAppointment ? CALL_LABEL : null,
+  };
+}
+
+/**
+ * Everything the card says about a flyer except its title, as one string for
+ * the lightbox to name as its description, in the order the card says it. The
+ * dialog is `aria-modal`, so while it is open the card that carries this text
+ * is outside the accessibility tree and the flyer's `alt` describes the
+ * picture rather than the offer - which would leave a screen-reader user in
+ * the enlarged view of an image of text with none of that text. The date is
+ * here because a dated seminar's day is the actionable fact on it, and it is
+ * dropped when it is only `NO_END_DATE`, which states no fact to carry.
+ *
+ * Empty when the flyer says none of it, which is what keeps the dialog from
+ * carrying a description element with nothing in it.
+ */
+function flyerOfferDescription(flyer: AnnouncementFlyer): string {
+  const { price, details, call } = offerParts(flyer);
+  const date = flyer.date === NO_END_DATE ? null : flyer.date;
+
+  return [price, ...details, call && `${call} ${site.phone}`, date]
+    .filter((line): line is string => Boolean(line))
+    .join('. ');
+}
+
+/**
+ * The flyer's offer as page text: price, what it includes, ages and the phone
+ * line, in that order, each present only when the flyer prints it. A flyer
+ * that prints none of them renders no block at all, so nothing sits empty
+ * between the title and the date row.
+ */
+function FlyerDetails({ flyer }: { flyer: AnnouncementFlyer }) {
+  const { price, details, call } = offerParts(flyer);
+
+  if (!price && details.length === 0 && !call) return null;
+
+  return (
+    <div className="mt-2 space-y-1 text-xs leading-relaxed text-black/70">
+      {price && <p className="text-sm font-extrabold tabular-nums text-ink">{price}</p>}
+      {details.map((line) => (
+        <p key={line}>{line}</p>
+      ))}
+      {call && (
+        <p>
+          {`${call} `}
+          <a
+            href={site.phoneHref}
+            className="font-semibold text-ink underline decoration-black/30 underline-offset-2 hover:text-ember"
+          >
+            {site.phone}
+          </a>
+        </p>
+      )}
+    </div>
+  );
+}
 
 export function AnnouncementFlyerGallery({ flyers }: AnnouncementFlyerGalleryProps) {
   const [filter, setFilter] = useState<'All' | FlyerCategory>('All');
@@ -55,6 +173,7 @@ export function AnnouncementFlyerGallery({ flyers }: AnnouncementFlyerGalleryPro
   );
 
   const activeFlyer = flyers.find((flyer) => flyer.id === activeId);
+  const offerDescription = activeFlyer ? flyerOfferDescription(activeFlyer) : '';
 
   function openFlyer(id: string) {
     restoreFocusRef.current =
@@ -236,6 +355,7 @@ export function AnnouncementFlyerGallery({ flyers }: AnnouncementFlyerGalleryPro
                 >
                   {flyer.title}
                 </h3>
+                <FlyerDetails flyer={flyer} />
                 <div className="mt-2 flex items-center justify-between">
                   <span className="text-xs font-semibold text-black/60">{flyer.date}</span>
                   <button
@@ -302,6 +422,7 @@ export function AnnouncementFlyerGallery({ flyers }: AnnouncementFlyerGalleryPro
             role="dialog"
             aria-modal="true"
             aria-label={activeFlyer.title}
+            aria-describedby={offerDescription ? `${activeFlyer.id}-offer` : undefined}
             // Keeps a click on the flyer inside the dialog subtree - without it
             // that click drops focus to <body>, outside the modal context
             // `aria-modal` promises. The keys are handled on the document above.
@@ -326,6 +447,11 @@ export function AnnouncementFlyerGallery({ flyers }: AnnouncementFlyerGalleryPro
               className="max-h-full w-auto max-w-full rounded-lg bg-white object-contain shadow-[0_30px_90px_rgba(0,0,0,0.45)]"
               onClick={(event) => event.stopPropagation()}
             />
+            {offerDescription && (
+              <p id={`${activeFlyer.id}-offer`} className="sr-only">
+                {offerDescription}
+              </p>
+            )}
           </div>,
           document.body,
         )}

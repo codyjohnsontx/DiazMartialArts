@@ -2,58 +2,86 @@ import {
   AnnouncementFlyerGallery,
   type AnnouncementFlyer,
 } from '@/components/AnnouncementFlyerGallery';
+import { NO_END_DATE } from '@/content/announcements';
 import { pageMetadata } from '@/lib/seo';
 
-// Every entry below is transcribed from the flyer image it points at: the
-// price, what that price includes, and the ages, times or contact details the
-// flyer prints. Only the Cleber Luciano flyer prints a date; the three specials
-// carry no start date or expiry, so none is claimed for them - `date` says so
-// rather than guessing a run. A dated flyer retires once its day has passed,
-// together with its entry in content/upcoming.ts.
+// Every entry below is transcribed from the flyer image it points at. The
+// price, the words printed beside it, what it includes and the ages go in the
+// structured fields (`priceUsd`, `priceNote`, `includes`, `ages`), which the
+// card renders as page text under the title; a field is left off when the
+// flyer does not print it. The phone number is the exception and is NOT
+// transcribed: every flyer that prints one prints the gym line, which
+// content/site.ts owns, so `callForAppointment` says the flyer prints it and
+// the card renders that single source. A flyer printing a different number
+// would need its own explicit entry and a comment saying why.
+// `alt` describes the picture, since the offer no longer has to travel through
+// it. Only the Cleber Luciano flyer prints a date; the three specials carry no
+// start date or expiry, so none is claimed for them - `NO_END_DATE` says so
+// rather than guessing a run.
+//
+// A dated flyer retires once its day has passed, and three places move with
+// it: its entry here, its entry in content/upcoming.ts, and the lines it
+// contributes to OFFER_LINES in tests/e2e/announcement-offer-text.spec.ts,
+// which pins this page's served HTML and is in the `test:smoke` list. That
+// spec transcribes each live flyer's own copy on purpose, so retiring a flyer
+// without it fails the smoke run on a correct change.
 const flyers: AnnouncementFlyer[] = [
   {
     id: 'cleber-luciano-2026-10-08',
     src: '/announcements/cleber-luciano-2026-10-08.jpg',
-    alt: 'Master Cleber Luciano. Date: Thursday, October 8. Place: Diaz Martial Arts. Time: 7 to 9 PM. Cost: $125.',
+    alt: 'Black and white portrait of Master Cleber Luciano standing in a white gi, his name in tall capitals across the top.',
     title: 'Master Cleber Luciano',
-    tag: '$125',
+    tag: 'BJJ',
     date: 'Thursday, October 8, 2026 - 7-9 PM',
     category: 'Events',
     width: 1650,
     height: 1275,
+    priceUsd: 125,
   },
   {
     id: 'back-to-school-special',
     src: '/announcements/back-to-school-special.jpeg',
-    alt: 'Back to School special: $60 to start a child at Diaz Martial Arts, including uniform and belt. Lil Dragons Karate for ages 4 to 6, Karate Kids for ages 7 to 11. The flyer prints no end date.',
+    alt: 'Cartoon flyer on notebook paper: a green dragon and two children in white karate uniforms, a backpack, and Back to School in big blue and red letters.',
     title: 'Back to School Special',
     tag: 'Kids',
-    date: 'No end date listed',
+    date: NO_END_DATE,
     category: 'Promos',
     width: 1247,
     height: 1600,
+    priceUsd: 60,
+    priceNote: 'to get them started',
+    includes: ['uniform', 'belt'],
+    ages: ['Lil Dragons Karate, ages 4-6', 'Karate Kids, ages 7-11'],
   },
   {
     id: 'jiu-jitsu-special',
     src: '/announcements/jiu-jitsu-special.jpeg',
-    alt: 'Jiu Jitsu special: $130 to get started at Diaz Martial Arts, including a jiu jitsu gi and two private lessons. Call 512-392-4763 to make an appointment. The flyer prints no end date.',
+    alt: 'Two students grappling on the mat in blue and white gis, with Jiu Jitsu Special in white and blue brush lettering.',
     title: 'Jiu Jitsu Special',
     tag: 'BJJ',
-    date: 'No end date listed',
+    date: NO_END_DATE,
     category: 'Promos',
     width: 1024,
     height: 1536,
+    priceUsd: 130,
+    priceNote: 'to get started',
+    includes: ['a jiu jitsu gi', 'two private lessons'],
+    callForAppointment: true,
   },
   {
     id: 'muay-thai-special',
     src: '/announcements/muay-thai-special.jpeg',
-    alt: 'Muay Thai special: $60 to get started at Diaz Martial Arts, including 16 ounce gloves and two private lessons. Call 512-392-4763 to make an appointment. The flyer prints no end date.',
+    alt: 'A fighter in black gloves and Muay Thai shorts throwing a punch at the camera, with Muay Thai Special in white and red brush lettering.',
     title: 'Muay Thai Special',
     tag: 'Muay Thai',
-    date: 'No end date listed',
+    date: NO_END_DATE,
     category: 'Promos',
     width: 1024,
     height: 1536,
+    priceUsd: 60,
+    priceNote: 'to get started',
+    includes: ['16 oz gloves', 'two private lessons'],
+    callForAppointment: true,
   },
 ];
 
