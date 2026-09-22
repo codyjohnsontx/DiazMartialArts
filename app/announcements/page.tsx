@@ -5,11 +5,16 @@ import {
 import { pageMetadata } from '@/lib/seo';
 
 // Every entry below is transcribed from the flyer image it points at. The
-// price, what it includes, the ages and the phone number go in the structured
-// fields (`priceUsd`, `includes`, `ages`, `phone`), which the card renders as
-// page text under the title; a field is left off when the flyer does not print
-// it, never filled from elsewhere. `alt` describes the picture, since the offer
-// no longer has to travel through it. Only the Cleber Luciano flyer prints a
+// price, the words printed beside it, what it includes and the ages go in the
+// structured fields (`priceUsd`, `priceNote`, `includes`, `ages`), which the
+// card renders as page text under the title; a field is left off when the
+// flyer does not print it. The phone number is the exception and is NOT
+// transcribed: every flyer that prints one prints the gym line, which
+// content/site.ts owns, so `callForAppointment` says the flyer prints it and
+// the card renders that single source. A flyer printing a different number
+// would need its own explicit entry and a comment saying why.
+// `alt` describes the picture, since the offer no longer has to travel through
+// it. Only the Cleber Luciano flyer prints a
 // date; the three specials carry no start date or expiry, so none is claimed
 // for them - `date` says so rather than guessing a run. A dated flyer retires
 // once its day has passed, together with its entry in content/upcoming.ts.
@@ -37,6 +42,7 @@ const flyers: AnnouncementFlyer[] = [
     width: 1247,
     height: 1600,
     priceUsd: 60,
+    priceNote: 'to get them started',
     includes: ['uniform', 'belt'],
     ages: ['Lil Dragons Karate, ages 4-6', 'Karate Kids, ages 7-11'],
   },
@@ -51,8 +57,9 @@ const flyers: AnnouncementFlyer[] = [
     width: 1024,
     height: 1536,
     priceUsd: 130,
+    priceNote: 'to get started',
     includes: ['a jiu jitsu gi', 'two private lessons'],
-    phone: '512-392-4763',
+    callForAppointment: true,
   },
   {
     id: 'muay-thai-special',
@@ -65,8 +72,9 @@ const flyers: AnnouncementFlyer[] = [
     width: 1024,
     height: 1536,
     priceUsd: 60,
+    priceNote: 'to get started',
     includes: ['16 oz gloves', 'two private lessons'],
-    phone: '512-392-4763',
+    callForAppointment: true,
   },
 ];
 

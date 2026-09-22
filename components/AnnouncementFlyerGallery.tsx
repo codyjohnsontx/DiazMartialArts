@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
+import { site } from '@/content/site';
 import { cn, formatList, formatPriceUsd } from '@/lib/utils';
 
 export type FlyerCategory = 'Events' | 'Promos' | 'Testings' | 'Closures';
@@ -29,18 +30,32 @@ export type AnnouncementFlyer = {
    * page text under the title: a phone visitor reads the price without opening
    * the image, a screen reader gets it as text rather than through the alt,
    * and a search engine can index it. Each is transcribed from the image and
-   * nothing else, and left off when the flyer does not print it - a missing
-   * field renders nothing, never a placeholder. `alt` then describes the
-   * picture rather than carrying the offer.
+   * left off when the flyer does not print it - a missing field renders
+   * nothing, never a placeholder. `alt` then describes the picture rather than
+   * carrying the offer.
+   *
+   * The phone number is the one thing not transcribed, because the number on
+   * every flyer so far is the gym line that content/site.ts already owns:
+   * re-typing it here would give the site a second spelling of its own number
+   * and a second rule for building its `tel:` target. `callForAppointment`
+   * says the flyer prints that line, and the card renders site.phone /
+   * site.phoneHref. A flyer printing a DIFFERENT number is not this field -
+   * that one would need its own entry, with a comment saying why.
    */
   /** The price the flyer prints, in US dollars. */
   priceUsd?: number;
+  /**
+   * The words the flyer prints beside that price - "to get started", "to get
+   * them started" - so the amount does not read as a monthly rate. Left off
+   * when the flyer prints the amount bare, as the Cleber Luciano one does.
+   */
+  priceNote?: string;
   /** What that price includes, one item per entry, as the flyer lists them. */
   includes?: string[];
   /** The age brackets the flyer prints, one line per entry. */
   ages?: string[];
-  /** The phone number the flyer prints, as it prints it. */
-  phone?: string;
+  /** Set when the flyer prints "call to make an appointment" above the gym line. */
+  callForAppointment?: boolean;
 };
 
 type AnnouncementFlyerGalleryProps = {
@@ -55,34 +70,35 @@ type AnnouncementFlyerGalleryProps = {
 const categoryOrder: FlyerCategory[] = ['Events', 'Promos', 'Testings', 'Closures'];
 
 /**
- * The flyer's offer as page text: price, what it includes, ages and phone, in
- * that order, each line present only when the flyer prints it. A flyer that
- * prints none of them renders no block at all, so nothing sits empty between
- * the title and the date row.
+ * The flyer's offer as page text: price, what it includes, ages and the phone
+ * line, in that order, each present only when the flyer prints it. A flyer
+ * that prints none of them renders no block at all, so nothing sits empty
+ * between the title and the date row.
  */
 function FlyerDetails({ flyer }: { flyer: AnnouncementFlyer }) {
-  const price = flyer.priceUsd;
-  const includes = flyer.includes?.length ? flyer.includes : null;
-  const ages = flyer.ages?.length ? flyer.ages : null;
-  const phone = flyer.phone?.trim() || null;
+  const { priceUsd, priceNote, includes, ages, callForAppointment } = flyer;
 
-  if (price === undefined && !includes && !ages && !phone) return null;
+  if (priceUsd === undefined && !includes && !ages && !callForAppointment) return null;
+
+  const price = priceUsd === undefined ? null : formatPriceUsd(priceUsd);
 
   return (
     <div className="mt-2 space-y-1 text-xs leading-relaxed text-black/70">
-      {price !== undefined && (
-        <p className="text-sm font-extrabold tabular-nums text-ink">{formatPriceUsd(price)}</p>
+      {price && (
+        <p className="text-sm font-extrabold tabular-nums text-ink">
+          {priceNote ? `${price} ${priceNote}` : price}
+        </p>
       )}
       {includes && <p>{`Includes ${formatList(includes)}`}</p>}
       {ages?.map((line) => <p key={line}>{line}</p>)}
-      {phone && (
+      {callForAppointment && (
         <p>
-          Call {/* The flyers print a US number; the href is the same digits in E.164. */}
+          {'Call to make an appointment: '}
           <a
-            href={`tel:+1${phone.replace(/\D/g, '')}`}
+            href={site.phoneHref}
             className="font-semibold text-ink underline decoration-black/30 underline-offset-2 hover:text-ember"
           >
-            {phone}
+            {site.phone}
           </a>
         </p>
       )}

@@ -33,29 +33,35 @@ import { test, expect } from '@playwright/test';
  * image, and a guard that re-read the page's own source would pass any silent
  * loss or reword of it.
  *
- * Two lines are deliberately absent, because finding them would say nothing
- * about whether the card rendered: `$125`, which the Cleber Luciano card also
- * prints as its `tag` badge, and a bare `href="tel:+15123924763"`, which the
- * footer puts on every page of the site. The phone is checked as the anchor's
- * own text instead - the footer spells the same number `(512) 392-4763`, so
- * only the card can satisfy it, and matching it closed against `</a>` is what
- * makes it a dialable link rather than a loose run of digits. Both were
- * measured: with the offer fields removed from app/announcements/page.tsx, the
- * raw `href` line passed on the served HTML of the very page this guards.
+ * Each amount is pinned together with the words the flyer prints beside it,
+ * because that pair is the claim: `$60` alone under a kids karate heading
+ * reads as a monthly rate, and it is the served HTML a crawler indexes.
+ *
+ * Two candidates are deliberately absent, because finding them would say
+ * nothing about whether the card rendered. `$125` is also the Cleber Luciano
+ * card's `tag` badge. And the phone number itself now comes from
+ * content/site.ts, which the footer renders on every page of the site in the
+ * same spelling and behind the same `tel:` href - so neither the number nor
+ * its link can distinguish this card from the footer below it, and what is
+ * pinned is the line's own words instead. That was measured rather than
+ * assumed: with the offer fields removed from app/announcements/page.tsx, a
+ * raw `href="tel:+15123924763"` assertion passed on the served HTML of the
+ * very page this guards.
  */
 const OFFER_LINES = [
-  // Back to School Special
-  '$60',
+  // Back to School Special: "SPECIAL! $60 TO GET THEM STARTED!"
+  '$60 to get them started',
   'Includes uniform and belt',
   'Lil Dragons Karate, ages 4-6',
   'Karate Kids, ages 7-11',
-  // Jiu Jitsu Special
-  '$130',
+  // Jiu Jitsu Special: "ONLY $130 TO GET STARTED!"
+  '$130 to get started',
   'Includes a jiu jitsu gi and two private lessons',
-  // Muay Thai Special
+  // Muay Thai Special: "$60 TO GET STARTED!"
+  '$60 to get started',
   'Includes 16 oz gloves and two private lessons',
-  // Both specials print the gym's number, and the card makes it dialable.
-  '>512-392-4763</a>',
+  // Both specials print "CALL TO MAKE AN APPOINTMENT" above the gym's number.
+  'Call to make an appointment:',
 ];
 
 test.describe('the announcements offer is served as text', () => {

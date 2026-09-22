@@ -6,6 +6,7 @@ import {
   AnnouncementFlyerGallery,
   type AnnouncementFlyer,
 } from '@/components/AnnouncementFlyerGallery';
+import { site } from '@/content/site';
 
 // The live feed is whatever the gym is currently running, and it is routinely a
 // single category - tests/e2e/public-pages.spec.ts can then only walk one filter
@@ -57,9 +58,10 @@ const flyers: AnnouncementFlyer[] = [
     width: 1200,
     height: 900,
     priceUsd: 130,
+    priceNote: 'to get started',
     includes: ['a jiu jitsu gi', 'two private lessons'],
     ages: ['Adults, ages 16 and up'],
-    phone: '512-392-4763',
+    callForAppointment: true,
   },
 ];
 
@@ -167,30 +169,38 @@ describe('AnnouncementFlyerGallery', () => {
   });
 
   /**
-   * The offer itself - price, what it includes, ages, phone - is page text
-   * under the title, so what a card says depends on the fields the flyer was
-   * transcribed into and on nothing else: a field the flyer does not print is
-   * left off, and the card must then render nothing in its place rather than a
-   * bare label, an empty line or a stray "Includes".
+   * The offer itself - price, what it includes, ages, the phone line - is page
+   * text under the title, so what a card says depends on the fields the flyer
+   * was transcribed into: a field the flyer does not print is left off, and
+   * the card must then render nothing in its place rather than a bare label,
+   * an empty line or a stray "Includes". The number is the one value not
+   * transcribed - it comes from content/site.ts, so the card cannot spell the
+   * gym's own line differently from the footer or dial a different target.
    */
   describe('the offer as page text', () => {
     function card(title: string) {
       return within(screen.getByRole('heading', { name: title }).closest('article')!);
     }
 
-    it('renders the price, what it includes, the ages and a callable phone number', () => {
+    it('renders the qualified price, what it includes, the ages and a callable phone number', () => {
       render(<AnnouncementFlyerGallery flyers={flyers} />);
       const special = card('Beginner Special');
 
-      expect(special.getByText('$130')).toBeVisible();
+      // The amount never stands alone when the flyer qualifies it: "$130" on
+      // its own reads as a monthly rate for a martial arts class, and the alt
+      // text that used to carry "to get started" now describes the picture.
+      expect(special.getByText('$130 to get started')).toBeVisible();
+      expect(special.queryByText('$130')).not.toBeInTheDocument();
       expect(special.getByText('Includes a jiu jitsu gi and two private lessons')).toBeVisible();
       expect(special.getByText('Adults, ages 16 and up')).toBeVisible();
-      const phone = special.getByRole('link', { name: '512-392-4763' });
-      expect(phone).toHaveAttribute('href', 'tel:+15123924763');
+      const phone = special.getByRole('link', { name: site.phone });
+      expect(phone).toHaveAttribute('href', site.phoneHref);
       // The whole offer reads as ordinary text, in order, before the date row.
       const body = special.getByRole('heading', { name: 'Beginner Special' }).parentElement!;
       expect(body).toHaveTextContent(
-        /^Beginner Special\$130Includes a jiu jitsu gi and two private lessonsAdults, ages 16 and upCall 512-392-4763No end date listedView/,
+        new RegExp(
+          `^Beginner Special\\$130 to get startedIncludes a jiu jitsu gi and two private lessonsAdults, ages 16 and upCall to make an appointment: ${site.phone.replace(/[()]/g, '\\$&')}No end date listedView`,
+        ),
       );
     });
 
@@ -210,15 +220,19 @@ describe('AnnouncementFlyerGallery', () => {
       expect(body).toHaveTextContent(/^Holiday ClosureNovember 26View/);
     });
 
-    it('renders a price on its own when that is all the flyer prints', () => {
+    // The shape the live Cleber Luciano flyer has: it prints "Cost: $125" and
+    // no qualifier, so the amount is the whole fee and the line must not grow
+    // wording the image does not carry - nor a trailing space where the note
+    // would have been.
+    it('renders the price bare when the flyer prints no words beside it', () => {
       render(
         <AnnouncementFlyerGallery
-          flyers={[{ ...flyers[0], id: 'seminar', title: 'Seminar', priceUsd: 125, includes: [] }]}
+          flyers={[{ ...flyers[0], id: 'seminar', title: 'Seminar', priceUsd: 125 }]}
         />,
       );
       const seminar = card('Seminar');
 
-      expect(seminar.getByText('$125')).toBeVisible();
+      expect(seminar.getByText('$125', { exact: true })).toBeVisible();
       expect(seminar.queryByText(/Includes/)).not.toBeInTheDocument();
       expect(seminar.queryByText(/^Call/)).not.toBeInTheDocument();
     });
