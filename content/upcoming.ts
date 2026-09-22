@@ -62,11 +62,18 @@ export type UpcomingItem = {
 // day after, and stays listed until that day is over at the gym, while a timed
 // entry with an `end` finishes at that exact time.
 //
-// CLEARED 2026-08-28. The last entry - "Stripe Testing (White Stripe)",
-// 26-27 August 2026, taken from the August panel of the July 2026 events
-// calendar flyer - had finished, so it no longer reached the page and the
-// staleness guard went red. The owner checked /announcements the same day: the
-// three flyers published there print no dates at all, so there was nothing to
-// replace it with and the empty state is the honest answer. The list simply
-// waits here for the next flyer that prints a date.
-export const upcomingItems: UpcomingItem[] = [];
+// Current entry: taken from the Master Cleber Luciano flyer on /announcements
+// (public/announcements/cleber-luciano-2026-10-08.jpg), which prints Thursday
+// October 8th, 7 - 9 PM, at Diaz Martial Arts, cost $125. The flyer prints no
+// year; the file it arrived as was named for October 8th 2026, which is a
+// Thursday. 8 October is daylight saving time at the gym, hence -05:00.
+export const upcomingItems: UpcomingItem[] = [
+  {
+    id: 'cleber-luciano-2026-10-08',
+    title: 'Master Cleber Luciano',
+    start: '2026-10-08T19:00:00-05:00',
+    end: '2026-10-08T21:00:00-05:00',
+    location: 'Diaz Martial Arts',
+    notes: 'Cost: $125',
+  },
+];

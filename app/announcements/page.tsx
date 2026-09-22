@@ -6,10 +6,23 @@ import { Eyebrow } from '@/components/Eyebrow';
 import { pageMetadata } from '@/lib/seo';
 
 // Every entry below is transcribed from the flyer image it points at: the
-// price, what that price includes, and the ages or contact details the flyer
-// prints. None of the three carries a start date or an expiry, so none is
-// claimed here - `date` says so rather than guessing a run.
+// price, what that price includes, and the ages, times or contact details the
+// flyer prints. Only the Cleber Luciano flyer prints a date; the three specials
+// carry no start date or expiry, so none is claimed for them - `date` says so
+// rather than guessing a run. A dated flyer retires once its day has passed,
+// together with its entry in content/upcoming.ts.
 const flyers: AnnouncementFlyer[] = [
+  {
+    id: 'cleber-luciano-2026-10-08',
+    src: '/announcements/cleber-luciano-2026-10-08.jpg',
+    alt: 'Master Cleber Luciano. Date: Thursday, October 8. Place: Diaz Martial Arts. Time: 7 to 9 PM. Cost: $125.',
+    title: 'Master Cleber Luciano',
+    tag: '$125',
+    date: 'Thursday, October 8, 2026 - 7-9 PM',
+    category: 'Events',
+    width: 1650,
+    height: 1275,
+  },
   {
     id: 'back-to-school-special',
     src: '/announcements/back-to-school-special.jpeg',
