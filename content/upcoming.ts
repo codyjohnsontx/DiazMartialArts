@@ -17,6 +17,14 @@ export type UpcomingItem = {
   location?: string;
   notes?: string;
   /**
+   * What the event costs, in US dollars, when the flyer prints a price. The card
+   * renders this and the Event markup on /schedule emits it as an Offer, from
+   * this one field, so what a reader sees and what a search engine reads cannot
+   * drift. Leave it off when no price is printed - a price in `notes` is text a
+   * machine cannot read, so it belongs here instead.
+   */
+  priceUsd?: number;
+  /**
    * True when the source flyer gives a date but no clock time. The card then
    * shows the date span instead of a time, rather than implying midnight.
    *
@@ -74,6 +82,6 @@ export const upcomingItems: UpcomingItem[] = [
     start: '2026-10-08T19:00:00-05:00',
     end: '2026-10-08T21:00:00-05:00',
     location: 'Diaz Martial Arts',
-    notes: 'Cost: $125',
+    priceUsd: 125,
   },
 ];

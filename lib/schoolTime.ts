@@ -70,6 +70,27 @@ export function readSchoolClock(instant: number) {
   return readClock(SCHOOL_TIME_ZONE, instant);
 }
 
+/**
+ * An instant written as ISO 8601 on the gym's clock, with the offset the gym
+ * was on: `2026-10-08T19:00:00-05:00`. This is the form schema.org Event
+ * dates take. `toISOString` would write the same instant as `...T00:00:00Z`,
+ * which is correct but reads as midnight, and a consumer that shows the local
+ * time from it needs to know the venue's zone to get back to 7:00 PM.
+ */
+export function formatSchoolIso(instant: number): string {
+  const at = readSchoolClock(instant);
+  const offsetMinutes = Math.round(offsetAt(SCHOOL_TIME_ZONE, instant) / 60_000);
+  const sign = offsetMinutes < 0 ? '-' : '+';
+  const magnitude = Math.abs(offsetMinutes);
+  const pad = (value: number) => String(value).padStart(2, '0');
+
+  return (
+    `${at.year}-${pad(at.month)}-${pad(at.day)}` +
+    `T${pad(at.hour)}:${pad(at.minute)}:${pad(at.second)}` +
+    `${sign}${pad(Math.floor(magnitude / 60))}:${pad(magnitude % 60)}`
+  );
+}
+
 // How far a zone sits from UTC at a given instant, read off the zone itself
 // rather than hard-coded, so it follows the zone's own rules.
 function offsetAt(timeZone: string, instant: number): number {

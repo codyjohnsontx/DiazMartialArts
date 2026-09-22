@@ -253,8 +253,9 @@ marking work complete or CI fails on unformatted files.
   and hours through it, never through `getDay`/`getHours`/`setDate` or a
   formatter with no `timeZone`. Timed events on /schedule
   (`components/ScheduleContent.tsx`) read the same way, through
-  `readSchoolClock` for their calendar day and `SCHOOL_TIME_ZONE` on the
-  `toLocaleTimeString` call for their clock time.
+  `readSchoolClock` for their calendar day and clock time, and the Event
+  markup writes their instants through `formatSchoolIso` so the emitted
+  `startDate` carries the gym's offset rather than a `Z`.
   `vitest.config.ts` pins the suite to Chicago, where local time and gym time
   agree, so a test of such a rule proves nothing unless it also runs in
   another zone;

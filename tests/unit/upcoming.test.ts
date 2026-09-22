@@ -371,6 +371,29 @@ describe('getUpcomingEvents', () => {
     });
   });
 
+  it('un-escapes RFC 5545 text escapes in feed values', async () => {
+    process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL = 'https://calendar.example/feed.ics';
+    const ics = [
+      'BEGIN:VCALENDAR',
+      'BEGIN:VEVENT',
+      'UID:escaped',
+      'SUMMARY:Open Mat\\, Gi\\; No-Gi',
+      'DTSTART:20260520T180000Z',
+      'DESCRIPTION:Bring a gi\\, belt\\Nand water\\\\n',
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ].join('\r\n');
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, text: async () => ics }));
+    const { getUpcomingEvents } = await loadUpcoming();
+
+    const result = await getUpcomingEvents();
+
+    expect(result.events[0]).toMatchObject({
+      title: 'Open Mat, Gi; No-Gi',
+      notes: 'Bring a gi, belt\nand water\\n',
+    });
+  });
+
   it('falls back when the ICS request is not OK', async () => {
     process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL = 'https://calendar.example/feed.ics';
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false }));

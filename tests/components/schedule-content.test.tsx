@@ -96,6 +96,58 @@ describe('ScheduleContent', () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
+  it('emits Event markup for the events it shows, priced from the same field', async () => {
+    // Renders /schedule itself with a pinned list, so this reads the markup the
+    // page really emits next to the card it really renders. The list is mocked
+    // and the clock frozen so the guard does not age out with the shipped
+    // content, and the second entry is past MAX_SHOWN_EVENTS's reach only if
+    // the cut is wrong - it should appear in both places or neither.
+    vi.resetModules();
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-01T12:00:00-05:00'));
+    vi.stubEnv('NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL', '');
+    vi.stubGlobal('fetch', vi.fn());
+    vi.doMock('@/content/upcoming', () => ({
+      upcomingItems: [
+        {
+          id: 'seminar',
+          title: 'Master Cleber Luciano',
+          start: '2026-10-08T19:00:00-05:00',
+          end: '2026-10-08T21:00:00-05:00',
+          location: 'Diaz Martial Arts',
+          priceUsd: 125,
+        },
+        {
+          id: 'open-mat',
+          title: 'Free Open Mat',
+          start: '2026-10-10T10:00:00-05:00',
+        },
+      ],
+    }));
+
+    try {
+      const { default: FreshSchedulePage } = await import('@/app/schedule/page');
+      const { container } = render(await FreshSchedulePage());
+
+      const script = container.querySelector('script[type="application/ld+json"]');
+      expect(script).not.toBeNull();
+      const events = JSON.parse(script?.textContent ?? '[]') as Array<Record<string, unknown>>;
+
+      expect(events.map((event) => event.name)).toEqual(['Master Cleber Luciano', 'Free Open Mat']);
+      expect(events[0].startDate).toBe('2026-10-08T19:00:00-05:00');
+      expect(events[0].endDate).toBe('2026-10-08T21:00:00-05:00');
+      expect(events[0].offers).toEqual({ '@type': 'Offer', price: 125, priceCurrency: 'USD' });
+      expect(events[1]).not.toHaveProperty('offers');
+
+      // The visible price and the Offer's price are the one field, read twice.
+      expect(screen.getByText('$125')).toBeVisible();
+      expect(screen.getByText('Diaz Martial Arts · 7:00 - 9:00 PM')).toBeVisible();
+    } finally {
+      vi.doUnmock('@/content/upcoming');
+      vi.useRealTimers();
+    }
+  });
+
   it('tracks the event grid columns to the number of events', () => {
     // The cards are divided by the grid background showing through 1px gaps, so a
     // column with no card in it renders as an empty grey panel.
@@ -132,6 +184,113 @@ describe('ScheduleContent', () => {
     expect(screen.getByText(/^Main Mat · \d{1,2}:\d{2} (AM|PM)$/)).toBeVisible();
   });
 
+  describe('a timed event with an end', () => {
+    // The Cleber Luciano flyer printed 7 - 9 PM and the card showed 7:00 PM
+    // alone, so a parent could not tell how long it ran without opening the
+    // flyer.
+    it('shows the range, sharing one AM/PM when both ends have the same', () => {
+      render(
+        <ScheduleContent
+          upcoming={[
+            {
+              id: 'seminar',
+              title: 'Master Cleber Luciano',
+              start: new Date('2026-10-08T19:00:00-05:00'),
+              end: new Date('2026-10-08T21:00:00-05:00'),
+              location: 'Diaz Martial Arts',
+            },
+          ]}
+          windowDays={WINDOW_DAYS}
+        />,
+      );
+
+      expect(screen.getByText('Diaz Martial Arts · 7:00 - 9:00 PM')).toBeVisible();
+    });
+
+    it('spells both periods out when the range crosses noon', () => {
+      render(
+        <ScheduleContent
+          upcoming={[
+            {
+              id: 'open-mat',
+              title: 'Open Mat',
+              start: new Date('2026-10-10T11:00:00-05:00'),
+              end: new Date('2026-10-10T13:00:00-05:00'),
+            },
+          ]}
+          windowDays={WINDOW_DAYS}
+        />,
+      );
+
+      expect(screen.getByText('11:00 AM - 1:00 PM')).toBeVisible();
+    });
+
+    it('shows the start alone when the end is where it starts', () => {
+      // The feed writes an event with no DTEND as ending at its start; that is
+      // not a range and must not print as "7:00 - 7:00 PM".
+      render(
+        <ScheduleContent
+          upcoming={[
+            {
+              id: 'no-end',
+              title: 'Open Mat',
+              start: new Date('2026-10-10T19:00:00-05:00'),
+              end: new Date('2026-10-10T19:00:00-05:00'),
+            },
+          ]}
+          windowDays={WINDOW_DAYS}
+        />,
+      );
+
+      expect(screen.getByText('7:00 PM')).toBeVisible();
+    });
+
+    it('names the day the event ends when it is not the day it starts', () => {
+      render(
+        <ScheduleContent
+          upcoming={[
+            {
+              id: 'overnight',
+              title: 'Lock-In',
+              start: new Date('2026-10-10T19:00:00-05:00'),
+              end: new Date('2026-10-11T08:00:00-05:00'),
+            },
+          ]}
+          windowDays={WINDOW_DAYS}
+        />,
+      );
+
+      expect(screen.getByText('7:00 PM - Oct 11, 8:00 AM')).toBeVisible();
+    });
+  });
+
+  it('shows the price from the structured field, and the notes', () => {
+    render(
+      <ScheduleContent
+        upcoming={[
+          {
+            id: 'seminar',
+            title: 'Master Cleber Luciano',
+            start: new Date('2026-10-08T19:00:00-05:00'),
+            end: new Date('2026-10-08T21:00:00-05:00'),
+            priceUsd: 125,
+            notes: 'Bring a gi.',
+          },
+        ]}
+        windowDays={WINDOW_DAYS}
+      />,
+    );
+
+    expect(screen.getByText('$125')).toBeVisible();
+    expect(screen.getByText('Bring a gi.')).toBeVisible();
+  });
+
+  it('prints no price line for an event with no known price', () => {
+    render(<ScheduleContent upcoming={upcoming} windowDays={WINDOW_DAYS} />);
+
+    expect(screen.queryByText(/^\$/)).toBeNull();
+  });
+
   describe("a timed event's date and time, for a visitor outside the gym's zone", () => {
     // vitest.config.ts pins TZ to America/Chicago, the gym's own zone, so a rule
     // reading local accessors and a rule reading the gym's zone agree there and a
@@ -147,7 +306,9 @@ describe('ScheduleContent', () => {
       process.env.TZ = 'Asia/Tokyo';
       expect(Intl.DateTimeFormat().resolvedOptions().timeZone).toBe('Asia/Tokyo');
 
-      // 7:00 PM CDT on June 20 is 9:00 AM the next day, June 21, in Tokyo.
+      // 7:00 PM CDT on June 20 is 9:00 AM the next day, June 21, in Tokyo, and
+      // 9:00 PM is 11:00 AM there. An end read on the visitor's clock would also
+      // land on a different day from its start and print that day's name.
       render(
         <ScheduleContent
           upcoming={[
@@ -155,6 +316,7 @@ describe('ScheduleContent', () => {
               id: 'evening-class',
               title: 'Evening Open Mat',
               start: new Date('2026-06-20T19:00:00-05:00'),
+              end: new Date('2026-06-20T21:00:00-05:00'),
               location: 'Main Mat',
             },
           ]}
@@ -164,9 +326,9 @@ describe('ScheduleContent', () => {
 
       expect(screen.getByText('JUN')).toBeVisible();
       expect(screen.getByText('20')).toBeVisible();
-      expect(screen.getByText('Main Mat · 7:00 PM')).toBeVisible();
+      expect(screen.getByText('Main Mat · 7:00 - 9:00 PM')).toBeVisible();
       expect(screen.queryByText('21')).toBeNull();
-      expect(screen.queryByText('Main Mat · 9:00 AM')).toBeNull();
+      expect(screen.queryByText(/9:00 AM/)).toBeNull();
     });
   });
 
