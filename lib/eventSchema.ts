@@ -10,14 +10,35 @@ function floatingDate(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
 
+function eventPlace(location: string | undefined): Record<string, unknown> {
+  const venue = location?.trim();
+  if (venue && venue.toLowerCase() !== site.name.trim().toLowerCase()) {
+    return { '@type': 'Place', name: venue };
+  }
+
+  return {
+    '@type': 'Place',
+    name: site.name,
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: site.address.street,
+      addressLocality: site.address.city,
+      addressRegion: site.address.state,
+      postalCode: site.address.zip,
+      addressCountry: site.address.country,
+    },
+  };
+}
+
 /**
  * One upcoming event as schema.org Event markup, built from the same
  * `UpcomingEvent` the card renders so the two cannot disagree. A timed event's
  * dates carry the gym's offset (`2026-10-08T19:00:00-05:00`) rather than the
  * `Z` form, because a listing shows the venue's local time and the offset is
- * what tells it which that is. The location is always the gym's own Place:
- * every event here happens at the gym, and `event.location` is free text such
- * as "Main Mat" that names a spot inside it, not a different address.
+ * what tells it which that is. The location is the gym's own Place with its
+ * address unless `event.location` names somewhere else, in which case the
+ * Place carries that name alone: the markup must not put an off-site event at
+ * the gym's address, and a free-text venue gives no address to state.
  *
  * `offers` is emitted only from `priceUsd`, never parsed out of `notes`: a
  * price a reader can see but a machine cannot read is the failure mode
@@ -32,18 +53,7 @@ export function toEventSchema(event: UpcomingEvent): Record<string, unknown> {
     startDate: event.allDay ? floatingDate(event.start) : formatSchoolIso(event.start.getTime()),
     eventStatus: 'https://schema.org/EventScheduled',
     eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-    location: {
-      '@type': 'Place',
-      name: site.name,
-      address: {
-        '@type': 'PostalAddress',
-        streetAddress: site.address.street,
-        addressLocality: site.address.city,
-        addressRegion: site.address.state,
-        postalCode: site.address.zip,
-        addressCountry: site.address.country,
-      },
-    },
+    location: eventPlace(event.location),
     organizer: {
       '@type': 'Organization',
       name: site.name,

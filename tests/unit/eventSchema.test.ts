@@ -68,6 +68,19 @@ describe('toEventSchema', () => {
     });
   });
 
+  it('keeps the gym Place when the location names the gym in other casing or spacing', () => {
+    const schema = toEventSchema({ ...timed, location: '  diaz MARTIAL arts ' });
+
+    expect(schema.location).toMatchObject({ '@type': 'Place', name: site.name });
+    expect(schema.location).toHaveProperty('address.streetAddress', site.address.street);
+  });
+
+  it('names an off-site venue without giving it the gym address', () => {
+    const schema = toEventSchema({ ...timed, location: 'Austin Convention Center' });
+
+    expect(schema.location).toEqual({ '@type': 'Place', name: 'Austin Convention Center' });
+  });
+
   it('emits an Offer in US dollars from the structured price', () => {
     const schema = toEventSchema(timed);
 
