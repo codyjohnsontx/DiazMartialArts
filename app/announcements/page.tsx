@@ -1,5 +1,6 @@
 import {
   AnnouncementFlyerGallery,
+  NO_END_DATE,
   type AnnouncementFlyer,
 } from '@/components/AnnouncementFlyerGallery';
 import { pageMetadata } from '@/lib/seo';
@@ -14,10 +15,16 @@ import { pageMetadata } from '@/lib/seo';
 // the card renders that single source. A flyer printing a different number
 // would need its own explicit entry and a comment saying why.
 // `alt` describes the picture, since the offer no longer has to travel through
-// it. Only the Cleber Luciano flyer prints a
-// date; the three specials carry no start date or expiry, so none is claimed
-// for them - `date` says so rather than guessing a run. A dated flyer retires
-// once its day has passed, together with its entry in content/upcoming.ts.
+// it. Only the Cleber Luciano flyer prints a date; the three specials carry no
+// start date or expiry, so none is claimed for them - `NO_END_DATE` says so
+// rather than guessing a run.
+//
+// A dated flyer retires once its day has passed, and three places move with
+// it: its entry here, its entry in content/upcoming.ts, and the lines it
+// contributes to OFFER_LINES in tests/e2e/announcement-offer-text.spec.ts,
+// which pins this page's served HTML and is in the `test:smoke` list. That
+// spec transcribes each live flyer's own copy on purpose, so retiring a flyer
+// without it fails the smoke run on a correct change.
 const flyers: AnnouncementFlyer[] = [
   {
     id: 'cleber-luciano-2026-10-08',
@@ -37,7 +44,7 @@ const flyers: AnnouncementFlyer[] = [
     alt: 'Cartoon flyer on notebook paper: a green dragon and two children in white karate uniforms, a backpack, and Back to School in big blue and red letters.',
     title: 'Back to School Special',
     tag: 'Kids',
-    date: 'No end date listed',
+    date: NO_END_DATE,
     category: 'Promos',
     width: 1247,
     height: 1600,
@@ -52,7 +59,7 @@ const flyers: AnnouncementFlyer[] = [
     alt: 'Two students grappling on the mat in blue and white gis, with Jiu Jitsu Special in white and blue brush lettering.',
     title: 'Jiu Jitsu Special',
     tag: 'BJJ',
-    date: 'No end date listed',
+    date: NO_END_DATE,
     category: 'Promos',
     width: 1024,
     height: 1536,
@@ -67,7 +74,7 @@ const flyers: AnnouncementFlyer[] = [
     alt: 'A fighter in black gloves and Muay Thai shorts throwing a punch at the camera, with Muay Thai Special in white and red brush lettering.',
     title: 'Muay Thai Special',
     tag: 'Muay Thai',
-    date: 'No end date listed',
+    date: NO_END_DATE,
     category: 'Promos',
     width: 1024,
     height: 1536,

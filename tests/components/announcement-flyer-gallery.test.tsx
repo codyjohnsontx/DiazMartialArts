@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   AnnouncementFlyerGallery,
+  NO_END_DATE,
   type AnnouncementFlyer,
 } from '@/components/AnnouncementFlyerGallery';
 import { site } from '@/content/site';
@@ -42,7 +43,7 @@ const flyers: AnnouncementFlyer[] = [
     alt: 'Summer special: $60 to get started.',
     title: 'Summer Special',
     tag: 'Karate',
-    date: 'No end date listed',
+    date: NO_END_DATE,
     category: 'Promos',
     width: 1200,
     height: 900,
@@ -53,7 +54,7 @@ const flyers: AnnouncementFlyer[] = [
     alt: 'Two students grappling in blue and white gis.',
     title: 'Beginner Special',
     tag: 'BJJ',
-    date: 'No end date listed',
+    date: NO_END_DATE,
     category: 'Promos',
     width: 1200,
     height: 900,
@@ -166,10 +167,6 @@ describe('AnnouncementFlyerGallery', () => {
     const dialog = screen.getByRole('dialog');
     expect(dialog).toHaveAttribute('aria-label', 'Open Mat Night');
     expect(within(dialog).getByAltText(flyers[1].alt)).toBeVisible();
-    // This flyer prints no offer, so the dialog carries no description at all
-    // rather than an empty element for a screen reader to stop on.
-    expect(dialog).not.toHaveAttribute('aria-describedby');
-    expect(dialog).toHaveAccessibleDescription('');
   });
 
   /**
@@ -190,9 +187,35 @@ describe('AnnouncementFlyerGallery', () => {
 
     const dialog = screen.getByRole('dialog');
     expect(dialog).toHaveAccessibleName('Beginner Special');
+    // This flyer names no expiry, and "No end date listed" states no fact, so
+    // the description carries the offer and stops there.
     expect(dialog).toHaveAccessibleDescription(
       `$130 to get started. Includes a jiu jitsu gi and two private lessons. Adults, ages 16 and up. Call to make an appointment: ${site.phone}`,
     );
+  });
+
+  /**
+   * A dated flyer's day is the one actionable fact on it, and the date row that
+   * carries it on the card is behind the modal like the rest of the card. The
+   * live Cleber Luciano seminar is this shape: a real date, and before this
+   * change its alt spelled the date, place, time and cost out.
+   */
+  it('carries a real date into the enlarged view, and the no-expiry placeholder not at all', async () => {
+    const user = userEvent.setup();
+    const dated = { ...flyers[3], id: 'seminar', title: 'Seminar', date: 'Thursday, October 8' };
+    render(<AnnouncementFlyerGallery flyers={[dated, flyers[2]]} />);
+
+    await user.click(screen.getByRole('button', { name: 'Enlarge Seminar' }));
+    expect(screen.getByRole('dialog')).toHaveAccessibleDescription(/Thursday, October 8$/);
+
+    await user.keyboard('{Escape}');
+    await user.click(screen.getByRole('button', { name: 'Enlarge Summer Special' }));
+
+    // Nothing to say and no date worth saying: no description element at all,
+    // rather than an empty one for a screen reader to stop on.
+    const undated = screen.getByRole('dialog');
+    expect(undated).not.toHaveAttribute('aria-describedby');
+    expect(undated).toHaveAccessibleDescription('');
   });
 
   /**

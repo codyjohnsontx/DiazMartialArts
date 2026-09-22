@@ -15,6 +15,12 @@ export type AnnouncementFlyer = {
   alt: string;
   title: string;
   tag: string;
+  /**
+   * When the flyer runs, as the card's date row prints it. A promo that names
+   * no expiry says `NO_END_DATE`, which is a statement that there is nothing to
+   * report rather than a date, and the lightbox description leaves it out on
+   * exactly that ground.
+   */
   date: string;
   category: FlyerCategory;
   /**
@@ -73,6 +79,13 @@ const categoryOrder: FlyerCategory[] = ['Events', 'Promos', 'Testings', 'Closure
 const CALL_LABEL = 'Call to make an appointment:';
 
 /**
+ * What a flyer's date row says when the flyer prints no start date or expiry.
+ * Defined once and imported by the feed, so the one place that has to tell a
+ * real date from this placeholder can compare rather than re-spell it.
+ */
+export const NO_END_DATE = 'No end date listed';
+
+/**
  * The offer's wording, in one place, because two views render it: the card
  * below the title and the lightbox's accessible description. The label and the
  * number are kept apart so the card can wrap the number in a `tel:` link while
@@ -90,18 +103,23 @@ function offerParts(flyer: AnnouncementFlyer) {
 }
 
 /**
- * The same offer as one string, for the lightbox to name as its description.
- * The dialog is `aria-modal`, so while it is open the card that carries this
- * text is outside the accessibility tree and the flyer's `alt` describes the
+ * Everything the card says about a flyer except its title, as one string for
+ * the lightbox to name as its description, in the order the card says it. The
+ * dialog is `aria-modal`, so while it is open the card that carries this text
+ * is outside the accessibility tree and the flyer's `alt` describes the
  * picture rather than the offer - which would leave a screen-reader user in
- * the enlarged view of an image of text with none of that text. Empty when the
- * flyer prints none of it, which is what keeps the dialog from carrying a
- * description element with nothing in it.
+ * the enlarged view of an image of text with none of that text. The date is
+ * here because a dated seminar's day is the actionable fact on it, and it is
+ * dropped when it is only `NO_END_DATE`, which states no fact to carry.
+ *
+ * Empty when the flyer says none of it, which is what keeps the dialog from
+ * carrying a description element with nothing in it.
  */
 function flyerOfferDescription(flyer: AnnouncementFlyer): string {
   const { price, details, call } = offerParts(flyer);
+  const date = flyer.date === NO_END_DATE ? null : flyer.date;
 
-  return [price, ...details, call && `${call} ${site.phone}`]
+  return [price, ...details, call && `${call} ${site.phone}`, date]
     .filter((line): line is string => Boolean(line))
     .join('. ');
 }
