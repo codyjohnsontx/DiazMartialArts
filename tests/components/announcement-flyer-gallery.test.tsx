@@ -166,6 +166,33 @@ describe('AnnouncementFlyerGallery', () => {
     const dialog = screen.getByRole('dialog');
     expect(dialog).toHaveAttribute('aria-label', 'Open Mat Night');
     expect(within(dialog).getByAltText(flyers[1].alt)).toBeVisible();
+    // This flyer prints no offer, so the dialog carries no description at all
+    // rather than an empty element for a screen reader to stop on.
+    expect(dialog).not.toHaveAttribute('aria-describedby');
+    expect(dialog).toHaveAccessibleDescription('');
+  });
+
+  /**
+   * The lightbox is `aria-modal="true"`, so while it is open the card behind it
+   * - offer text and all - is outside the accessibility tree, and the flyer's
+   * `alt` describes the picture rather than the offer. Without a description on
+   * the dialog itself a screen-reader user reaches the full-size view of an
+   * image of text and is told only what the photograph looks like: the price,
+   * what it includes, the ages and the phone line are unreachable until they
+   * close it. Read through the accessibility tree rather than off the DOM,
+   * because that is the thing under test - the words are present either way.
+   */
+  it('describes the enlarged flyer with the same offer the card shows', async () => {
+    const user = userEvent.setup();
+    render(<AnnouncementFlyerGallery flyers={flyers} />);
+
+    await user.click(screen.getByRole('button', { name: 'Enlarge Beginner Special' }));
+
+    const dialog = screen.getByRole('dialog');
+    expect(dialog).toHaveAccessibleName('Beginner Special');
+    expect(dialog).toHaveAccessibleDescription(
+      `$130 to get started. Includes a jiu jitsu gi and two private lessons. Adults, ages 16 and up. Call to make an appointment: ${site.phone}`,
+    );
   });
 
   /**

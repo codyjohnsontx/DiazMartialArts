@@ -24,7 +24,7 @@ const flyers: AnnouncementFlyer[] = [
     src: '/announcements/cleber-luciano-2026-10-08.jpg',
     alt: 'Black and white portrait of Master Cleber Luciano standing in a white gi, his name in tall capitals across the top.',
     title: 'Master Cleber Luciano',
-    tag: '$125',
+    tag: 'BJJ',
     date: 'Thursday, October 8, 2026 - 7-9 PM',
     category: 'Events',
     width: 1650,

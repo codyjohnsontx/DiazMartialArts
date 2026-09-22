@@ -37,9 +37,8 @@ import { test, expect } from '@playwright/test';
  * because that pair is the claim: `$60` alone under a kids karate heading
  * reads as a monthly rate, and it is the served HTML a crawler indexes.
  *
- * Two candidates are deliberately absent, because finding them would say
- * nothing about whether the card rendered. `$125` is also the Cleber Luciano
- * card's `tag` badge. And the phone number itself now comes from
+ * One candidate is deliberately absent, because finding it would say nothing
+ * about whether the card rendered: the phone number itself now comes from
  * content/site.ts, which the footer renders on every page of the site in the
  * same spelling and behind the same `tel:` href - so neither the number nor
  * its link can distinguish this card from the footer below it, and what is
@@ -49,6 +48,8 @@ import { test, expect } from '@playwright/test';
  * very page this guards.
  */
 const OFFER_LINES = [
+  // Master Cleber Luciano: "Cost: $125", the whole fee, with no qualifier.
+  '$125',
   // Back to School Special: "SPECIAL! $60 TO GET THEM STARTED!"
   '$60 to get them started',
   'Includes uniform and belt',

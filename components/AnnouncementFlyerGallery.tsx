@@ -70,6 +70,42 @@ type AnnouncementFlyerGalleryProps = {
 // - every button there would select the whole feed.
 const categoryOrder: FlyerCategory[] = ['Events', 'Promos', 'Testings', 'Closures'];
 
+const CALL_LABEL = 'Call to make an appointment:';
+
+/**
+ * The offer's wording, in one place, because two views render it: the card
+ * below the title and the lightbox's accessible description. The label and the
+ * number are kept apart so the card can wrap the number in a `tel:` link while
+ * the description says the same words as plain text.
+ */
+function offerParts(flyer: AnnouncementFlyer) {
+  const { priceUsd, priceNote, includes, ages, callForAppointment } = flyer;
+  const amount = priceUsd === undefined ? null : formatPriceUsd(priceUsd);
+
+  return {
+    price: amount && priceNote ? `${amount} ${priceNote}` : amount,
+    details: [...(includes ? [`Includes ${formatList(includes)}`] : []), ...(ages ?? [])],
+    call: callForAppointment ? CALL_LABEL : null,
+  };
+}
+
+/**
+ * The same offer as one string, for the lightbox to name as its description.
+ * The dialog is `aria-modal`, so while it is open the card that carries this
+ * text is outside the accessibility tree and the flyer's `alt` describes the
+ * picture rather than the offer - which would leave a screen-reader user in
+ * the enlarged view of an image of text with none of that text. Empty when the
+ * flyer prints none of it, which is what keeps the dialog from carrying a
+ * description element with nothing in it.
+ */
+function flyerOfferDescription(flyer: AnnouncementFlyer): string {
+  const { price, details, call } = offerParts(flyer);
+
+  return [price, ...details, call && `${call} ${site.phone}`]
+    .filter((line): line is string => Boolean(line))
+    .join('. ');
+}
+
 /**
  * The flyer's offer as page text: price, what it includes, ages and the phone
  * line, in that order, each present only when the flyer prints it. A flyer
@@ -77,24 +113,19 @@ const categoryOrder: FlyerCategory[] = ['Events', 'Promos', 'Testings', 'Closure
  * between the title and the date row.
  */
 function FlyerDetails({ flyer }: { flyer: AnnouncementFlyer }) {
-  const { priceUsd, priceNote, includes, ages, callForAppointment } = flyer;
+  const { price, details, call } = offerParts(flyer);
 
-  if (priceUsd === undefined && !includes && !ages && !callForAppointment) return null;
-
-  const price = priceUsd === undefined ? null : formatPriceUsd(priceUsd);
+  if (!price && details.length === 0 && !call) return null;
 
   return (
     <div className="mt-2 space-y-1 text-xs leading-relaxed text-black/70">
-      {price && (
-        <p className="text-sm font-extrabold tabular-nums text-ink">
-          {priceNote ? `${price} ${priceNote}` : price}
-        </p>
-      )}
-      {includes && <p>{`Includes ${formatList(includes)}`}</p>}
-      {ages?.map((line) => <p key={line}>{line}</p>)}
-      {callForAppointment && (
+      {price && <p className="text-sm font-extrabold tabular-nums text-ink">{price}</p>}
+      {details.map((line) => (
+        <p key={line}>{line}</p>
+      ))}
+      {call && (
         <p>
-          {'Call to make an appointment: '}
+          {`${call} `}
           <a
             href={site.phoneHref}
             className="font-semibold text-ink underline decoration-black/30 underline-offset-2 hover:text-ember"
@@ -125,6 +156,7 @@ export function AnnouncementFlyerGallery({ flyers }: AnnouncementFlyerGalleryPro
   );
 
   const activeFlyer = flyers.find((flyer) => flyer.id === activeId);
+  const offerDescription = activeFlyer ? flyerOfferDescription(activeFlyer) : '';
 
   function openFlyer(id: string) {
     restoreFocusRef.current =
@@ -373,6 +405,7 @@ export function AnnouncementFlyerGallery({ flyers }: AnnouncementFlyerGalleryPro
             role="dialog"
             aria-modal="true"
             aria-label={activeFlyer.title}
+            aria-describedby={offerDescription ? `${activeFlyer.id}-offer` : undefined}
             // Keeps a click on the flyer inside the dialog subtree - without it
             // that click drops focus to <body>, outside the modal context
             // `aria-modal` promises. The keys are handled on the document above.
@@ -397,6 +430,11 @@ export function AnnouncementFlyerGallery({ flyers }: AnnouncementFlyerGalleryPro
               className="max-h-full w-auto max-w-full rounded-lg bg-white object-contain shadow-[0_30px_90px_rgba(0,0,0,0.45)]"
               onClick={(event) => event.stopPropagation()}
             />
+            {offerDescription && (
+              <p id={`${activeFlyer.id}-offer`} className="sr-only">
+                {offerDescription}
+              </p>
+            )}
           </div>,
           document.body,
         )}
