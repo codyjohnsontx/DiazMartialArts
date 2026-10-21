@@ -30,8 +30,8 @@ export const site = {
     country: 'US',
   },
   geo: {
-    latitude: '29.8833',
-    longitude: '-97.9414',
+    latitude: '29.83668',
+    longitude: '-97.94376',
   },
   serviceArea: ['San Marcos', 'Kyle', 'Buda', 'New Braunfels'],
   socials: {
