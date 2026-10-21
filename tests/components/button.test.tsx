@@ -21,6 +21,9 @@ describe('Button', () => {
         <Button href="/schedule" variant="outline-light">
           View Schedule
         </Button>
+        <Button href="/contact" variant="ghost-light">
+          Contact
+        </Button>
       </>,
     );
 
@@ -31,6 +34,12 @@ describe('Button', () => {
     // 50% is the border opacity that clears 3:1 over the hero photo
     expect(screen.getByRole('link', { name: 'View Schedule' })).toHaveClass(
       'border-white/50',
+      'focus-visible:outline-white',
+    );
+
+    // 35% is the smallest scale step whose border clears 3:1 over bg-ink
+    expect(screen.getByRole('link', { name: 'Contact' })).toHaveClass(
+      'border-white/35',
       'focus-visible:outline-white',
     );
   });
