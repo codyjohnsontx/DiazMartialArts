@@ -197,8 +197,8 @@ describe('AnnouncementFlyerGallery', () => {
   /**
    * A dated flyer's day is the one actionable fact on it, and the date row that
    * carries it on the card is behind the modal like the rest of the card. The
-   * live Cleber Luciano seminar is this shape: a real date, and before this
-   * change its alt spelled the date, place, time and cost out.
+   * retired Cleber Luciano seminar was this shape: a real date, and its alt
+   * once spelled the date, place, time and cost out.
    */
   it('carries a real date into the enlarged view, and the no-expiry placeholder not at all', async () => {
     const user = userEvent.setup();
@@ -270,8 +270,8 @@ describe('AnnouncementFlyerGallery', () => {
       expect(body).toHaveTextContent(/^Holiday ClosureNovember 26View/);
     });
 
-    // The shape the live Cleber Luciano flyer has: it prints "Cost: $125" and
-    // no qualifier, so the amount is the whole fee and the line must not grow
+    // The shape the retired Cleber Luciano flyer had: it printed "Cost: $125"
+    // and no qualifier, so the amount is the whole fee and the line must not grow
     // wording the image does not carry - nor a trailing space where the note
     // would have been.
     it('renders the price bare when the flyer prints no words beside it', () => {

@@ -62,8 +62,6 @@ import { test, expect } from '@playwright/test';
  * very page this guards.
  */
 const OFFER_LINES = [
-  // Master Cleber Luciano: "Cost: $125", the whole fee, with no qualifier.
-  '$125',
   // Back to School Special: "SPECIAL! $60 TO GET THEM STARTED!"
   '$60 to get them started',
   'Includes uniform and belt',
