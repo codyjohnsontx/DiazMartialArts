@@ -104,9 +104,6 @@ read it before editing the list.
 
 Environment variables:
 
-- `NEXT_PUBLIC_GOOGLE_CALENDAR_EMBED_URL`
-  - Optional. Validated in `lib/env.ts`, but no page renders an embedded
-    calendar today; `/schedule` links out to `/announcements` instead.
 - `NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL` (optional)
   - Public ICS URL used to fetch upcoming events.
   - If missing or unavailable, the site falls back to `content/upcoming.ts`.

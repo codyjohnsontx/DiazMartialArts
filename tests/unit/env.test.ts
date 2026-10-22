@@ -14,7 +14,6 @@ function resetProcessEnv() {
   };
   delete process.env.NEXT_PUBLIC_SITE_URL;
   delete process.env.NEXT_PUBLIC_ONDEMAND_URL;
-  delete process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_EMBED_URL;
   delete process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL;
   delete process.env.NEXT_PUBLIC_FORMSPREE_ENDPOINT;
   delete process.env.ONDEMAND_COMING_SOON;
