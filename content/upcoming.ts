@@ -70,18 +70,6 @@ export type UpcomingItem = {
 // day after, and stays listed until that day is over at the gym, while a timed
 // entry with an `end` finishes at that exact time.
 //
-// Current entry: taken from the Master Cleber Luciano flyer on /announcements
-// (public/announcements/cleber-luciano-2026-10-08.jpg), which prints Thursday
-// October 8th, 7 - 9 PM, at Diaz Martial Arts, cost $125. The flyer prints no
-// year; the file it arrived as was named for October 8th 2026, which is a
-// Thursday. 8 October is daylight saving time at the gym, hence -05:00.
-export const upcomingItems: UpcomingItem[] = [
-  {
-    id: 'cleber-luciano-2026-10-08',
-    title: 'Master Cleber Luciano',
-    start: '2026-10-08T19:00:00-05:00',
-    end: '2026-10-08T21:00:00-05:00',
-    location: 'Diaz Martial Arts',
-    priceUsd: 125,
-  },
-];
+// Currently empty: the last entry, the Master Cleber Luciano event on
+// 8 October 2026, has ended. Add the next events here as their flyers arrive.
+export const upcomingItems: UpcomingItem[] = [];

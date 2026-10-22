@@ -63,7 +63,7 @@ Environment validation notes:
 
 ## Editable Content Files
 
-All primary content is in `content/`:
+Most editable content is in `content/`:
 
 - `content/site.ts`
 - `content/programs.ts`
@@ -71,6 +71,11 @@ All primary content is in `content/`:
 - `content/faq.ts`
 - `content/schedule.ts`
 - `content/upcoming.ts` (fallback list)
+
+Announcement flyers are the exception: each flyer's entry is authored in the
+`flyers` list in `app/announcements/page.tsx`, and its image lives in
+`public/announcements/`. The comment above that list explains which fields to
+fill from the flyer and what else moves when a dated flyer retires.
 
 Editing the head instructor's rank line, bio or credentials in
 `content/coaches.ts` also means updating the copy of them recorded verbatim in
