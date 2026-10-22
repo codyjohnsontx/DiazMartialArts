@@ -45,7 +45,7 @@ export type AnnouncementFlyer = {
   /**
    * The words the flyer prints beside that price - "to get started", "to get
    * them started" - so the amount does not read as a monthly rate. Left off
-   * when the flyer prints the amount bare, as the Cleber Luciano one does.
+   * when the flyer prints the amount bare.
    */
   priceNote?: string;
   /**

@@ -15,29 +15,18 @@ import { pageMetadata } from '@/lib/seo';
 // the card renders that single source. A flyer printing a different number
 // would need its own explicit entry and a comment saying why.
 // `alt` describes the picture, since the offer no longer has to travel through
-// it. Only the Cleber Luciano flyer prints a date; the three specials carry no
+// it. None of the current flyers prints a date; the three specials carry no
 // start date or expiry, so none is claimed for them - `NO_END_DATE` says so
 // rather than guessing a run.
 //
-// A dated flyer retires once its day has passed, and three places move with
-// it: its entry here, its entry in content/upcoming.ts, and the lines it
-// contributes to OFFER_LINES in tests/e2e/announcement-offer-text.spec.ts,
-// which pins this page's served HTML and is in the `test:smoke` list. That
-// spec transcribes each live flyer's own copy on purpose, so retiring a flyer
-// without it fails the smoke run on a correct change.
+// A dated flyer retires once its day has passed, and four places move with
+// it: its entry here, its image in public/announcements/, its entry in
+// content/upcoming.ts, and the lines it contributes to OFFER_LINES in
+// tests/e2e/announcement-offer-text.spec.ts, which pins this page's served
+// HTML and is in the `test:smoke` list. That spec transcribes each live
+// flyer's own copy on purpose, so retiring a flyer without it fails the smoke
+// run on a correct change.
 const flyers: AnnouncementFlyer[] = [
-  {
-    id: 'cleber-luciano-2026-10-08',
-    src: '/announcements/cleber-luciano-2026-10-08.jpg',
-    alt: 'Black and white portrait of Master Cleber Luciano standing in a white gi, his name in tall capitals across the top.',
-    title: 'Master Cleber Luciano',
-    tag: 'BJJ',
-    date: 'Thursday, October 8, 2026 - 7-9 PM',
-    category: 'Events',
-    width: 1650,
-    height: 1275,
-    priceUsd: 125,
-  },
   {
     id: 'back-to-school-special',
     src: '/announcements/back-to-school-special.jpeg',

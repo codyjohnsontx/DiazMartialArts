@@ -39,17 +39,18 @@ const buttonStyles = {
   secondary: 'bg-ink text-white hover:bg-black focus-visible:outline-ink shadow-soft',
   ghost:
     'border border-black/20 bg-transparent text-ink hover:border-black/40 hover:bg-black/5 focus-visible:outline-ink',
+  // ghost-light's border at 35% composites to rgb(100,101,102) over bg-ink,
+  // about 3.21:1, which clears the 3:1 WCAG 1.4.11 bar for a component
+  // boundary. 35 is the smallest step on Tailwind's opacity scale that clears
+  // it on every surface the variant sits on: the flat bg-ink panels in
+  // app/contact/page.tsx, components/FaqAccordion.tsx and
+  // components/ScheduleContent.tsx, and the ember-glow panels in app/page.tsx
+  // and app/ondemand/page.tsx, where the lightest pixel behind the button
+  // measured rgb(52,22,21) and the border holds about 3.15:1. 30% reaches only
+  // about 2.68:1 on flat ink. The hero sits on a photograph rather than a
+  // panel, so it uses outline-light instead.
   'ghost-light':
-    'border border-white/25 bg-transparent text-sand hover:bg-white/10 focus-visible:outline-white',
-  // ghost-light's 25% border is about 2.22:1 over bg-ink and about 2.1:1 over
-  // the hero's photo backdrop, so it misses the 3:1 WCAG 1.4.11 bar on both.
-  // That gap is pre-existing and is not specific to imagery, so it is not why
-  // the hero needed another variant. It is left alone deliberately because that
-  // change was scoped to the hero, and it reaches every ghost-light call site:
-  // app/page.tsx, app/contact/page.tsx, app/ondemand/page.tsx,
-  // components/FaqAccordion.tsx and components/ScheduleContent.tsx. The hero
-  // needed a border that clears 3:1 against a photographic backdrop, which a
-  // 50% border does at about 4.06:1.
+    'border border-white/35 bg-transparent text-sand hover:bg-white/10 focus-visible:outline-white',
   'outline-light':
     'border border-white/50 bg-transparent text-sand hover:border-white hover:bg-white/10 focus-visible:outline-white',
 };
