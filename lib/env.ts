@@ -8,7 +8,6 @@ export type AppEnv = {
    * it, so callers must handle its absence rather than link somewhere dead.
    */
   ondemandUrl?: string;
-  googleCalendarEmbedUrl?: string;
   googleCalendarIcsUrl?: string;
   formspreeEndpoint?: string;
   ondemandComingSoon: boolean;
@@ -16,11 +15,7 @@ export type AppEnv = {
 
 type PublicEnv = Pick<
   AppEnv,
-  | 'siteUrl'
-  | 'ondemandUrl'
-  | 'googleCalendarEmbedUrl'
-  | 'googleCalendarIcsUrl'
-  | 'formspreeEndpoint'
+  'siteUrl' | 'ondemandUrl' | 'googleCalendarIcsUrl' | 'formspreeEndpoint'
 >;
 
 const DEFAULT_LOCAL_SITE_URL = 'http://localhost:3000';
@@ -131,10 +126,6 @@ function readPublicEnv(): PublicEnv {
   cachedPublicEnv = {
     siteUrl: readSiteUrl(),
     ondemandUrl: resolveOndemandUrl(process.env.NEXT_PUBLIC_ONDEMAND_URL),
-    googleCalendarEmbedUrl: readOptionalUrl(
-      'NEXT_PUBLIC_GOOGLE_CALENDAR_EMBED_URL',
-      process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_EMBED_URL,
-    ),
     googleCalendarIcsUrl: readOptionalUrl(
       'NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL',
       process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_ICS_URL,
