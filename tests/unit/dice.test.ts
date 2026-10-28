@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { dice, DIE_SIDES } from '@/content/dice';
-import { describeRoll, rollAll, rollDie } from '@/lib/dice';
+import { describeRoll, rollDie } from '@/lib/dice';
 
 // content/dice.ts is the one place coaches edit the technique lists, so these
 // are the rules an edit there has to keep: a die is a d20, a face is a short
@@ -50,16 +50,6 @@ describe('rollDie', () => {
     const seen = new Set<number>();
     for (let i = 0; i < 5000; i += 1) seen.add(rollDie(position));
     expect(seen.size).toBe(DIE_SIDES);
-  });
-});
-
-describe('rollAll', () => {
-  it('rolls one face per die, in die order, from one source', () => {
-    const values = [0, 0.5, 0.999];
-    let n = 0;
-    const roll = rollAll(dice, () => values[n++]);
-
-    expect(roll).toEqual([0, 10, 19]);
   });
 });
 
