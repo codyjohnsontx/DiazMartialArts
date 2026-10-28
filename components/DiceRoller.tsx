@@ -34,7 +34,7 @@ export function DiceRoller({ dice, random = Math.random }: Props) {
   const [shown, setShown] = useState<readonly (number | null)[]>(() => dice.map(() => null));
   // Positions of the dice in flight. Empty when nothing is tumbling.
   const [rolling, setRolling] = useState<readonly number[]>([]);
-  const [announcement, setAnnouncement] = useState('');
+  const [announcement, setAnnouncement] = useState({ text: '', id: 0 });
   const timers = useRef<{ step?: number; settle?: number }>({});
 
   useEffect(() => {
@@ -56,7 +56,7 @@ export function DiceRoller({ dice, random = Math.random }: Props) {
     const settle = () => {
       setShown(final);
       setRolling([]);
-      setAnnouncement(describeRoll(dice, final));
+      setAnnouncement((previous) => ({ text: describeRoll(dice, final), id: previous.id + 1 }));
     };
 
     if (prefersReducedMotion()) {
@@ -87,9 +87,9 @@ export function DiceRoller({ dice, random = Math.random }: Props) {
               <button
                 type="button"
                 onClick={() => roll([i])}
-                disabled={isRolling}
+                aria-disabled={isRolling}
                 className={cn(
-                  'surface-card card-hover flex min-h-[172px] w-full flex-col rounded-2xl p-5 text-left focus-visible:outline-ember disabled:cursor-wait sm:min-h-[200px]',
+                  'surface-card card-hover flex min-h-[172px] w-full flex-col rounded-2xl p-5 text-left focus-visible:outline-ember aria-disabled:cursor-wait sm:min-h-[200px]',
                   tumbling && 'motion-safe:animate-tumble',
                 )}
               >
@@ -121,7 +121,6 @@ export function DiceRoller({ dice, random = Math.random }: Props) {
       <Button
         onClick={() => roll(dice.map((_, i) => i))}
         size="lg"
-        disabled={isRolling}
         className="mt-6 w-full sm:w-auto"
       >
         {isRolling ? 'Rolling…' : hasRolled ? 'Roll again' : 'Roll the dice'}
@@ -130,7 +129,7 @@ export function DiceRoller({ dice, random = Math.random }: Props) {
       {/* The whole result in one sentence, announced once the dice settle, so a
           screen reader does not read every face the tumble passes through. */}
       <p className="sr-only" role="status">
-        {announcement}
+        <span key={announcement.id}>{announcement.text}</span>
       </p>
     </div>
   );

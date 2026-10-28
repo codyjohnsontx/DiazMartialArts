@@ -64,7 +64,7 @@ describe('DiceRoller', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Roll the dice' }));
 
-    expect(screen.getByRole('button', { name: 'Rolling…' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Rolling…' })).toBeEnabled();
     // Mid-tumble the faces are the tumble's, not the result's, and nothing has
     // been announced yet.
     act(() => {
@@ -124,6 +124,46 @@ describe('DiceRoller', () => {
 
     expect(dieButton('Position')).toHaveTextContent(dice[0].faces[0]);
     expect(screen.getByRole('button', { name: 'Roll again' })).toBeEnabled();
+  });
+
+  // A disabled control drops keyboard focus to <body>, so the button that was
+  // just pressed has to stay enabled and focused through the tumble.
+  it('keeps focus on the pressed control while the dice tumble', () => {
+    stubReducedMotion(false);
+    render(<DiceRoller dice={dice} random={dealing(0)} />);
+
+    const rollAll = screen.getByRole('button', { name: 'Roll the dice' });
+    rollAll.focus();
+    fireEvent.click(rollAll);
+
+    expect(rollAll).toHaveTextContent('Rolling…');
+    expect(rollAll).toBeEnabled();
+    expect(rollAll).toHaveFocus();
+    for (const die of dice) {
+      expect(dieButton(die.name)).toBeEnabled();
+      expect(dieButton(die.name)).toHaveAttribute('aria-disabled', 'true');
+    }
+
+    act(() => {
+      vi.advanceTimersByTime(TUMBLE_MS);
+    });
+    expect(rollAll).toHaveFocus();
+    expect(dieButton('Position')).toHaveAttribute('aria-disabled', 'false');
+  });
+
+  it('announces a re-roll that lands on the faces already shown', () => {
+    stubReducedMotion(true);
+    render(<DiceRoller dice={dice} random={dealing(0)} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Roll the dice' }));
+    const status = screen.getByRole('status', { hidden: true });
+    const first = status.firstChild;
+    fireEvent.click(screen.getByRole('button', { name: 'Roll again' }));
+
+    expect(status).toHaveTextContent(
+      `Position: ${dice[0].faces[0]}. Submission: ${dice[1].faces[0]}. Sweep or pass: ${dice[2].faces[0]}.`,
+    );
+    expect(status.firstChild).not.toBe(first);
   });
 
   // The page is prerendered, so the HTML a visitor receives must be the same
