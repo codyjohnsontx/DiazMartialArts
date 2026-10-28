@@ -14,6 +14,7 @@ const routes = [
   '/announcements',
   '/contact',
   '/faq',
+  '/dice',
   '/privacy',
   '/terms',
 ];

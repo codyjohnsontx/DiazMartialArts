@@ -8,6 +8,7 @@ const trainLinks = [
   { href: '/programs', label: 'Programs' },
   { href: '/schedule', label: 'Schedule' },
   { href: '/ondemand', label: 'On Demand' },
+  { href: '/dice', label: 'Jiu Jitsu Dice' },
 ];
 
 const gymLinks = [

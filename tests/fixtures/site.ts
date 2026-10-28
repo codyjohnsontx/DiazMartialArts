@@ -47,6 +47,7 @@ export const PUBLIC_PAGES: Array<{ path: string; heading: string }> = [
   { path: '/announcements', heading: 'Announcements' },
   { path: '/contact', heading: 'Visit the gym' },
   { path: '/faq', heading: 'FAQ' },
+  { path: '/dice', heading: 'Jiu Jitsu Dice' },
   { path: '/privacy', heading: 'Privacy' },
   { path: '/terms', heading: 'Terms' },
 ];

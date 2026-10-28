@@ -23,9 +23,19 @@ const config: Config = {
           '0%': { opacity: '0', transform: 'translateY(10px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
+        // The dice on /dice while a roll is in flight. Time-based, so the
+        // global prefers-reduced-motion block in app/globals.css neutralises
+        // it; components/DiceRoller.tsx also applies it under `motion-safe:`.
+        tumble: {
+          '0%, 100%': { transform: 'rotate(0deg) scale(1)' },
+          '25%': { transform: 'rotate(-5deg) scale(1.03)' },
+          '50%': { transform: 'rotate(4deg) scale(0.98)' },
+          '75%': { transform: 'rotate(-2deg) scale(1.01)' },
+        },
       },
       animation: {
         rise: 'rise 650ms ease-out both',
+        tumble: 'tumble 480ms ease-in-out both',
       },
     },
   },

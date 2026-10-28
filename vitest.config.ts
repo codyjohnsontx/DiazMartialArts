@@ -23,6 +23,7 @@ export default defineConfig({
         'components/AnnouncementFlyerGallery.tsx',
         'components/Button.tsx',
         'components/ContactForm.tsx',
+        'components/DiceRoller.tsx',
         'components/FaqAccordion.tsx',
         'components/HomeUpcomingClasses.tsx',
         'components/OndemandWaitlistForm.tsx',
