@@ -69,6 +69,7 @@ Most editable content is in `content/`:
 - `content/programs.ts`
 - `content/coaches.ts`
 - `content/faq.ts`
+- `content/dice.ts` (the jiu jitsu dice faces on `/dice`)
 - `content/schedule.ts`
 - `content/upcoming.ts` (fallback list)
 
@@ -186,7 +187,7 @@ On Demand env vars:
 Use two review passes for design updates:
 
 1. Run app locally and review desktop + mobile for core pages:
-   - `/`, `/programs`, `/schedule`, `/coaches`, `/pricing`, `/contact`, `/faq`
+   - `/`, `/programs`, `/schedule`, `/coaches`, `/pricing`, `/contact`, `/faq`, `/dice`
 2. Capture screenshots and compare before/after each pass.
 3. Confirm no regressions in spacing, hierarchy, contrast, and nav entry points.
 
