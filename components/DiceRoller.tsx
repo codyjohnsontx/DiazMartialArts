@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/Button';
 import { type Die, type Face } from '@/content/dice';
@@ -33,6 +33,9 @@ export function DiceRoller({ dice, random = Math.random }: Props) {
   // and the first client render agree - the same rule HomeUpcomingClasses
   // follows for the clock.
   const [shown, setShown] = useState<readonly (number | null)[]>(() => dice.map(() => null));
+  // The face each die last settled on, which is what the media under it shows.
+  // A tumble passes through faces far faster than a still could load for each.
+  const [settled, setSettled] = useState<readonly (number | null)[]>(() => dice.map(() => null));
   // Positions of the dice in flight. Empty when nothing is tumbling.
   const [rolling, setRolling] = useState<readonly number[]>([]);
   // Which dice have their video open, by position. A roll closes the player
@@ -60,6 +63,7 @@ export function DiceRoller({ dice, random = Math.random }: Props) {
     const final = shown.map((face, i) => (positions.includes(i) ? rollDie(dice[i], random) : face));
     const settle = () => {
       setShown(final);
+      setSettled(final);
       setRolling([]);
       setAnnouncement((previous) => ({ text: describeRoll(dice, final), id: previous.id + 1 }));
     };
@@ -86,6 +90,7 @@ export function DiceRoller({ dice, random = Math.random }: Props) {
       <ul className="grid gap-3 sm:grid-cols-3 sm:gap-4">
         {dice.map((die, i) => {
           const face = shown[i];
+          const result = settled[i];
           const tumbling = rolling.includes(i);
           return (
             <li key={die.id} className="min-w-0">
@@ -118,9 +123,9 @@ export function DiceRoller({ dice, random = Math.random }: Props) {
                   </span>
                 )}
               </button>
-              {face !== null && (
+              {result !== null && (
                 <FaceMedia
-                  face={die.faces[face]}
+                  face={die.faces[result]}
                   tumbling={tumbling}
                   playing={playing[i]}
                   onToggle={(open) =>
@@ -152,7 +157,7 @@ export function DiceRoller({ dice, random = Math.random }: Props) {
 
 type FaceMediaProps = {
   face: Face;
-  /** True while the die above is still tumbling; the block holds its shape and shows nothing. */
+  /** True while the die above is re-rolling; the block keeps its last face, faded and inert. */
   tumbling: boolean;
   playing: boolean;
   onToggle: (open: boolean) => void;
@@ -167,24 +172,47 @@ type FaceMediaProps = {
  * leaving a broken image or an empty player; `content/dice.ts` is where a
  * coach adds the id.
  *
- * The block is rendered from the first roll on, including during a tumble,
- * so the page does not jump by a thumbnail's height every time a die is
- * re-rolled. The still is a plain <img> on purpose: next/image would route a
- * YouTube-hosted file through this site's optimiser, which the project notes
- * record as the slowest thing on the box, for an image YouTube already serves
- * at the size it is shown.
+ * While a die re-rolls, the block keeps showing the face it last settled on,
+ * faded and inert, so the page does not jump by a thumbnail's height every
+ * time a die is re-rolled. Opening or closing the player replaces the control
+ * that was pressed, so focus is moved to its counterpart rather than left to
+ * fall to <body>. The still is a plain <img> on purpose: next/image would
+ * route a YouTube-hosted file through this site's optimiser, which the
+ * project notes record as the slowest thing on the box, for an image YouTube
+ * already serves at the size it is shown.
  */
 function FaceMedia({ face, tumbling, playing, onToggle }: FaceMediaProps) {
   const id = face.youtubeId;
+  const watchRef = useRef<HTMLButtonElement>(null);
+  const playerRef = useRef<HTMLIFrameElement>(null);
+  const toggled = useRef(false);
+
+  useLayoutEffect(() => {
+    if (!toggled.current) return;
+    toggled.current = false;
+    (playing ? playerRef : watchRef).current?.focus();
+  }, [playing]);
+
+  function toggle(open: boolean) {
+    toggled.current = true;
+    onToggle(open);
+  }
+
   return (
-    <div className="surface-card mt-3 overflow-hidden rounded-2xl">
-      {tumbling || !id ? (
+    <div
+      className={cn(
+        'surface-card mt-3 overflow-hidden rounded-2xl transition-opacity',
+        tumbling && 'opacity-50',
+      )}
+    >
+      {!id ? (
         <p className="px-4 py-3 text-xs leading-relaxed text-black/60">
-          {tumbling ? '\u00a0' : 'No video for this one yet. Ask a coach to show it on the mat.'}
+          No video for this one yet. Ask a coach to show it on the mat.
         </p>
       ) : playing ? (
         <div>
           <iframe
+            ref={playerRef}
             className="aspect-video w-full"
             src={youtubeEmbedUrl(id)}
             title={`${face.label} video`}
@@ -194,7 +222,7 @@ function FaceMedia({ face, tumbling, playing, onToggle }: FaceMediaProps) {
           />
           <button
             type="button"
-            onClick={() => onToggle(false)}
+            onClick={() => toggle(false)}
             className="block w-full px-4 py-2.5 text-left text-[11px] font-bold text-ember hover:bg-black/5 focus-visible:outline-ember"
           >
             Hide video
@@ -202,9 +230,11 @@ function FaceMedia({ face, tumbling, playing, onToggle }: FaceMediaProps) {
         </div>
       ) : (
         <button
+          ref={watchRef}
           type="button"
-          onClick={() => onToggle(true)}
-          className="group flex w-full items-center gap-3 p-2 text-left hover:bg-black/5 focus-visible:outline-ember sm:block sm:p-0"
+          onClick={() => toggle(true)}
+          disabled={tumbling}
+          className="group flex w-full items-center gap-3 p-2 text-left enabled:hover:bg-black/5 focus-visible:outline-ember disabled:cursor-wait sm:block sm:p-0"
         >
           <span className="relative block w-[132px] shrink-0 overflow-hidden rounded-xl sm:w-full sm:rounded-none">
             {/* eslint-disable-next-line @next/next/no-img-element -- YouTube serves this still at display size; see the docblock. */}

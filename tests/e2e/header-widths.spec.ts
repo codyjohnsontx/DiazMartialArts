@@ -29,9 +29,10 @@ import { waitForMenuToggleHydration } from '../fixtures/hydration';
  * `ui-sans-serif`, a different typeface on each platform, rather than in the
  * self-hosted Manrope it renders in now, so part of that gap was the font. An
  * assertion widened until it passes on every platform is one that can no
- * longer fail, so it is gone rather than loosened. `1035` is therefore
- * the width this header needs on the machine it was measured on, not a
- * universal constant - see the project notes and the follow-up work filed as
+ * longer fail, so it is gone rather than loosened. `1100` - the seven-link row
+ * measured at 1073, plus room for a classic scrollbar - is therefore the width
+ * this header needs on the machine it was measured on, not a universal
+ * constant - see the project notes and the follow-up work filed as
  * dma-header-size-from-content, which owns sizing this header from its content
  * instead of from a number somebody measured.
  *
@@ -49,7 +50,8 @@ import { waitForMenuToggleHydration } from '../fixtures/hydration';
  * notes. A `@media (min-width: ...)` is evaluated against `window.innerWidth`,
  * which counts a classic scrollbar, while the row lays out in
  * `documentElement.clientWidth`, which does not - so on Windows and Linux the
- * row is handed about 15px less than the query promised. And every width here
+ * row is handed about 15px less than the query promised, which the gap between
+ * 1073 and 1100 is there to absorb. And every width here
  * was measured under overlay scrollbars, which is what headless Chromium and
  * macOS give you, which is exactly why that went unnoticed.
  */

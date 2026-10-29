@@ -284,16 +284,18 @@ marking work complete or CI fails on unformatted files.
   moving the breakpoint or restyling the header to make the measurement pass:
   changing the product to satisfy a machine-local number is how 1035 became
   1152 and had to be put back.
-  One residual is live, accepted and unfixed at roughly 1035-1049 on
-  classic-scrollbar platforms: a CSS `@media (min-width: ...)` is evaluated
-  against `window.innerWidth`, which counts a classic scrollbar, while the row
-  lays out in `documentElement.clientWidth`, which does not, so the row is
-  handed about 15px less than the query promised and the call to action can
-  wrap. Every width here was measured under overlay scrollbars, which is what
-  headless Chromium and macOS give you, which is exactly why that went
-  unnoticed. Sizing this header from its own content instead of from a number
-  somebody measured is filed as dma-header-size-from-content, which owns both
-  that residual and the machine-local pixel.
+  Classic-scrollbar platforms are covered by margin, not fixed: a CSS
+  `@media (min-width: ...)` is evaluated against `window.innerWidth`, which
+  counts a classic scrollbar, while the row lays out in
+  `documentElement.clientWidth`, which does not, so the row is handed about
+  15px less than the query promised. At the six-link 1035 gate that wrapped
+  the call to action at roughly 1035-1049; the seven-link row needs 1073, so
+  1100 still hands it about 1085. Every width here was measured under overlay
+  scrollbars, which is what headless Chromium and macOS give you, which is
+  exactly why the old residual went unnoticed. Sizing this header from its own
+  content instead of from a number somebody measured is filed as
+  dma-header-size-from-content, which owns both that margin and the
+  machine-local pixel.
   Read those widths knowing they predate the body font working at all. Until
   `font-[family-name:var(--font-body)]` landed, the header laid out in
   `ui-sans-serif`, which is by definition a different typeface on every
@@ -301,10 +303,10 @@ marking work complete or CI fails on unformatted files.
   Linux runner - so the disagreement the note above records was measured
   between two different fonts, not two rendering stacks. Manrope is a
   self-hosted file that is byte-identical everywhere, which should narrow that
-  gap considerably. Measured with the query forced on, the row's own content
-  now fits at 985px against 1003px in the fallback face, so 1035 keeps the
-  desktop header and gains headroom; the numbers to re-take when picking that
-  work up are these, not the pre-fix ones. Both figures are the narrowest
+  gap considerably. Measured with the query forced on, the six-link row fit
+  at 985px in Manrope against 1003px in the fallback face; those are history
+  now. The seven-link row with Dice fits at 1073px in Manrope, and that is the
+  number to re-take when picking that work up. Each figure is the narrowest
   viewport at which the desktop row keeps "Book Free Trial" on a single line
   and leaves neither the row nor the document overflowing, so the call to
   action's wrap was measured there, not just the box.

@@ -249,25 +249,60 @@ describe('DiceRoller', () => {
       expect(stillOf('Armbar')).toBeInTheDocument();
     });
 
-    // Re-rolling must not bounce the page: the block keeps its place under
-    // the die through the tumble, but shows no still for the faces flying by.
-    it('keeps the block in place and empty while the die tumbles', () => {
+    // Re-rolling must not bounce the page: the block keeps the face the die
+    // last settled on through the tumble, so it keeps that face's shape, and
+    // loads no still for the faces flying by.
+    it('keeps the last settled still in place, inert, while the die tumbles', () => {
       stubReducedMotion(false);
-      render(<DiceRoller dice={[technique]} random={dealing(0)} />);
+      render(<DiceRoller dice={[technique]} random={dealing(0, 0.999, 0.999, 0.999)} />);
       fireEvent.click(screen.getByRole('button', { name: 'Roll the dice' }));
       act(() => {
         vi.advanceTimersByTime(TUMBLE_MS);
       });
-      expect(stillOf('Armbar')).toBeInTheDocument();
+      const still = document.querySelector('img');
+      expect(still).toHaveAttribute('src', 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg');
 
       fireEvent.click(dieButton('Technique'));
-
-      expect(dieButton('Technique').nextElementSibling).not.toBeNull();
-      expect(document.querySelector('img, iframe')).toBeNull();
       act(() => {
-        vi.advanceTimersByTime(TUMBLE_MS);
+        vi.advanceTimersByTime(TUMBLE_MS / 2);
       });
-      expect(stillOf('Armbar')).toBeInTheDocument();
+
+      expect(dieButton('Technique')).toHaveTextContent('Kimura');
+      expect(document.querySelector('img')).toBe(still);
+      expect(stillOf('Armbar')).toBeDisabled();
+      act(() => {
+        vi.advanceTimersByTime(TUMBLE_MS / 2);
+      });
+      expect(document.querySelector('img')).toBeNull();
+      expect(screen.getByText(/No video for this one yet/)).toBeInTheDocument();
+    });
+
+    // Opening the player replaces the Watch control, and closing it replaces
+    // Hide video, so without a hand-off focus falls to <body>.
+    it('moves focus to the player when it opens and back to Watch when it closes', () => {
+      stubReducedMotion(true);
+      render(<DiceRoller dice={[technique]} random={dealing(0)} />);
+      fireEvent.click(screen.getByRole('button', { name: 'Roll the dice' }));
+
+      stillOf('Armbar').focus();
+      fireEvent.click(stillOf('Armbar'));
+      expect(document.querySelector('iframe')).toHaveFocus();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Hide video' }));
+      expect(stillOf('Armbar')).toHaveFocus();
+    });
+
+    it('leaves focus on the die when a re-roll closes the player', () => {
+      stubReducedMotion(true);
+      render(<DiceRoller dice={[technique]} random={dealing(0)} />);
+      fireEvent.click(screen.getByRole('button', { name: 'Roll the dice' }));
+      fireEvent.click(stillOf('Armbar'));
+
+      dieButton('Technique').focus();
+      fireEvent.click(dieButton('Technique'));
+
+      expect(document.querySelector('iframe')).toBeNull();
+      expect(dieButton('Technique')).toHaveFocus();
     });
   });
 });
