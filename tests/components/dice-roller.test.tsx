@@ -3,7 +3,7 @@ import { renderToString } from 'react-dom/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DiceRoller, TUMBLE_MS } from '@/components/DiceRoller';
-import { dice } from '@/content/dice';
+import { dice, type Die } from '@/content/dice';
 
 // A source that deals the given values in order, then repeats the last one.
 // `rollDie` floors value x faces, so 0 is the first face and 0.999 the last.
@@ -54,7 +54,7 @@ describe('DiceRoller', () => {
       vi.advanceTimersByTime(TUMBLE_MS);
     });
 
-    expect(dieButton('Position')).toHaveTextContent(dice[0].faces[0]);
+    expect(dieButton('Position')).toHaveTextContent(dice[0].faces[0].label);
   });
 
   it('tumbles briefly and then settles every die on the result decided at the tap', () => {
@@ -70,17 +70,17 @@ describe('DiceRoller', () => {
     act(() => {
       vi.advanceTimersByTime(TUMBLE_MS / 2);
     });
-    expect(dieButton('Position')).toHaveTextContent(dice[0].faces[5]);
+    expect(dieButton('Position')).toHaveTextContent(dice[0].faces[5].label);
     expect(screen.getByRole('status', { hidden: true })).toHaveTextContent('');
 
     act(() => {
       vi.advanceTimersByTime(TUMBLE_MS / 2);
     });
-    expect(dieButton('Position')).toHaveTextContent(dice[0].faces[0]);
-    expect(dieButton('Submission')).toHaveTextContent(dice[1].faces[10]);
-    expect(dieButton('Sweep or pass')).toHaveTextContent(dice[2].faces[19]);
+    expect(dieButton('Position')).toHaveTextContent(dice[0].faces[0].label);
+    expect(dieButton('Submission')).toHaveTextContent(dice[1].faces[10].label);
+    expect(dieButton('Sweep or pass')).toHaveTextContent(dice[2].faces[19].label);
     expect(screen.getByRole('status', { hidden: true })).toHaveTextContent(
-      `Position: ${dice[0].faces[0]}. Submission: ${dice[1].faces[10]}. Sweep or pass: ${dice[2].faces[19]}.`,
+      `Position: ${dice[0].faces[0].label}. Submission: ${dice[1].faces[10].label}. Sweep or pass: ${dice[2].faces[19].label}.`,
     );
     expect(screen.getByRole('button', { name: 'Roll again' })).toBeEnabled();
   });
@@ -92,7 +92,7 @@ describe('DiceRoller', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Roll the dice' }));
 
     for (const die of dice) {
-      expect(dieButton(die.name)).toHaveTextContent(die.faces[19]);
+      expect(dieButton(die.name)).toHaveTextContent(die.faces[19].label);
     }
     expect(screen.getByRole('button', { name: 'Roll again' })).toBeEnabled();
   });
@@ -104,11 +104,11 @@ describe('DiceRoller', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Roll the dice' }));
     fireEvent.click(dieButton('Submission'));
 
-    expect(dieButton('Position')).toHaveTextContent(dice[0].faces[0]);
-    expect(dieButton('Submission')).toHaveTextContent(dice[1].faces[19]);
-    expect(dieButton('Sweep or pass')).toHaveTextContent(dice[2].faces[0]);
+    expect(dieButton('Position')).toHaveTextContent(dice[0].faces[0].label);
+    expect(dieButton('Submission')).toHaveTextContent(dice[1].faces[19].label);
+    expect(dieButton('Sweep or pass')).toHaveTextContent(dice[2].faces[0].label);
     expect(screen.getByRole('status', { hidden: true })).toHaveTextContent(
-      `Submission: ${dice[1].faces[19]}.`,
+      `Submission: ${dice[1].faces[19].label}.`,
     );
   });
 
@@ -122,7 +122,7 @@ describe('DiceRoller', () => {
       vi.advanceTimersByTime(TUMBLE_MS);
     });
 
-    expect(dieButton('Position')).toHaveTextContent(dice[0].faces[0]);
+    expect(dieButton('Position')).toHaveTextContent(dice[0].faces[0].label);
     expect(screen.getByRole('button', { name: 'Roll again' })).toBeEnabled();
   });
 
@@ -161,7 +161,7 @@ describe('DiceRoller', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Roll again' }));
 
     expect(status).toHaveTextContent(
-      `Position: ${dice[0].faces[0]}. Submission: ${dice[1].faces[0]}. Sweep or pass: ${dice[2].faces[0]}.`,
+      `Position: ${dice[0].faces[0].label}. Submission: ${dice[1].faces[0].label}. Sweep or pass: ${dice[2].faces[0].label}.`,
     );
     expect(status.firstChild).not.toBe(first);
   });
@@ -173,9 +173,101 @@ describe('DiceRoller', () => {
 
     expect(html.match(/Not rolled yet/g)).toHaveLength(dice.length);
     for (const die of dice) {
-      for (const face of die.faces) {
-        expect(html).not.toContain(`>${face}<`);
+      for (const { label } of die.faces) {
+        expect(html).not.toContain(`>${label}<`);
       }
     }
+  });
+
+  // The media under each die. A two-face die, one face with a video and one
+  // without, so a single `random` value picks which case shows.
+  const technique: Die = {
+    id: 'technique',
+    name: 'Technique',
+    prompt: 'Drill it.',
+    faces: [{ label: 'Armbar', youtubeId: 'dQw4w9WgXcQ' }, { label: 'Kimura' }],
+  };
+  const stillOf = (label: string) =>
+    screen.getByRole('button', { name: new RegExp(`^Watch: ${label}`) });
+
+  describe('media', () => {
+    it('loads nothing from YouTube until a die has been rolled', () => {
+      render(<DiceRoller dice={[technique]} />);
+
+      expect(document.querySelector('img, iframe')).toBeNull();
+      expect(screen.queryByRole('button', { name: /^Watch:/ })).toBeNull();
+    });
+
+    it("shows the face's own YouTube still and opens the player only when asked", () => {
+      stubReducedMotion(true);
+      render(<DiceRoller dice={[technique]} random={dealing(0)} />);
+      fireEvent.click(screen.getByRole('button', { name: 'Roll the dice' }));
+
+      const still = document.querySelector('img');
+      expect(still).toHaveAttribute('src', 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg');
+      expect(still).toHaveAttribute('alt', '');
+      expect(document.querySelector('iframe')).toBeNull();
+
+      fireEvent.click(stillOf('Armbar'));
+
+      const player = document.querySelector('iframe');
+      expect(player).toHaveAttribute(
+        'src',
+        'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?rel=0&autoplay=1',
+      );
+      expect(player).toHaveAttribute('title', 'Armbar video');
+      expect(player).toHaveAttribute('allowfullscreen');
+      expect(document.querySelector('img')).toBeNull();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Hide video' }));
+      expect(document.querySelector('iframe')).toBeNull();
+      expect(stillOf('Armbar')).toBeInTheDocument();
+    });
+
+    it('says so for a face with no video, with no image and no player', () => {
+      stubReducedMotion(true);
+      render(<DiceRoller dice={[technique]} random={dealing(0.999)} />);
+      fireEvent.click(screen.getByRole('button', { name: 'Roll the dice' }));
+
+      expect(dieButton('Technique')).toHaveTextContent('Kimura');
+      expect(screen.getByText(/No video for this one yet/)).toBeInTheDocument();
+      expect(document.querySelector('img, iframe')).toBeNull();
+      expect(screen.queryByRole('button', { name: /^Watch:/ })).toBeNull();
+    });
+
+    it('closes the player when its die is re-rolled, even onto the same face', () => {
+      stubReducedMotion(true);
+      render(<DiceRoller dice={[technique]} random={dealing(0)} />);
+      fireEvent.click(screen.getByRole('button', { name: 'Roll the dice' }));
+      fireEvent.click(stillOf('Armbar'));
+      expect(document.querySelector('iframe')).not.toBeNull();
+
+      fireEvent.click(dieButton('Technique'));
+
+      expect(dieButton('Technique')).toHaveTextContent('Armbar');
+      expect(document.querySelector('iframe')).toBeNull();
+      expect(stillOf('Armbar')).toBeInTheDocument();
+    });
+
+    // Re-rolling must not bounce the page: the block keeps its place under
+    // the die through the tumble, but shows no still for the faces flying by.
+    it('keeps the block in place and empty while the die tumbles', () => {
+      stubReducedMotion(false);
+      render(<DiceRoller dice={[technique]} random={dealing(0)} />);
+      fireEvent.click(screen.getByRole('button', { name: 'Roll the dice' }));
+      act(() => {
+        vi.advanceTimersByTime(TUMBLE_MS);
+      });
+      expect(stillOf('Armbar')).toBeInTheDocument();
+
+      fireEvent.click(dieButton('Technique'));
+
+      expect(dieButton('Technique').nextElementSibling).not.toBeNull();
+      expect(document.querySelector('img, iframe')).toBeNull();
+      act(() => {
+        vi.advanceTimersByTime(TUMBLE_MS);
+      });
+      expect(stillOf('Armbar')).toBeInTheDocument();
+    });
   });
 });

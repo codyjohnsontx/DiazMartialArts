@@ -264,9 +264,10 @@ marking work complete or CI fails on unformatted files.
 
 - Gate a wide layout on the width the layout measurably needs, not on the
   nearest standard breakpoint above it. The header's desktop navigation is
-  gated at `min-[1035px]`, and 1035 is a measurement: it was read off a
-  rendered browser with the wide layout forced visible, rather than guessed at
-  the next Tailwind size up. `md` and `lg` were each wrong here for the same
+  gated at `min-[1100px]`, and 1100 is a measurement, as 1035 was before the
+  Dice link made the row seven links: it was read off a rendered browser with
+  the wide layout forced visible, rather than guessed at the next Tailwind
+  size up. `md` and `lg` were each wrong here for the same
   underlying reason - flex children shrink, so the row stops overflowing long
   before it fits, and "Book Free Trial" was crushed into a three-line pill at
   892px and onto two lines across 1024-1034 with no overflow to show for it.
@@ -428,7 +429,7 @@ marking work complete or CI fails on unformatted files.
   and only the pixel is wrong, so guard it with `document.elementFromPoint`
   at the control's own centre rather than any DOM assertion - and guard it
   at both Playwright projects, because the covering element differs across
-  `min-[1035px]` exactly as the header's own contents do. The portal
+  `min-[1100px]` exactly as the header's own contents do. The portal
   docblock in `components/AnnouncementFlyerGallery.tsx` and the "pointer"
   block in `tests/e2e/announcement-lightbox.spec.ts` own the mechanism, and
   issue #46 the record.

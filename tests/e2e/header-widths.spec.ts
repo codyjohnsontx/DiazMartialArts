@@ -7,7 +7,8 @@ import { waitForMenuToggleHydration } from '../fixtures/hydration';
  * six nav labels plus the call to action needed far more room, so every page
  * scrolled sideways across the whole of tablet portrait - 768 on the classic
  * iPad, 820 on the Air, 834 on the Pro. The desktop header is now gated at
- * `min-[1035px]`, and these tests pin that.
+ * the width it measurably needs - `min-[1035px]` for six links, `min-[1100px]`
+ * since the Dice link made it seven - and these tests pin that.
  *
  * WHY THERE IS NO ASSERTION ON HOW WIDE THE TEXT IS. There used to be one, and
  * it was the most informative thing in this file: below the width the row
@@ -38,7 +39,7 @@ import { waitForMenuToggleHydration } from '../fixtures/hydration';
  * moves. `scrollWidth` against `clientWidth` is a relation, not a pixel count,
  * and which control a width gets is a media query resolving, not a text
  * measurement. Both boundaries stay pinned: move the breakpoint down and the
- * widths below it overflow, move it up and 1035 loses its desktop header. A
+ * widths below it overflow, move it up and 1100 loses its desktop header. A
  * relation is only platform-independent while everything inside the box it
  * measures is, though, and the document-level check reaches page content the
  * header does not control, which is why it is scoped - DOC_OVERFLOW_WIDTHS owns
@@ -60,7 +61,7 @@ test.beforeEach(async ({}, testInfo) => {
 });
 
 /** Widths that get the menu button, and used to overflow or wrap. */
-const MENU_BUTTON_WIDTHS = [768, 800, 820, 834, 891, 1023, 1024, 1034];
+const MENU_BUTTON_WIDTHS = [768, 800, 820, 834, 891, 1023, 1024, 1034, 1035, 1072, 1099];
 
 /**
  * The menu-button widths at which the whole document is worth measuring, which
@@ -84,7 +85,7 @@ const MENU_BUTTON_WIDTHS = [768, 800, 820, 834, 891, 1023, 1024, 1034];
 const DOC_OVERFLOW_WIDTHS = MENU_BUTTON_WIDTHS.filter((width) => width < 1024);
 
 /** Widths outside the band this fix moved, on either side of it. */
-const UNCHANGED_WIDTHS = [320, 375, 390, 767, 1035, 1440];
+const UNCHANGED_WIDTHS = [320, 375, 390, 767, 1100, 1440];
 
 /** The header is shared but page content is not, so this checks several. */
 const PATHS = ['/', '/programs', '/schedule', '/coaches', '/contact'];
@@ -179,8 +180,8 @@ test.describe('Which navigation each width gets', () => {
   // The upper boundary. Without this the guard would be satisfied by pushing the
   // breakpoint higher still, which would take the desktop header away from the
   // laptops it fits on.
-  test('1035px gets the desktop header, not the menu button', async ({ page }) => {
-    await page.setViewportSize({ width: 1035, height: 900 });
+  test('1100px gets the desktop header, not the menu button', async ({ page }) => {
+    await page.setViewportSize({ width: 1100, height: 900 });
     await page.goto('/');
     await expect(desktopNav(page)).toBeVisible();
     await expect(desktopCta(page)).toBeVisible();
@@ -242,12 +243,12 @@ test.describe('The menu works at tablet portrait', () => {
 });
 
 /**
- * Gating the desktop nav on `min-[1035px]` lays the mobile panel out across
- * 768-1034 too, where `md:hidden` used to take it out of the flow entirely.
+ * Gating the desktop nav on `min-[1100px]` lays the mobile panel out across
+ * 768-1099 too, where `md:hidden` used to take it out of the flow entirely.
  * `pointer-events-none max-h-0 opacity-0` hides the closed panel from the eye
  * and the mouse but not from the keyboard - neither opacity nor max-height
  * removes a link from the tab order - so without `invisible` a keyboard visitor
- * tabbing off the menu button lands in six invisible nav links and the call to
+ * tabbing off the menu button lands in seven invisible nav links and the call to
  * action, on every page. Both directions are pinned: closed must be
  * unreachable, open must be reachable, or "nothing is focusable" would pass.
  */

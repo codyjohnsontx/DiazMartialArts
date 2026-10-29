@@ -12,6 +12,7 @@ import { Crest } from './Crest';
 const navItems = [
   { href: '/programs', label: 'Programs' },
   { href: '/schedule', label: 'Schedule' },
+  { href: '/dice', label: 'Dice' },
   { href: '/coaches', label: 'Coaches' },
   { href: '/announcements', label: 'Announcements' },
   { href: '/contact', label: 'Contact' },
@@ -57,15 +58,17 @@ export function Header() {
         </Link>
 
         {/*
-          1035 is the width this header measurably needs. Gating below it is
-          what left tablet portrait scrolling sideways and 1024-1034 rendering
-          "Book Free Trial" on two lines. It is a measurement taken on one
-          machine rather than a universal constant:
+          1100 is the width this header measurably needs: with seven links the
+          row keeps "Book Free Trial" on one line from 1073px and wraps it at
+          1072, so 1100 leaves room for a classic scrollbar. Gating below the
+          need is what left tablet portrait scrolling sideways and, before the
+          Dice link, 1024-1034 rendering the call to action on two lines. It is
+          a measurement taken on one machine rather than a universal constant:
           `tests/e2e/header-widths.spec.ts` holds that reasoning and the
           residual it leaves, and dma-header-size-from-content owns sizing this
           row from its own content instead.
         */}
-        <nav className="hidden items-center gap-7 min-[1035px]:flex" aria-label="Primary">
+        <nav className="hidden items-center gap-7 min-[1100px]:flex" aria-label="Primary">
           {navItems.map((item) => {
             const active = isActive(item.href);
             return (
@@ -86,13 +89,13 @@ export function Header() {
           })}
         </nav>
 
-        <div className="hidden items-center gap-2 min-[1035px]:flex">
+        <div className="hidden items-center gap-2 min-[1100px]:flex">
           <Button href="/contact">Book Free Trial</Button>
         </div>
 
         <button
           type="button"
-          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/15 text-ink min-[1035px]:hidden"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/15 text-ink min-[1100px]:hidden"
           aria-expanded={open}
           aria-controls="mobile-nav"
           aria-label="Toggle menu"
@@ -106,7 +109,7 @@ export function Header() {
       <div
         id="mobile-nav"
         className={cn(
-          'min-[1035px]:hidden',
+          'min-[1100px]:hidden',
           // `invisible` is load-bearing rather than decoration: opacity and max-height
           // hide the closed panel from the eye and the mouse but leave its links in
           // the tab order. `tests/e2e/header-widths.spec.ts` owns that reasoning and

@@ -18,6 +18,7 @@ export const ONDEMAND_URL: string | undefined = (() => {
 export const NAV_LINKS = [
   { href: '/programs', label: 'Programs' },
   { href: '/schedule', label: 'Schedule' },
+  { href: '/dice', label: 'Dice' },
   { href: '/coaches', label: 'Coaches' },
   { href: '/announcements', label: 'Announcements' },
   { href: '/contact', label: 'Contact' },
