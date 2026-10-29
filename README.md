@@ -69,7 +69,7 @@ Most editable content is in `content/`:
 - `content/programs.ts`
 - `content/coaches.ts`
 - `content/faq.ts`
-- `content/dice.ts` (the jiu jitsu dice faces on `/dice`)
+- `content/dice.ts` (the jiu jitsu dice faces on `/dice`, each with the YouTube video it plays)
 - `content/schedule.ts`
 - `content/upcoming.ts` (fallback list)
 

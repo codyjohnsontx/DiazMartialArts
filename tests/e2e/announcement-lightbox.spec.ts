@@ -229,7 +229,7 @@ test.describe('Announcement flyer lightbox - keyboard', () => {
  * Both Playwright projects run this file, so each test below is really two: a
  * desktop width, where the covering element was the `<header>` itself, and a
  * 390px width, where it was the header's "Toggle menu" button. The two differ
- * because the header's own contents differ across `min-[1035px]`, so covering
+ * because the header's own contents differ across `min-[1100px]`, so covering
  * one width would have left the other unguarded.
  */
 test.describe('Announcement flyer lightbox - pointer', () => {

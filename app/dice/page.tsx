@@ -22,7 +22,7 @@ const steps = [
   {
     n: '02',
     t: 'Start where the dice say',
-    d: 'Set up in the position that came up. The bottom player works the sweep, the top player works the pass, and both hunt the submission.',
+    d: 'Set up in the position that came up. The bottom player works the sweep, the top player works the pass, and both hunt the submission. New to a face? Tap Watch under its die for a short video of the technique.',
   },
   {
     n: '03',

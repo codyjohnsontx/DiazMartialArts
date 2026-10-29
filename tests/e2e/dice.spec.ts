@@ -1,12 +1,12 @@
 import { test, expect } from '@playwright/test';
 
-import { waitForHydration } from '../fixtures/hydration';
+import { waitForHydration, waitForMenuToggleHydration } from '../fixtures/hydration';
 
 // The dice faces the page can show, read from the content file the page reads,
 // so a face the roller invents rather than picks would fail here.
 import { dice } from '../../content/dice';
 
-const allFaces = new Set(dice.flatMap((die) => [...die.faces]));
+const allFaces = new Set(dice.flatMap((die) => die.faces.map((face) => face.label)));
 const dieButton = (page: import('@playwright/test').Page, name: string) =>
   page.getByRole('button', { name: new RegExp(`^${name}`) });
 
@@ -46,7 +46,10 @@ test.describe('Jiu jitsu dice', () => {
     const faces: string[] = [];
     for (const die of dice) {
       const face = await shownFace(page, die.name);
-      expect(die.faces, `${die.name} shows "${face}"`).toContain(face);
+      expect(
+        die.faces.map((f) => f.label),
+        `${die.name} shows "${face}"`,
+      ).toContain(face);
       faces.push(face);
     }
     await expect(page.getByRole('status')).toHaveText(
@@ -103,6 +106,59 @@ test.describe('Jiu jitsu dice', () => {
   test('is linked from the footer on every page', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     const link = page.getByRole('contentinfo').getByRole('link', { name: 'Jiu Jitsu Dice' });
+    await expect(link).toHaveAttribute('href', '/dice');
+    await link.click();
+    await expect(page).toHaveURL('/dice');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Jiu Jitsu Dice');
+  });
+
+  // Every face in the content file carries a video, so a roll shows three
+  // stills from YouTube's image host and no player; the player arrives only
+  // on tap, on the privacy-enhanced host. The iframe is asserted by its src,
+  // not by waiting for YouTube to answer, which this suite does not depend on.
+  test('shows each rolled face as its YouTube still, and plays it only when tapped', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await openDice(page);
+    await expect(page.locator('main img, main iframe')).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Roll the dice' }).click();
+    await expect(page.getByRole('button', { name: 'Roll again' })).toBeEnabled();
+
+    const stills = page.locator('main img');
+    await expect(stills).toHaveCount(dice.length);
+    for (const src of await stills.evaluateAll((els) => els.map((el) => el.getAttribute('src')))) {
+      expect(src).toMatch(/^https:\/\/i\.ytimg\.com\/vi\/[A-Za-z0-9_-]{11}\/hqdefault\.jpg$/);
+    }
+    await expect(page.locator('main iframe')).toHaveCount(0);
+
+    const face = await shownFace(page, 'Submission');
+    await page.getByRole('button', { name: `Watch: ${face}` }).click();
+
+    const player = page.locator('main iframe');
+    await expect(player).toHaveCount(1);
+    await expect(player).toHaveAttribute(
+      'src',
+      /^https:\/\/www\.youtube-nocookie\.com\/embed\/[A-Za-z0-9_-]{11}\?rel=0&autoplay=1$/,
+    );
+    await expect(player).toHaveAttribute('title', `${face} video`);
+    await expect(stills).toHaveCount(dice.length - 1);
+  });
+
+  test('is in the header navigation on every page', async ({ page }, testInfo) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    const nav =
+      testInfo.project.name === 'Mobile'
+        ? page.locator('#mobile-nav')
+        : page.getByRole('navigation', { name: 'Primary' });
+    if (testInfo.project.name === 'Mobile') {
+      // The toggle's handler trails the markup against `next dev`; a click
+      // that lands first is swallowed, as tests/fixtures/hydration.ts records.
+      await waitForMenuToggleHydration(page);
+      await page.getByRole('button', { name: 'Toggle menu' }).click();
+    }
+    const link = nav.getByRole('link', { name: 'Dice' });
     await expect(link).toHaveAttribute('href', '/dice');
     await link.click();
     await expect(page).toHaveURL('/dice');

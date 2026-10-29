@@ -21,7 +21,7 @@ export function describeRoll(dice: readonly Die[], roll: readonly (number | null
   return dice
     .flatMap((die, i) => {
       const face = roll[i];
-      return face === null || face === undefined ? [] : [`${die.name}: ${die.faces[face]}.`];
+      return face === null || face === undefined ? [] : [`${die.name}: ${die.faces[face].label}.`];
     })
     .join(' ');
 }
