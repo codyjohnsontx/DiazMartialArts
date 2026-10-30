@@ -13,7 +13,7 @@ import {
   type WeeklySchedule,
   weeklySchedule,
 } from '@/content/schedule';
-import { parseClassTimeRange } from '@/lib/classSchedule';
+import { formatClassStart, parseClassTimeRange } from '@/lib/classSchedule';
 import { readSchoolClock, SCHOOL_TIME_ZONE } from '@/lib/schoolTime';
 import type { UpcomingEvent } from '@/lib/upcoming';
 import { cn, formatPriceUsd } from '@/lib/utils';
@@ -60,11 +60,6 @@ function durationFromTime(time: string): string {
   const diff = parsed.endMinutes - parsed.startMinutes;
   if (diff <= 0) return '';
   return `${diff}m`;
-}
-
-function startTime(time: string): string {
-  const match = time.match(/^(\d+:\d+\s*(AM|PM))/i);
-  return match ? match[1].replace(/\s+/g, ' ') : time;
 }
 
 type Props = {
@@ -287,14 +282,22 @@ export function ScheduleContent({ upcoming, windowDays }: Props) {
               const tag = programToTag(c.program);
               const cat = classCategory(c.coach, c.program);
               const duration = durationFromTime(c.time);
-              const start = startTime(c.time);
+              const start = formatClassStart(c.time);
               return (
                 <details
                   key={`${dayData.day}-${i}-${c.time}-${c.program}`}
                   className={cn('group', i > 0 && 'border-t border-black/10')}
                 >
                   <summary className="grid cursor-pointer list-none grid-cols-[90px_1fr] items-center gap-4 px-6 py-4 sm:grid-cols-[110px_60px_1fr_140px_auto] sm:px-6">
-                    <div className="text-base font-extrabold tracking-tight [font-variant-numeric:tabular-nums] sm:text-lg">
+                    {/* The start only, on one line: the track is fixed so the
+                        rows' columns line up, and a fixed track cannot grow for
+                        its content, so what goes in it has to fit. The whole
+                        range did not, and it wrapped "7:00-8:00" over "AM" in
+                        every row at every width. The end of the range is what
+                        the duration is for: its own column from `sm` up, and
+                        under the program name below that, where the column is
+                        hidden. */}
+                    <div className="whitespace-nowrap text-base font-extrabold tracking-tight [font-variant-numeric:tabular-nums] sm:text-lg">
                       {start}
                     </div>
                     <div className="hidden text-xs font-semibold text-black/55 sm:block">
@@ -302,7 +305,10 @@ export function ScheduleContent({ upcoming, windowDays }: Props) {
                     </div>
                     <div>
                       <div className="text-[15px] font-bold sm:text-base">{c.program}</div>
-                      <div className="mt-0.5 text-xs text-black/55">{cat} class</div>
+                      <div className="mt-0.5 text-xs text-black/55">
+                        {cat} class
+                        {duration && <span className="sm:hidden"> · {duration}</span>}
+                      </div>
                     </div>
                     <div className="hidden sm:block">
                       <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-black/70">

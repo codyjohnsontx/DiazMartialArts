@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  formatClassStart,
   formatCountdown,
   getScheduleLabel,
   getUpcomingClassBlocks,
@@ -92,5 +93,18 @@ describe('schedule labels and countdowns', () => {
     expect(getScheduleLabel(next)).toBe('Tonight');
     expect(formatCountdown(next.start, now)).toBe('Starts in 1h 28m');
     expect(formatCountdown(now, now)).toBe('Starting now');
+  });
+});
+
+describe('formatClassStart', () => {
+  it('prints the start of a range with the period the range implies', () => {
+    expect(formatClassStart('7:00-8:00 AM')).toBe('7:00 AM');
+    expect(formatClassStart('11:00-12:00 PM')).toBe('11:00 AM');
+    expect(formatClassStart('12:00-1:00 PM')).toBe('12:00 PM');
+    expect(formatClassStart('8:10-9:10 PM')).toBe('8:10 PM');
+  });
+
+  it('returns a range it cannot parse as written rather than hiding it', () => {
+    expect(formatClassStart('TBD')).toBe('TBD');
   });
 });

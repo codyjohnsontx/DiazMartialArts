@@ -242,7 +242,10 @@ describe('ScheduleContent', () => {
         />,
       );
 
-      expect(screen.getByText('7:00 PM')).toBeVisible();
+      // Scoped to the event's card: the class rows above print their start
+      // the same way, so a page-wide query finds every 7 PM class as well.
+      const card = screen.getByRole('heading', { name: 'Open Mat' }).parentElement as HTMLElement;
+      expect(within(card).getByText('7:00 PM')).toBeVisible();
     });
 
     it('names the day the event ends when it is not the day it starts', () => {

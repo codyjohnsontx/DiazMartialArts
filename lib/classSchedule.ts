@@ -71,6 +71,26 @@ export function parseClassTimeRange(
   return { startMinutes, endMinutes };
 }
 
+// The start of a printed range as a label of its own: "7:00 AM" from
+// "7:00-8:00 AM". content/schedule.ts writes the period once, at the end of the
+// range, so the start's period is inferred the same way the parser infers it
+// rather than read off the string - a regex for `^\d+:\d+ (AM|PM)` matches no
+// entry in that file, and the fallback it left was the whole range, which is
+// what the schedule page printed, wrapped onto two lines, until this replaced
+// it. A range the parser rejects is returned as written, so bad content shows
+// rather than disappears.
+export function formatClassStart(time: string): string {
+  const parsed = parseClassTimeRange(time);
+  return parsed ? formatClock(parsed.startMinutes) : time;
+}
+
+function formatClock(minutesSinceMidnight: number): string {
+  const hour24 = Math.floor(minutesSinceMidnight / 60);
+  const minute = minutesSinceMidnight % 60;
+  const hour = hour24 % 12 || 12;
+  return `${hour}:${String(minute).padStart(2, '0')} ${hour24 < 12 ? 'AM' : 'PM'}`;
+}
+
 function inferStartPeriod(
   startRaw: string,
   endRaw: string,
