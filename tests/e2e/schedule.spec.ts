@@ -67,7 +67,7 @@ test.describe('Schedule page', () => {
  * width, so every row wrapped "7:00-8:00" over "AM" - on the live site at
  * 1440px as much as on a phone. The cell now prints the start through
  * `formatClassStart` with `whitespace-nowrap`, and the end of the range is what
- * the duration column beside it is for.
+ * the duration is for (the block below guards it at a phone width).
  *
  * Line boxes rather than a pixel width: `Range.getClientRects()` returns one
  * rect per line a text run occupies, which the platform's text shaping cannot
