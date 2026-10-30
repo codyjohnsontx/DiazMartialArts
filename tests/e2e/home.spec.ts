@@ -411,3 +411,87 @@ test.describe('Coming-up card fits the narrowest phones', () => {
     }
   });
 });
+
+/**
+ * The card's headline time stays on one line at every width.
+ *
+ * It sat in a `74px` grid track, and "7:00 AM" at 24px extrabold in Manrope is
+ * wider than that, so the label broke at its space and the card read "7:00"
+ * over "AM" - seen on the live site at a 1440px viewport, where the card has
+ * every pixel it could want, because a fixed track never grows for its content
+ * and wrapping was the only way text that wide could be made to fit it. The
+ * track is now sized `auto` and the label is `whitespace-nowrap`;
+ * components/HomeUpcomingClasses.tsx holds the rest of that reasoning.
+ *
+ * Widths rather than projects: the wrap did not depend on the viewport, so this
+ * checks once each at a phone, a tablet and a desktop. The visit is a Wednesday
+ * morning because the block it puts on the card carries the widest label the
+ * week has, "10:00 AM", beside one of the longest class names, so the name
+ * column has the least room it ever gets and a time that fits here fits
+ * anywhere.
+ *
+ * Line boxes, not a pixel width: `Range.getClientRects()` returns one rect per
+ * line a text run occupies, and that is a relation the platform's text shaping
+ * cannot move - a wrap is a second rect on every machine, where the width at
+ * which it happens is not (see tests/e2e/header-widths.spec.ts). The edge
+ * relation is the one the block above uses, so a label that stays on one line
+ * by painting out through the side of the card fails here as well.
+ */
+test.describe('Coming-up card keeps its headline time on one line', () => {
+  const visitTime = new Date('2026-09-02T09:30:00-05:00');
+
+  test.beforeEach(async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === 'Mobile', 'This spec sets its own viewports.');
+    await page.clock.setFixedTime(visitTime);
+  });
+
+  for (const width of [320, 768, 1440]) {
+    test(`the next class's time does not wrap at ${width}px`, async ({ page }) => {
+      const [nextBlock] = getUpcomingClassBlocks(visitTime, { limit: 1 });
+      // The fixture is only the worst case while the schedule keeps a 10 AM
+      // class on Wednesday; if that moves, move the visit, not the assertion.
+      expect(nextBlock.startLabel, 'the visit no longer lands on the widest label').toBe(
+        '10:00 AM',
+      );
+
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/', DOM_READY);
+      const card = page.locator('section:has(h1) .shadow-lift').first();
+      await expect(card.getByText(/Starts in|Starting now/)).toBeVisible();
+      // .first(): the headline time is the first thing in the card to say it;
+      // a Later row could repeat the label on another day.
+      const time = card.getByText(nextBlock.startLabel, { exact: true }).first();
+      await expect(time).toBeVisible();
+      await page.evaluate(async () => {
+        await document.fonts.ready;
+      });
+
+      const measured = await time.evaluate((el) => {
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        const shell = el.closest('.shadow-lift') as HTMLElement;
+        const style = getComputedStyle(shell);
+        const limit =
+          shell.getBoundingClientRect().right -
+          parseFloat(style.paddingRight) -
+          parseFloat(style.borderRightWidth);
+        return {
+          lineBoxes: range.getClientRects().length,
+          overhang: el.getBoundingClientRect().right - limit,
+          scrollWidth: document.documentElement.scrollWidth,
+          clientWidth: document.documentElement.clientWidth,
+        };
+      });
+      expect(
+        measured.lineBoxes,
+        `"${nextBlock.startLabel}" breaks across lines at ${width}px`,
+      ).toBe(1);
+      expect(measured.overhang, `the time paints past the card at ${width}px`).toBeLessThanOrEqual(
+        0.5,
+      );
+      expect(measured.scrollWidth, `home scrolls sideways at ${width}px`).toBe(
+        measured.clientWidth,
+      );
+    });
+  }
+});

@@ -54,3 +54,73 @@ test.describe('Schedule page', () => {
     }
   });
 });
+
+/**
+ * Every class time on the page is a start, on one line.
+ *
+ * Each row's time cell is a fixed grid track so the rows' columns line up, and
+ * a fixed track cannot grow for its content, so what goes in it has to fit.
+ * The cell printed the whole range ("7:00-8:00 AM"): the start-time extractor
+ * looked for `7:00 AM` at the front of the string, content/schedule.ts writes
+ * the period once at the end of the range so that matched no entry, and the
+ * fallback was the raw string. The range is wider than the track at every
+ * width, so every row wrapped "7:00-8:00" over "AM" - on the live site at
+ * 1440px as much as on a phone. The cell now prints the start through
+ * `formatClassStart` with `whitespace-nowrap`, and the end of the range is what
+ * the duration column beside it is for.
+ *
+ * Line boxes rather than a pixel width: `Range.getClientRects()` returns one
+ * rect per line a text run occupies, which the platform's text shaping cannot
+ * move, where the width at which a wrap happens is machine-local (see
+ * tests/e2e/header-widths.spec.ts). The scroll relation says the label did not
+ * stay on one line by being clipped, and the shape of the text says the cell
+ * is a start with its period rather than a range that happened to fit.
+ *
+ * Wednesday is chosen rather than left to the clock because it carries the
+ * widest label the week has ("10:00 AM") and the page would otherwise open on
+ * whatever day the test ran, including one with no rows to measure.
+ */
+test.describe('Class times on the schedule page', () => {
+  test.beforeEach(async ({}, testInfo) => {
+    test.skip(testInfo.project.name === 'Mobile', 'This spec sets its own viewports.');
+  });
+
+  for (const width of [320, 768, 1440]) {
+    test(`every row shows its start time on one line at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/schedule');
+      await page.getByRole('tab', { name: /wednesday/i }).click();
+      const cells = page.locator('details > summary > div:first-child');
+      await expect(cells.first()).toBeVisible();
+      await page.evaluate(async () => {
+        await document.fonts.ready;
+      });
+
+      const measured = await cells.evaluateAll((els) =>
+        els.map((el) => {
+          const range = document.createRange();
+          range.selectNodeContents(el);
+          return {
+            text: el.textContent?.trim() ?? '',
+            lineBoxes: range.getClientRects().length,
+            scrollWidth: el.scrollWidth,
+            clientWidth: el.clientWidth,
+          };
+        }),
+      );
+      expect(measured.length).toBeGreaterThan(0);
+      for (const cell of measured) {
+        expect(cell.text, 'a time cell prints something other than a start and its period').toMatch(
+          /^\d{1,2}:\d{2} (AM|PM)$/,
+        );
+        expect(cell.lineBoxes, `"${cell.text}" breaks across lines at ${width}px`).toBe(1);
+        // The client width is read first because a box reporting 0 would
+        // compare equal to anything and the relation could not fail.
+        expect(cell.clientWidth, 'the time cell has no layout box to measure').toBeGreaterThan(0);
+        expect(cell.scrollWidth, `"${cell.text}" is clipped at ${width}px`).toBeLessThanOrEqual(
+          cell.clientWidth,
+        );
+      }
+    });
+  }
+});

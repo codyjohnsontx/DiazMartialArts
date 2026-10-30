@@ -62,12 +62,26 @@ export function HomeUpcomingClasses() {
         </div>
       </div>
 
-      <div className="mt-3 grid grid-cols-[74px_1fr] gap-4">
+      {/* The time column is sized by what it holds, not by a pixel figure. It
+          was `74px`, which is narrower than "7:00 AM" at this size in Manrope,
+          so the label broke at its space and the card showed "7:00" over "AM"
+          at every width, 1440px included - a fixed track cannot grow for its
+          content, and a wrapping label is the only way text that wide can
+          fit it. `auto` sizes the track to the widest of the day, the time and
+          the duration, and `whitespace-nowrap` on the time keeps the clock and
+          its AM/PM on one line whatever character separates them (this
+          formatter emits a plain space; others emit a narrow no-break one).
+          The `1fr` track is `minmax(0, 1fr)` so the class names next to it
+          wrap rather than hold the row open, which at 320px is what keeps the
+          card inside the viewport - the same release the Later rows below
+          needed. tests/e2e/home.spec.ts reads the time's line boxes back at
+          phone, tablet and desktop widths. */}
+      <div className="mt-3 grid grid-cols-[auto_minmax(0,1fr)] gap-4">
         <div>
           <div className="text-[11px] font-bold uppercase tracking-[0.14em] text-bronze">
             {getScheduleLabel(nextBlock)}
           </div>
-          <div className="mt-1 text-2xl font-extrabold tracking-tight [font-variant-numeric:tabular-nums]">
+          <div className="mt-1 whitespace-nowrap text-2xl font-extrabold tracking-tight [font-variant-numeric:tabular-nums]">
             {nextBlock.startLabel}
           </div>
           <div className="mt-0.5 text-xs font-semibold text-black/50">
