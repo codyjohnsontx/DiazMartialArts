@@ -2,13 +2,29 @@
 
 Standalone Next.js marketing and member-entry website for Diaz Martial Arts.
 
+**Live:** https://www.diazmartialarts.com
+
+![Diaz Martial Arts home page](docs/screenshots/home.jpg)
+
+The `/schedule` page reads upcoming events from a public Google Calendar ICS
+feed, parsed in `lib/upcoming.ts`, and falls back to a hand-maintained list
+when the feed is unset or unavailable. Leads come in through the contact form and
+the Diaz on Demand waitlist form, both of which post to Formspree.
+
+**Tests:** 238 Vitest unit and component tests (`npm run test:unit`) and 278
+Playwright end-to-end tests across a desktop and a 390px mobile project
+(`npm run test:e2e`), all passing. A further 66 Playwright tests were skipped
+because they target the other viewport or an environment setting this run did
+not have. Measured 2026-10-29 at `a1fbffc`; CI runs both suites on every pull
+request.
+
 This repository is separate from the Diaz on Demand VOD product. The website links into the VOD app by URL; it does not share workspace code, packages, or repo tooling with the VOD system.
 
 ## Stack
 
 - Next.js (App Router) + TypeScript
 - Tailwind CSS
-- ESLint + Prettier + Playwright
+- ESLint + Prettier + Vitest + Playwright
 - SEO metadata, structured data, robots, sitemap
 
 ## Local Development
