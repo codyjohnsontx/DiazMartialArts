@@ -76,9 +76,10 @@ test.describe('Schedule page', () => {
  * stay on one line by being clipped, and the shape of the text says the cell
  * is a start with its period rather than a range that happened to fit.
  *
- * Wednesday is chosen rather than left to the clock because it carries the
- * widest label the week has ("10:00 AM") and the page would otherwise open on
- * whatever day the test ran, including one with no rows to measure.
+ * The page always opens on Monday, which carries the widest labels the week
+ * has ("10:00 AM", "11:00 AM", "12:00 PM"), so no tab is clicked: a click
+ * before hydration is swallowed under `next dev`, and the test would then
+ * measure a day other than the one it named.
  */
 test.describe('Class times on the schedule page', () => {
   test.beforeEach(async ({}, testInfo) => {
@@ -89,7 +90,6 @@ test.describe('Class times on the schedule page', () => {
     test(`every row shows its start time on one line at ${width}px`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 });
       await page.goto('/schedule');
-      await page.getByRole('tab', { name: /wednesday/i }).click();
       const cells = page.locator('details > summary > div:first-child');
       await expect(cells.first()).toBeVisible();
       await page.evaluate(async () => {

@@ -425,10 +425,11 @@ test.describe('Coming-up card fits the narrowest phones', () => {
  *
  * Widths rather than projects: the wrap did not depend on the viewport, so this
  * checks once each at a phone, a tablet and a desktop. The visit is a Wednesday
- * morning because the block it puts on the card carries the widest label the
- * week has, "10:00 AM", beside one of the longest class names, so the name
- * column has the least room it ever gets and a time that fits here fits
- * anywhere.
+ * morning because the block it puts on the card carries the widest time label
+ * the week has, "10:00 AM", so the headline time is at its widest. That is not
+ * the narrowest the name column gets: the `auto` track sizes to the day label
+ * as well, and "Next up Monday" on a weekend visit can be wider still, which
+ * the `minmax(0,1fr)` name track absorbs by wrapping.
  *
  * Line boxes, not a pixel width: `Range.getClientRects()` returns one rect per
  * line a text run occupies, and that is a relation the platform's text shaping
