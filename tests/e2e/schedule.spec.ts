@@ -124,3 +124,35 @@ test.describe('Class times on the schedule page', () => {
     });
   }
 });
+
+/**
+ * Every row still says how long its class runs, at a phone width as well.
+ *
+ * Printing only the start in the time cell leaves the duration as the one
+ * place a row says when the class ends, and its own column is `hidden` below
+ * `sm`. `innerText` is read rather than `textContent` because it leaves out
+ * what is not rendered, so a duration that exists only in a hidden column
+ * reads as missing here, which is exactly the phone-width failure.
+ */
+test.describe('Class durations on the schedule page', () => {
+  test.beforeEach(async ({}, testInfo) => {
+    test.skip(testInfo.project.name === 'Mobile', 'This spec sets its own viewports.');
+  });
+
+  for (const width of [390, 1440]) {
+    test(`every row shows how long its class runs at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/schedule');
+      const rows = page.locator('details > summary');
+      await expect(rows.first()).toBeVisible();
+
+      const texts = await rows.evaluateAll((els) => els.map((el) => (el as HTMLElement).innerText));
+      expect(texts.length).toBeGreaterThan(0);
+      for (const text of texts) {
+        expect(text, `a row at ${width}px does not say how long its class runs`).toMatch(
+          /\b\d+m\b/,
+        );
+      }
+    });
+  }
+});

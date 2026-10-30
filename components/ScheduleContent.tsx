@@ -294,7 +294,9 @@ export function ScheduleContent({ upcoming, windowDays }: Props) {
                         its content, so what goes in it has to fit. The whole
                         range did not, and it wrapped "7:00-8:00" over "AM" in
                         every row at every width. The end of the range is what
-                        the duration column beside this one is for. */}
+                        the duration is for: its own column from `sm` up, and
+                        under the program name below that, where the column is
+                        hidden. */}
                     <div className="whitespace-nowrap text-base font-extrabold tracking-tight [font-variant-numeric:tabular-nums] sm:text-lg">
                       {start}
                     </div>
@@ -303,7 +305,10 @@ export function ScheduleContent({ upcoming, windowDays }: Props) {
                     </div>
                     <div>
                       <div className="text-[15px] font-bold sm:text-base">{c.program}</div>
-                      <div className="mt-0.5 text-xs text-black/55">{cat} class</div>
+                      <div className="mt-0.5 text-xs text-black/55">
+                        {cat} class
+                        {duration && <span className="sm:hidden"> · {duration}</span>}
+                      </div>
                     </div>
                     <div className="hidden sm:block">
                       <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-black/70">
