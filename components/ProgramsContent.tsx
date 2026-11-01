@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
-import { Eyebrow } from '@/components/Eyebrow';
 import { Placeholder } from '@/components/Placeholder';
 import { type Program, type ProgramTag, programs } from '@/content/programs';
 import { cn } from '@/lib/utils';
@@ -140,13 +139,9 @@ export function ProgramsContent({ tag }: { tag: string | null }) {
                 alt={`${p.title} class at Diaz Martial Arts`}
               />
               <div className="flex flex-col p-7">
-                <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-bronze">
-                  {p.tag}
-                </div>
-                <h3 className="mt-2 text-xl font-extrabold leading-tight tracking-tight sm:text-[22px]">
+                <h3 className="text-xl font-extrabold leading-tight tracking-tight sm:text-[22px]">
                   {p.title}
                 </h3>
-                <div className="text-[13px] font-semibold text-bronze">{p.sub}</div>
                 <p className="my-4 flex-1 text-sm leading-relaxed text-black/70">{p.description}</p>
                 <div className="flex gap-4 border-t border-black/10 pt-3 text-xs font-semibold">
                   <span>
@@ -163,8 +158,7 @@ export function ProgramsContent({ tag }: { tag: string | null }) {
 
         {/* HOW IT WORKS */}
         <div className="mt-20 border-y border-black/10 py-12">
-          <Eyebrow>Getting started</Eyebrow>
-          <h2 className="display mt-3 text-3xl sm:text-4xl">What your first month looks like</h2>
+          <h2 className="display text-3xl sm:text-4xl">What your first month looks like</h2>
           <div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {onboardingSteps.map((s) => (
               <div key={s.n} className="border-t-2 border-ember pt-4">

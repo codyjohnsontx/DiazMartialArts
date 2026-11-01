@@ -9,7 +9,7 @@ export const metadata = pageMetadata({
 
 export default function PrivacyPage() {
   return (
-    <Section title="Privacy Policy" eyebrow="Legal">
+    <Section title="Privacy Policy">
       <div className="space-y-4 text-sm leading-relaxed text-black/75">
         <p>
           Diaz Martial Arts collects basic contact information you submit through our website to

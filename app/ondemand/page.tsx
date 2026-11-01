@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation';
 
 import { Button } from '@/components/Button';
-import { Eyebrow } from '@/components/Eyebrow';
 import { OndemandWaitlistForm } from '@/components/OndemandWaitlistForm';
 import { Placeholder } from '@/components/Placeholder';
 import { getAppEnv } from '@/lib/env';
@@ -34,10 +33,10 @@ const features = [
 ];
 
 const samples = [
-  { t: 'Closed Guard Fundamentals', d: '12:48', n: '01' },
-  { t: 'Hip Escape · Shrimp Drill', d: '08:22', n: '02' },
-  { t: 'Frame from Side Control', d: '14:05', n: '03' },
-  { t: 'Triangle from Guard', d: '18:40', n: '04' },
+  { t: 'Closed Guard Fundamentals', d: '12:48' },
+  { t: 'Hip Escape · Shrimp Drill', d: '08:22' },
+  { t: 'Frame from Side Control', d: '14:05' },
+  { t: 'Triangle from Guard', d: '18:40' },
 ];
 
 export default async function OndemandRoutePage() {
@@ -60,11 +59,7 @@ export default async function OndemandRoutePage() {
           />
           <div className="relative mx-auto grid w-full max-w-6xl items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-[1.1fr_1fr] lg:gap-16 lg:px-8">
             <div>
-              <div className="inline-flex items-center gap-2 border border-gold/40 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.22em] text-gold">
-                <span className="h-1.5 w-1.5 rounded-full bg-gold" aria-hidden="true" />
-                Coming soon · Q3 2026
-              </div>
-              <h1 className="display mt-6 text-5xl sm:text-7xl lg:text-[88px]">
+              <h1 className="display text-5xl sm:text-7xl lg:text-[88px]">
                 Diaz
                 <br />
                 <span className="text-ember">On Demand.</span>
@@ -100,8 +95,7 @@ export default async function OndemandRoutePage() {
         <section className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-6 lg:px-8">
           <div className="grid gap-12 lg:grid-cols-[1.1fr_1fr] lg:gap-14">
             <div>
-              <Eyebrow>What&apos;s coming</Eyebrow>
-              <h2 className="display mt-3 text-3xl leading-none sm:text-4xl lg:text-[44px]">
+              <h2 className="display text-3xl leading-none sm:text-4xl lg:text-[44px]">
                 Train anywhere. Same standards.
               </h2>
               <div className="mt-8">
@@ -123,15 +117,11 @@ export default async function OndemandRoutePage() {
             </div>
 
             <div id="waitlist" className="self-start bg-ink p-8 text-sand sm:p-9">
-              <Eyebrow variant="light">Waitlist</Eyebrow>
-              <h3 className="display mt-3 text-2xl sm:text-3xl">Be first in line.</h3>
+              <h3 className="display text-2xl sm:text-3xl">Be first in line.</h3>
               <p className="mb-5 mt-2 text-sm leading-relaxed text-white/70">
                 We&apos;ll email you when access opens, plus a 30-day intro at launch.
               </p>
               <OndemandWaitlistForm />
-              <div className="mt-5 flex flex-wrap justify-between gap-2 border-t border-white/10 pt-4 text-xs text-white/60">
-                <span>No spam. Unsubscribe anytime.</span>
-              </div>
             </div>
           </div>
         </section>
@@ -159,10 +149,7 @@ export default async function OndemandRoutePage() {
                     </div>
                   </div>
                   <div className="p-4">
-                    <div className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-ember">
-                      BJJ · {v.n}
-                    </div>
-                    <h3 className="mt-1.5 text-[15px] font-bold tracking-tight">{v.t}</h3>
+                    <h3 className="text-[15px] font-bold tracking-tight">{v.t}</h3>
                   </div>
                 </article>
               ))}

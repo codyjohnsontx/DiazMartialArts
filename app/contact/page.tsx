@@ -1,6 +1,5 @@
 import { Button } from '@/components/Button';
 import { ContactForm } from '@/components/ContactForm';
-import { Eyebrow } from '@/components/Eyebrow';
 import { LocalBusinessSchema } from '@/components/LocalBusinessSchema';
 import { site } from '@/content/site';
 import { pageMetadata } from '@/lib/seo';
@@ -21,8 +20,7 @@ export default function ContactPage() {
       <section className="border-b border-black/10">
         <div className="mx-auto grid w-full max-w-6xl items-end gap-12 px-4 py-14 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-8">
           <div>
-            <Eyebrow>Book a free trial</Eyebrow>
-            <h1 className="display mt-5 text-5xl sm:text-7xl lg:text-[88px]">Visit the gym</h1>
+            <h1 className="display text-5xl sm:text-7xl lg:text-[88px]">Visit the gym</h1>
           </div>
           <p className="text-base leading-relaxed text-black/75 sm:text-lg">
             Tell us your goals and availability. We&apos;ll help you choose the right class and get
@@ -38,8 +36,7 @@ export default function ContactPage() {
 
           <div className="flex flex-col gap-4">
             <div className="border border-black/10 bg-white p-7">
-              <Eyebrow>Visit us</Eyebrow>
-              <p className="mt-3.5 text-base leading-relaxed">
+              <p className="text-base leading-relaxed">
                 {site.address.street}
                 <br />
                 {site.address.city}, {site.address.state} {site.address.zip}
@@ -68,8 +65,7 @@ export default function ContactPage() {
             </div>
 
             <div className="bg-ink p-7 text-sand">
-              <Eyebrow variant="light">Already a member?</Eyebrow>
-              <p className="my-3 text-sm leading-relaxed text-white/70">
+              <p className="mb-3 text-sm leading-relaxed text-white/70">
                 Member accounts and video access live in Diaz on Demand. Head there for access or
                 launch updates.
               </p>

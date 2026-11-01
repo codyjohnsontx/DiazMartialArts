@@ -27,7 +27,7 @@ export default async function SchedulePage() {
   return (
     <>
       <UpcomingEventsSchema events={shown} />
-      <ScheduleContent upcoming={shown} windowDays={UPCOMING_WINDOW_DAYS} />
+      <ScheduleContent upcoming={shown} />
     </>
   );
 }

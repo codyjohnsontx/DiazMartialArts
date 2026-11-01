@@ -3,7 +3,6 @@
 import { useState } from 'react';
 
 import { Button } from '@/components/Button';
-import { Eyebrow } from '@/components/Eyebrow';
 import { type FaqGroup } from '@/content/faq';
 import { cn } from '@/lib/utils';
 
@@ -18,9 +17,8 @@ export function FaqAccordion({ groups }: Props) {
   return (
     <div className="grid gap-12 lg:grid-cols-[240px_1fr] lg:gap-16">
       {/* SIDEBAR */}
-      <nav className="self-start lg:sticky lg:top-28">
-        <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-bronze">Topics</div>
-        <ul className="mt-4 grid gap-1">
+      <nav aria-label="FAQ topics" className="self-start lg:sticky lg:top-28">
+        <ul className="grid gap-1">
           {groups.map((g, i) => {
             const active = i === activeGroup;
             return (
@@ -43,8 +41,7 @@ export function FaqAccordion({ groups }: Props) {
         </ul>
 
         <div className="mt-8 bg-ink p-5 text-sand">
-          <Eyebrow variant="light">Need help?</Eyebrow>
-          <p className="my-3 text-sm leading-relaxed text-white/70">
+          <p className="mb-3 text-sm leading-relaxed text-white/70">
             Front desk responds in under 24h.
           </p>
           <Button href="/contact" variant="ghost-light">

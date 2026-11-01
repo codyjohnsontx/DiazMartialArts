@@ -1,5 +1,4 @@
 import { Button } from '@/components/Button';
-import { Eyebrow } from '@/components/Eyebrow';
 import { Placeholder } from '@/components/Placeholder';
 import { coaches } from '@/content/coaches';
 import { pageMetadata } from '@/lib/seo';
@@ -18,8 +17,7 @@ export default function CoachesPage() {
   if (!head) {
     return (
       <section className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-6 lg:px-8">
-        <Eyebrow>Instruction</Eyebrow>
-        <h1 className="display mt-5 text-5xl sm:text-7xl lg:text-[88px]">Coaches</h1>
+        <h1 className="display text-5xl sm:text-7xl lg:text-[88px]">Coaches</h1>
         <p className="mt-6 max-w-xl text-base leading-relaxed text-black/75 sm:text-lg">
           Coach profiles are being updated. Please check back soon.
         </p>
@@ -35,8 +33,7 @@ export default function CoachesPage() {
       <section className="border-b border-black/10">
         <div className="mx-auto grid w-full max-w-6xl items-end gap-12 px-4 py-14 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-8">
           <div>
-            <Eyebrow>Instruction</Eyebrow>
-            <h1 className="display mt-5 text-5xl sm:text-7xl lg:text-[88px]">Coaches</h1>
+            <h1 className="display text-5xl sm:text-7xl lg:text-[88px]">Coaches</h1>
           </div>
           <p className="text-base leading-relaxed text-black/75 sm:text-lg">
             Experienced instructors focused on technical growth, safety, and long-term student
@@ -58,10 +55,7 @@ export default function CoachesPage() {
           alt={head.name}
         />
         <div className="mt-8 min-w-0 lg:mt-0 lg:pt-4">
-          <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-bronze">
-            01 · Head Instructor
-          </div>
-          <h2 id="head-instructor" className="display mt-3 text-4xl sm:text-5xl lg:text-[64px]">
+          <h2 id="head-instructor" className="display text-4xl sm:text-5xl lg:text-[64px]">
             {head.name.replace(/^Coach\s+/, '')}
           </h2>
           <p className="mt-3 text-base font-bold text-bronze sm:text-lg">{head.rank}</p>
@@ -84,8 +78,7 @@ export default function CoachesPage() {
       {/* RANK AND CERTIFICATION */}
       <section aria-labelledby="rank-and-certification" className="border-t border-black/10">
         <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
-          <Eyebrow>Credentials</Eyebrow>
-          <h2 id="rank-and-certification" className="display mt-3 text-3xl sm:text-4xl">
+          <h2 id="rank-and-certification" className="display text-3xl sm:text-4xl">
             Rank and certification
           </h2>
           <div className="mt-10 grid gap-x-10 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">

@@ -5,7 +5,6 @@ import { notFound } from 'next/navigation';
 import { Button } from '@/components/Button';
 import { CourseSchema } from '@/components/CourseSchema';
 import { CTABanner } from '@/components/CTABanner';
-import { Eyebrow } from '@/components/Eyebrow';
 import { Placeholder } from '@/components/Placeholder';
 import { Section } from '@/components/Section';
 import { programs } from '@/content/programs';
@@ -55,9 +54,7 @@ export default function ProgramPage({ params }: { params: { slug: string } }) {
       <section className="border-b border-black/10">
         <div className="mx-auto grid w-full max-w-6xl items-end gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1fr_340px] lg:gap-16 lg:px-8">
           <div>
-            <Eyebrow>{program.tag}</Eyebrow>
-            <h1 className="display mt-5 text-4xl sm:text-6xl lg:text-7xl">{program.title}</h1>
-            <p className="mt-2 text-base font-semibold text-bronze">{program.sub}</p>
+            <h1 className="display text-4xl sm:text-6xl lg:text-7xl">{program.title}</h1>
             <p className="mt-4 max-w-xl text-base leading-relaxed text-black/75 sm:text-lg">
               {program.description}
             </p>
@@ -80,7 +77,7 @@ export default function ProgramPage({ params }: { params: { slug: string } }) {
       </section>
 
       {/* OVERVIEW */}
-      <Section eyebrow="Program details" title="Who it's for">
+      <Section title="Who it's for">
         <div className="grid gap-8 sm:grid-cols-3">
           <div className="border-t-2 border-ember pt-4">
             <div className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-ember">
@@ -105,7 +102,7 @@ export default function ProgramPage({ params }: { params: { slug: string } }) {
 
       {/* SCHEDULE SLICE */}
       {schedule.length > 0 && (
-        <Section eyebrow="This week" title="Class schedule">
+        <Section title="Class schedule">
           <div className="border border-black/10 bg-white">
             {schedule.map((entry, di) => (
               <div key={entry.day} className={di > 0 ? 'border-t border-black/10' : undefined}>

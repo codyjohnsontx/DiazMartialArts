@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useState } from 'react';
 
 import { Button } from '@/components/Button';
-import { Eyebrow } from '@/components/Eyebrow';
 import { type ProgramTag } from '@/content/programs';
 import {
   classDescriptions,
@@ -69,14 +68,6 @@ type Props = {
    * Event markup, so a card and its markup never describe different events.
    */
   upcoming: UpcomingEvent[];
-  /**
-   * The forward window the page filtered `upcoming` on, so the eyebrow states the
-   * same figure rather than a copy that can drift. Passed in rather than imported:
-   * this is a client component, and reaching into lib/upcoming.ts for one integer
-   * would drag the ICS parser and the server-side env reader into the browser
-   * bundle with it.
-   */
-  windowDays: number;
 };
 
 const monthShort = [
@@ -193,7 +184,7 @@ function eventGridLayout(count: number): string {
   return 'max-w-sm';
 }
 
-export function ScheduleContent({ upcoming, windowDays }: Props) {
+export function ScheduleContent({ upcoming }: Props) {
   const [activeDay, setActiveDay] = useState<WeeklySchedule['day']>('Monday');
   const dayData = weeklySchedule.find((d) => d.day === activeDay) ?? weeklySchedule[0];
 
@@ -340,10 +331,7 @@ export function ScheduleContent({ upcoming, windowDays }: Props) {
       {/* PRINTABLE SCHEDULES */}
       <section className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
         <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <Eyebrow>Printable sheets</Eyebrow>
-            <h2 className="display mt-3 text-2xl sm:text-3xl">Class schedule flyers</h2>
-          </div>
+          <h2 className="display text-2xl sm:text-3xl">Class schedule flyers</h2>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
@@ -376,10 +364,7 @@ export function ScheduleContent({ upcoming, windowDays }: Props) {
       <section className="mt-16 bg-ink text-sand">
         <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
           <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <Eyebrow variant="light">Next {windowDays} days</Eyebrow>
-              <h2 className="display mt-3 text-3xl sm:text-[44px]">Upcoming events</h2>
-            </div>
+            <h2 className="display text-3xl sm:text-[44px]">Upcoming events</h2>
             <Button href="/announcements" variant="ghost-light">
               Open announcements →
             </Button>

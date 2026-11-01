@@ -17,12 +17,7 @@ export const metadata = pageMetadata({
 
 export default function PricingPage() {
   return (
-    <Section
-      title="Pricing"
-      titleAs="h1"
-      eyebrow="Membership"
-      description="Straightforward plans with clear options for families and adult students."
-    >
+    <Section title="Pricing" titleAs="h1">
       <div className="grid gap-5 md:grid-cols-3">
         {plans.map((plan) => (
           <Card key={plan.name} className="h-full">

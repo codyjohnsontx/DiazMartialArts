@@ -17,7 +17,7 @@ export default function Error({
   }, [error]);
 
   return (
-    <Section eyebrow="Error" title="Something went wrong">
+    <Section title="Something went wrong">
       <p className="mb-6 text-base leading-relaxed text-black/70">
         An unexpected error occurred. You can try again or return to the home page.
       </p>

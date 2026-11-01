@@ -40,8 +40,7 @@ test.describe('Contact page', () => {
     ).toBeVisible();
   });
 
-  test('"Visit us" and "San Marcos" visible', async ({ page }) => {
-    await expect(page.getByText('Visit us').first()).toBeVisible();
+  test('address with "San Marcos" visible', async ({ page }) => {
     await expect(page.getByText(/San Marcos/).first()).toBeVisible();
   });
 });

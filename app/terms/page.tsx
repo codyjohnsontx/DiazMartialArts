@@ -9,7 +9,7 @@ export const metadata = pageMetadata({
 
 export default function TermsPage() {
   return (
-    <Section title="Terms of Service" eyebrow="Legal">
+    <Section title="Terms of Service">
       <div className="space-y-4 text-sm leading-relaxed text-black/75">
         <p>
           By using this website, you agree to use the content for lawful purposes and acknowledge
