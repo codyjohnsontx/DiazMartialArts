@@ -1,7 +1,7 @@
 type Plan = {
   name: string;
   price: string;
-  /** A fact about the plan shown above its name; left off when there is none. */
+  /** A fact about the plan shown under its price; left off when there is none. */
   notes?: string;
   features: readonly string[];
 };
