@@ -102,9 +102,7 @@ marking work complete or CI fails on unformatted files.
   those deleted as filler (the `Eyebrow` component is gone and `Section` takes
   only a title), so do not add a new one to a page, card or banner. Text
   that carries a fact a visitor needs - a form label, a price, an address,
-  hours, a plan's age range - is not an eyebrow and stays, though a copy of
-  the address or hours under a banner heading is a sub-line, because the
-  footer already carries both on every page.
+  hours, a plan's age range - is not an eyebrow and stays.
 
 - This site has no authentication. Member accounts live in the separate Diaz on
   Demand app; `NEXT_PUBLIC_ONDEMAND_URL` is the single source of that
