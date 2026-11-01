@@ -47,7 +47,9 @@ const buttonStyles = {
   // boundary. 35 is the smallest step on Tailwind's opacity scale that clears
   // it on every surface the variant sits on: the flat bg-ink panels in
   // app/contact/page.tsx, components/FaqAccordion.tsx and
-  // components/ScheduleContent.tsx, and the ember-glow panels in app/page.tsx
+  // components/ScheduleContent.tsx, the ink-gradient card in
+  // components/CTABanner.tsx, whose lightest stop #191d23 still holds about
+  // 3.21:1, and the ember-glow panels in app/page.tsx
   // and app/ondemand/page.tsx, where the lightest pixel behind the button
   // measured rgb(52,22,21) and the border holds about 3.15:1. 30% reaches only
   // about 2.68:1 on flat ink. The hero sits on a photograph rather than a
