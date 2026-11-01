@@ -1,4 +1,12 @@
-export const plans = [
+type Plan = {
+  name: string;
+  price: string;
+  /** A fact about the plan shown above its name; left off when there is none. */
+  notes?: string;
+  features: readonly string[];
+};
+
+export const plans: readonly Plan[] = [
   {
     name: 'Essentials',
     price: '$120/mo',
@@ -8,7 +16,6 @@ export const plans = [
   {
     name: 'Unlimited',
     price: '$150/mo',
-    notes: 'Most popular',
     features: [
       'Unlimited class access',
       'Open mat access',
@@ -22,4 +29,4 @@ export const plans = [
     notes: 'Ages 6-14',
     features: ['2-3 youth classes weekly', 'Progress tracking', 'Belt promotion support'],
   },
-] as const;
+];

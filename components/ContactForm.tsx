@@ -269,7 +269,7 @@ export function ContactForm() {
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
         <p className="max-w-sm text-xs text-black/55">
-          By submitting you agree to be contacted about your trial. We respect your inbox.
+          By submitting you agree to be contacted about your trial.
         </p>
         <Button type="submit" size="lg" disabled={status === 'submitting'}>
           {status === 'submitting' ? 'Sending…' : 'Submit request →'}

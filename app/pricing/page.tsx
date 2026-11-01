@@ -21,10 +21,12 @@ export default function PricingPage() {
       <div className="grid gap-5 md:grid-cols-3">
         {plans.map((plan) => (
           <Card key={plan.name} className="h-full">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-bronze">
-              {plan.notes}
-            </p>
-            <h2 className="mt-2 text-2xl font-bold text-ink">{plan.name}</h2>
+            {plan.notes && (
+              <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-bronze">
+                {plan.notes}
+              </p>
+            )}
+            <h2 className="text-2xl font-bold text-ink">{plan.name}</h2>
             <p className="mt-2 text-3xl font-bold text-ink">{plan.price}</p>
             <ul className="mt-4 space-y-2 text-sm text-black/75">
               {plan.features.map((feature) => (

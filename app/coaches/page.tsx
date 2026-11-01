@@ -31,14 +31,8 @@ export default function CoachesPage() {
     <>
       {/* HERO */}
       <section className="border-b border-black/10">
-        <div className="mx-auto grid w-full max-w-6xl items-end gap-12 px-4 py-14 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-8">
-          <div>
-            <h1 className="display text-5xl sm:text-7xl lg:text-[88px]">Coaches</h1>
-          </div>
-          <p className="text-base leading-relaxed text-black/75 sm:text-lg">
-            Experienced instructors focused on technical growth, safety, and long-term student
-            development.
-          </p>
+        <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
+          <h1 className="display text-5xl sm:text-7xl lg:text-[88px]">Coaches</h1>
         </div>
       </section>
 
