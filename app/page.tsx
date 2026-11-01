@@ -224,6 +224,7 @@ export default function HomePage() {
                   <div>
                     <h3 className="text-xl font-extrabold tracking-tight">{p.title}</h3>
                     <p className="mt-3 text-sm leading-relaxed text-black/70">{p.description}</p>
+                    <p className="mt-2 text-[13px] text-black/55">{p.age}</p>
                   </div>
                   <div className="text-2xl font-light text-black/30" aria-hidden="true">
                     →
