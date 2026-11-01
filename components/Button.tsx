@@ -35,8 +35,9 @@ const buttonStyles = {
   // light pages; a white ring measures about 1.1:1 on sand. So every primary on
   // a dark panel must opt into this variant at the call site - there is no
   // surface-aware default - and the measured call sites are the CTA banner in
-  // app/page.tsx, the hero in app/ondemand/page.tsx, the empty upcoming-events
-  // state in components/ScheduleContent.tsx and components/CTABanner.tsx.
+  // app/page.tsx, the hero in app/ondemand/page.tsx, the waitlist submit in
+  // components/OndemandWaitlistForm.tsx, the empty upcoming-events state in
+  // components/ScheduleContent.tsx and components/CTABanner.tsx.
   'primary-light': `${primarySurface} focus-visible:outline-white`,
   secondary: 'bg-ink text-white hover:bg-black focus-visible:outline-ink shadow-soft',
   ghost:

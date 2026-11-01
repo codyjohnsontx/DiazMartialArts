@@ -148,6 +148,7 @@ export function OndemandWaitlistForm() {
 
       <Button
         type="submit"
+        variant="primary-light"
         size="lg"
         disabled={status === 'submitting'}
         className="justify-between"
