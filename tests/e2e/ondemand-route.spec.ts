@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 
+import { waitForHydration } from '../fixtures/hydration';
 import { ONDEMAND_URL } from '../fixtures/site';
 
 test.describe('Ondemand entry route', () => {
@@ -25,5 +26,23 @@ test.describe('Ondemand entry route', () => {
 
     await expect(page).toHaveURL(/\/ondemand$/);
     await expect(page.getByRole('heading', { name: /Diaz\s+On Demand/i })).toBeVisible();
+  });
+
+  // The waitlist form sits on a bg-ink panel, where the default primary's ember
+  // focus ring misses WCAG 1.4.11's 3:1, so its submit must resolve to white.
+  test('waitlist submit gets the white focus ring on its dark panel', async ({ page }) => {
+    test.skip(Boolean(ONDEMAND_URL), 'NEXT_PUBLIC_ONDEMAND_URL points at a member app.');
+
+    await page.goto('/ondemand', { waitUntil: 'domcontentloaded' });
+    const submit = page.locator('#waitlist').getByRole('button', { name: /Join waitlist/i });
+    await waitForHydration(page, '#waitlist button[type="submit"]');
+
+    await submit.focus();
+
+    await expect(submit).toBeFocused();
+    expect(await submit.evaluate((el) => el.matches(':focus-visible'))).toBe(true);
+    expect(await submit.evaluate((el) => getComputedStyle(el).outlineColor)).toBe(
+      'rgb(255, 255, 255)',
+    );
   });
 });

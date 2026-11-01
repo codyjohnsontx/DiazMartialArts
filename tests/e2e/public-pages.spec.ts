@@ -1,5 +1,7 @@
 import { test, expect } from '@playwright/test';
 
+import { site } from '@/content/site';
+import { waitForHydration } from '../fixtures/hydration';
 import { imageSize } from '../fixtures/imageSize';
 import { fetchServedImage } from '../fixtures/servedImage';
 import { PUBLIC_PAGES } from '../fixtures/site';
@@ -100,6 +102,37 @@ const CREDENTIAL_GROUPS = [
     ],
   },
 ];
+
+// The CTA banner is an ink gradient card on the light program pages, so its
+// buttons must use the dark-surface variants: the default primary's ember ring
+// and the default ghost's ink text vanish against it. Nothing in the DOM tells
+// an inert or off-scale utility from a working one, so read what the browser
+// resolves. `focus()` has no actionability check, hence the hydration wait.
+test.describe('Program page CTA banner', () => {
+  test('uses the dark-surface button colours on its ink card', async ({ page }) => {
+    await page.goto('/programs/brazilian-jiu-jitsu', { waitUntil: 'domcontentloaded' });
+    const banner = page.locator('section', {
+      has: page.getByRole('heading', { name: 'Classes 6 days a week.' }),
+    });
+    const schedule = banner.getByRole('link', { name: site.ctas.secondary.label });
+    const coaches = banner.getByRole('link', { name: site.ctas.coaches.label });
+    await waitForHydration(page, 'main a[href="/contact"]');
+
+    await schedule.focus();
+
+    await expect(schedule).toBeFocused();
+    expect(await schedule.evaluate((el) => el.matches(':focus-visible'))).toBe(true);
+    expect(await schedule.evaluate((el) => getComputedStyle(el).outlineColor)).toBe(
+      'rgb(255, 255, 255)',
+    );
+    expect(
+      await coaches.evaluate((el) => {
+        const style = getComputedStyle(el);
+        return { color: style.color, border: style.borderTopColor };
+      }),
+    ).toEqual({ color: 'rgb(247, 243, 237)', border: 'rgba(255, 255, 255, 0.35)' });
+  });
+});
 
 test.describe('Coaches page details', () => {
   test('shows Coach Eddie Diaz and head instructor label', async ({ page }) => {

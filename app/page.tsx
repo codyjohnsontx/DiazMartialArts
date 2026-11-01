@@ -264,7 +264,7 @@ export default function HomePage() {
             </p>
           </div>
           <div className="flex flex-col gap-3">
-            <Button href="/contact" size="lg" className="justify-between">
+            <Button href="/contact" variant="primary-light" size="lg" className="justify-between">
               Book a free trial <span aria-hidden="true">→</span>
             </Button>
             <Button

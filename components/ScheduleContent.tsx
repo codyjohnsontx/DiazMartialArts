@@ -391,7 +391,7 @@ export function ScheduleContent({ upcoming, windowDays }: Props) {
                 No special events on the calendar right now. Regular classes run six days a week,
                 and the full weekly schedule is at the top of this page.
               </p>
-              <Button href="/contact" size="lg" className="mt-6">
+              <Button href="/contact" variant="primary-light" size="lg" className="mt-6">
                 Book Free Trial →
               </Button>
             </div>
