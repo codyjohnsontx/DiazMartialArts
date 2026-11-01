@@ -22,8 +22,10 @@ export function CTABanner() {
           Drop in for a free first class or check the schedule to find the right session for you.
         </p>
         <div className="mt-6 flex gap-3">
-          <Button href={site.ctas.secondary.href}>{site.ctas.secondary.label}</Button>
-          <Button href={site.ctas.coaches.href} variant="ghost">
+          <Button href={site.ctas.secondary.href} variant="primary-light">
+            {site.ctas.secondary.label}
+          </Button>
+          <Button href={site.ctas.coaches.href} variant="ghost-light">
             {site.ctas.coaches.label}
           </Button>
         </div>

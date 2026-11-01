@@ -31,10 +31,12 @@ const buttonStyles = {
   // reaches about 1.66:1 against the home hero's photo backdrop and about
   // 2.86:1 against bg-ink; a white ring clears the bar on both, at about
   // 10.9:1 over that photo backdrop and about 18.8:1 over bg-ink. The default
-  // `primary` keeps the ember ring, so app/page.tsx's CTA banner sits on the
-  // bg-ink side of that same gap. That instance is pre-existing and is left
-  // alone deliberately because the change that added this variant was scoped to
-  // the hero.
+  // `primary` keeps the ember ring because that ring is what carries it on the
+  // light pages; a white ring measures about 1.1:1 on sand. So every primary on
+  // a dark panel must opt into this variant at the call site - there is no
+  // surface-aware default - and the measured call sites are the CTA banner in
+  // app/page.tsx, the hero in app/ondemand/page.tsx, the empty upcoming-events
+  // state in components/ScheduleContent.tsx and components/CTABanner.tsx.
   'primary-light': `${primarySurface} focus-visible:outline-white`,
   secondary: 'bg-ink text-white hover:bg-black focus-visible:outline-ink shadow-soft',
   ghost:

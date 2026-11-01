@@ -2,6 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 
 import { formatCountdown, getUpcomingClassBlocks } from '@/lib/classSchedule';
 import { imageSize } from '../fixtures/imageSize';
+import { waitForHydration } from '../fixtures/hydration';
 import { fetchServedImage } from '../fixtures/servedImage';
 
 /**
@@ -166,6 +167,26 @@ test.describe('Home page', () => {
   test('cta banner visible', async ({ page }) => {
     await expect(page.getByText(/Your first class/i).first()).toBeVisible();
     await expect(page.getByText(/is on us/i).first()).toBeVisible();
+  });
+
+  // The banner is bg-ink, and the default primary's ember focus ring measured
+  // 2.60:1 against it at 1440px (2.80:1 at 390px), under WCAG 1.4.11's 3:1.
+  // Nothing in the DOM distinguishes that ring from a visible one, so read the
+  // colour the browser actually resolves for the focused link: white measures
+  // 17.08:1 and 18.39:1 at those widths. `focus()` has no actionability check,
+  // hence the hydration wait (tests/fixtures/hydration.ts owns that reasoning).
+  test('cta banner primary gets the white focus ring for dark surfaces', async ({ page }) => {
+    const banner = page.locator('section', { hasText: /Your first class/i });
+    const link = banner.getByRole('link', { name: /Book a free trial/i });
+    await waitForHydration(page, 'section a[href="/contact"]');
+
+    await link.focus();
+
+    await expect(link).toBeFocused();
+    expect(await link.evaluate((el) => el.matches(':focus-visible'))).toBe(true);
+    expect(await link.evaluate((el) => getComputedStyle(el).outlineColor)).toBe(
+      'rgb(255, 255, 255)',
+    );
   });
 
   test('header home link is visible', async ({ page }) => {

@@ -74,7 +74,7 @@ export default async function OndemandRoutePage() {
                 curriculum, progress tracking, and the same standards we run on the mat.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
-                <Button href="#waitlist" size="lg">
+                <Button href="#waitlist" variant="primary-light" size="lg">
                   Join the waitlist →
                 </Button>
                 <Button href="#samples" variant="ghost-light" size="lg">
