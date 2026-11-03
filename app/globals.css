@@ -5,7 +5,7 @@
 :root {
   color-scheme: light;
   --surface: #ffffff;
-  --surface-muted: #f5efe7;
+  --surface-muted: #f4f4f5;
   --text-primary: #101214;
   --text-muted: rgba(16, 18, 20, 0.72);
 }
@@ -16,10 +16,7 @@ body {
 }
 
 body {
-  background:
-    radial-gradient(circle at 6% -4%, rgba(180, 35, 24, 0.1), transparent 34%),
-    radial-gradient(circle at 92% 4%, rgba(138, 75, 16, 0.1), transparent 37%),
-    linear-gradient(180deg, #f9f5ef 0%, #f6f1e9 58%, #f4eee5 100%);
+  background: #ffffff;
   color: var(--text-primary);
   text-rendering: optimizeLegibility;
 }

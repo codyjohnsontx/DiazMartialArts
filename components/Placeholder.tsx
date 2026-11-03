@@ -16,10 +16,10 @@ type PlaceholderProps = {
 };
 
 const tints: Record<Tint, { a: string; b: string; text: string }> = {
-  sand: { a: '#E9DFD5', b: '#DCD0C2', text: 'rgba(16,18,20,0.55)' },
-  ink: { a: '#1A1F26', b: '#101214', text: 'rgba(247,243,237,0.65)' },
-  ember: { a: '#7A1810', b: '#5C100A', text: 'rgba(247,243,237,0.72)' },
-  clay: { a: '#D4C4B3', b: '#C2B09D', text: 'rgba(16,18,20,0.55)' },
+  sand: { a: '#E4E4E7', b: '#D4D4D8', text: 'rgba(16,18,20,0.55)' },
+  ink: { a: '#1A1F26', b: '#101214', text: 'rgba(244,244,245,0.65)' },
+  ember: { a: '#7A1810', b: '#5C100A', text: 'rgba(244,244,245,0.72)' },
+  clay: { a: '#D4D4D8', b: '#C4C4CA', text: 'rgba(16,18,20,0.55)' },
 };
 
 const DEFAULT_PLACEHOLDER_HEIGHT = 320;

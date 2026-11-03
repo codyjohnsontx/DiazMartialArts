@@ -130,7 +130,7 @@ test.describe('Program page CTA banner', () => {
         const style = getComputedStyle(el);
         return { color: style.color, border: style.borderTopColor };
       }),
-    ).toEqual({ color: 'rgb(247, 243, 237)', border: 'rgba(255, 255, 255, 0.35)' });
+    ).toEqual({ color: 'rgb(244, 244, 245)', border: 'rgba(255, 255, 255, 0.35)' });
   });
 });
 

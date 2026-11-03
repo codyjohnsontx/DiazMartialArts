@@ -7,11 +7,11 @@ const config: Config = {
       colors: {
         ink: '#101214',
         ember: '#B42318',
-        sand: '#F7F3ED',
+        sand: '#F4F4F5',
         bronze: '#8A4B10',
         gold: '#D4A017',
         charcoal: '#1A1F26',
-        clay: '#E9DFD5',
+        clay: '#E4E4E7',
       },
       boxShadow: {
         ring: '0 10px 30px -12px rgba(16, 18, 20, 0.35)',

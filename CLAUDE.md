@@ -351,17 +351,21 @@ marking work complete or CI fails on unformatted files.
   rebuild, restart dev, or delete `.next/types` before treating it as one. CI
   never sees it because each run starts from a clean checkout.
 
-- Text contrast on this site cannot be checked against a nominal background
-  colour. `body` paints a gradient (`app/globals.css`), so no ancestor carries
-  an opaque `backgroundColor`: walking up the tree for one finds nothing, and
-  `sand` is near but not equal to what any given pixel actually is. Measure the
-  rendered page instead - hide every glyph with
-  `* { color: transparent !important }`, re-screenshot, and scan the whole box
-  behind each run of text for the pixel that MINIMISES the ratio, which for
-  dark type on this light page is the darkest one, not the lightest. The
-  `Rank and certification` list on `/coaches` was sized that way; its tightest
-  runs measure 5.52:1 (bronze rank line) and 5.98:1 (bronze group headings)
-  against AA's 4.5:1.
+- Text contrast on a flat surface here is a nominal check: `body` is flat
+  `#ffffff` and the light panels are flat tokens (`sand`, `clay`,
+  `--surface-muted`), so the colour behind a run of text is the token's. That
+  is recent. Until the white background landed, `body` painted a tan gradient
+  with two radial glows, no ancestor carried an opaque `backgroundColor`, and
+  `sand` was near but not equal to any given pixel, so every ratio recorded
+  before it was measured off the rendered page. Surfaces that still paint a
+  gradient or a photo (the home hero, the CTA banner card) still need that
+  measurement: hide every glyph with `* { color: transparent !important }`,
+  re-screenshot, and scan the whole box behind each run of text for the pixel
+  that MINIMISES the ratio, which for dark type on a light surface is the
+  darkest one, not the lightest. The `Rank and certification` list on
+  `/coaches` was sized that way on the old gradient; its tightest runs
+  measured 5.52:1 (bronze rank line) and 5.98:1 (bronze group headings)
+  against AA's 4.5:1, and bronze on flat white is 6.79:1.
 
 - A `.display` heading is one long word away from scrolling the whole page
   sideways, and no test on this site sees it until one is written for that
