@@ -83,7 +83,7 @@ test.describe('Home page', () => {
 
     // the copy is only legible over the photo because the section is inverted
     await expect(hero).toHaveCSS('background-color', 'rgb(16, 18, 20)');
-    await expect(page.locator('h1')).toHaveCSS('color', 'rgb(247, 243, 237)');
+    await expect(page.locator('h1')).toHaveCSS('color', 'rgb(244, 244, 245)');
 
     // the oversized image box is held inside a layer of its own, so the section
     // clips nothing and the photo is the only thing cropped

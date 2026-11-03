@@ -97,7 +97,7 @@ export default function HomePage() {
             scrim shows its own floor independent of the photo: the lightest
             backdrop the section can produce anywhere is rgb(69,61,62), to
             within the unit the browser's gradient dithering moves it, giving
-            sand 9.55:1, gold 4.44:1 and white/70 6.14:1. That corrects the
+            sand 9.60:1, gold 4.44:1 and white/70 6.14:1. That corrects the
             optimistic rgb(65,59,60) this comment carried from PR #25, which the
             hero parallax then inherited; the figure was revised deliberately
             rather than drifting. Gold reads under 4.5:1 and still clears AA
@@ -106,7 +106,7 @@ export default function HomePage() {
             under the ember radial, where nothing renders anyway: at 1440px the
             copy stops at x=724 and the right-hand column holds an opaque card.
             Inside the rects where text does sit the worst cases are h1
-            rgb(65,62,62) (sand 9.58:1, gold 4.46:1), subtext rgb(58,58,59)
+            rgb(65,62,62) (sand 9.63:1, gold 4.46:1), subtext rgb(58,58,59)
             (white/70 6.51:1) and buttons rgb(48,47,49) (white/70 7.40:1), so
             nothing renders below AA. The floor is a bound on how much photo
             survives, and it does not depend on layer order: what reaches the

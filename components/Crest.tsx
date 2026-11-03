@@ -7,7 +7,7 @@ type CrestProps = {
 };
 
 export function Crest({ size = 40, variant = 'dark', className }: CrestProps) {
-  const borderColor = variant === 'light' ? 'rgba(247, 243, 237, 0.7)' : 'rgba(16, 18, 20, 0.18)';
+  const borderColor = variant === 'light' ? 'rgba(244, 244, 245, 0.7)' : 'rgba(16, 18, 20, 0.18)';
 
   return (
     <span
