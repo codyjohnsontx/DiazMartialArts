@@ -100,8 +100,8 @@ p {
    backdrop lightens as travel proceeds and the worst case sits at full travel
    rather than at rest. Measured at 1440px the 99th-percentile backdrop under
    the headline goes from rgb(53,49,51) at rest to rgb(55,54,56) at full
-   travel, and contrast falls monotonically across the range: sand 11.59:1 to
-   10.87:1, gold 5.40:1 to 5.06:1, white/70 7.14:1 to 6.82:1. The tightest of
+   travel, and contrast falls monotonically across the range: sand 11.66:1 to
+   10.93:1, gold 5.40:1 to 5.06:1, white/70 7.14:1 to 6.82:1. The tightest of
    those is gold, at 5.06:1 against the 3:1 its 96px h1 span needs. What
    carries the AA guarantee is not that direction but the scrim's 82% coverage
    floor, which this change does not touch and which bounds any photo pixel,
