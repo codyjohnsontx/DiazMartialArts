@@ -17,20 +17,13 @@ export const metadata = pageMetadata({
 
 export default function PricingPage() {
   return (
-    <Section
-      title="Pricing"
-      titleAs="h1"
-      eyebrow="Membership"
-      description="Straightforward plans with clear options for families and adult students."
-    >
+    <Section title="Pricing" titleAs="h1">
       <div className="grid gap-5 md:grid-cols-3">
         {plans.map((plan) => (
           <Card key={plan.name} className="h-full">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-bronze">
-              {plan.notes}
-            </p>
-            <h2 className="mt-2 text-2xl font-bold text-ink">{plan.name}</h2>
+            <h2 className="text-2xl font-bold text-ink">{plan.name}</h2>
             <p className="mt-2 text-3xl font-bold text-ink">{plan.price}</p>
+            {plan.notes && <p className="mt-2 text-[13px] text-black/55">{plan.notes}</p>}
             <ul className="mt-4 space-y-2 text-sm text-black/75">
               {plan.features.map((feature) => (
                 <li key={feature}>• {feature}</li>

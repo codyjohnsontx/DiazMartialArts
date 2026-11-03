@@ -28,9 +28,8 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 /**
  * How far ahead /schedule looks. Exported so everything that states the figure -
- * the page's metadata description, the "Next N days" eyebrow it hands the
- * component, and the content staleness guard - reads this one number instead of
- * each hand-copying it and drifting.
+ * the page's metadata description and the content staleness guard - reads this
+ * one number instead of each hand-copying it and drifting.
  */
 export const UPCOMING_WINDOW_DAYS = 60;
 const MAX_ITEMS = 15;

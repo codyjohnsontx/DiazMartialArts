@@ -1,7 +1,6 @@
 import Link from 'next/link';
 
 import { DiceRoller } from '@/components/DiceRoller';
-import { Eyebrow } from '@/components/Eyebrow';
 import { dice, DIE_SIDES } from '@/content/dice';
 import { pageMetadata } from '@/lib/seo';
 
@@ -38,8 +37,7 @@ export default function DicePage() {
       <section className="border-b border-black/10">
         <div className="mx-auto grid w-full max-w-6xl items-end gap-12 px-4 py-14 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-8">
           <div>
-            <Eyebrow>Drill randomizer</Eyebrow>
-            <h1 className="display mt-5 text-5xl sm:text-7xl lg:text-[88px]">Jiu Jitsu Dice</h1>
+            <h1 className="display text-5xl sm:text-7xl lg:text-[88px]">Jiu Jitsu Dice</h1>
           </div>
           <p className="text-base leading-relaxed text-black/75 sm:text-lg">
             Three {DIE_SIDES}-sided dice for open mat. Roll for a starting position, a submission to
@@ -58,10 +56,7 @@ export default function DicePage() {
       <section className="mx-auto w-full max-w-6xl px-4 pb-6 sm:px-6 lg:px-8">
         <div className="grid gap-10 lg:grid-cols-[1fr_1.4fr] lg:gap-14">
           <div>
-            <Eyebrow>How to use it</Eyebrow>
-            <h2 className="display mt-3 text-3xl leading-none sm:text-4xl">
-              Three dice, one round.
-            </h2>
+            <h2 className="display text-3xl leading-none sm:text-4xl">Three dice, one round.</h2>
             <p className="mt-4 text-sm leading-relaxed text-black/70">
               New to the positions or the names?{' '}
               <Link href="/programs/brazilian-jiu-jitsu" className="font-bold text-ember">

@@ -2,7 +2,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { Button } from '@/components/Button';
-import { Eyebrow } from '@/components/Eyebrow';
 import { HomeUpcomingClasses } from '@/components/HomeUpcomingClasses';
 import { LocalBusinessSchema } from '@/components/LocalBusinessSchema';
 import { programs } from '@/content/programs';
@@ -162,8 +161,7 @@ export default function HomePage() {
       {/* WHY */}
       <section className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-6 lg:grid lg:grid-cols-[1fr_2fr] lg:gap-20 lg:px-8 lg:py-24">
         <div>
-          <Eyebrow>Why Diaz</Eyebrow>
-          <h2 className="display mt-4 text-3xl leading-[1.05] sm:text-4xl lg:text-[44px]">
+          <h2 className="display text-3xl leading-[1.05] sm:text-4xl lg:text-[44px]">
             A better first step for beginners. A better long-term home for committed students.
           </h2>
         </div>
@@ -190,8 +188,7 @@ export default function HomePage() {
         <div className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-6 lg:px-8 lg:py-24">
           <div className="mb-12 flex flex-wrap items-end justify-between gap-8">
             <div>
-              <Eyebrow>Programs</Eyebrow>
-              <h2 className="display mt-4 text-4xl sm:text-5xl lg:text-[56px]">
+              <h2 className="display text-4xl sm:text-5xl lg:text-[56px]">
                 Classes for every stage
               </h2>
             </div>
@@ -225,12 +222,9 @@ export default function HomePage() {
                     {String(i + 1).padStart(2, '0')}
                   </div>
                   <div>
-                    <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-bronze">
-                      {p.tag}
-                    </div>
-                    <h3 className="mt-1.5 text-xl font-extrabold tracking-tight">{p.title}</h3>
-                    <div className="mt-0.5 text-[13px] font-semibold text-bronze">{p.sub}</div>
+                    <h3 className="text-xl font-extrabold tracking-tight">{p.title}</h3>
                     <p className="mt-3 text-sm leading-relaxed text-black/70">{p.description}</p>
+                    <p className="mt-2 text-[13px] text-black/55">{p.age}</p>
                   </div>
                   <div className="text-2xl font-light text-black/30" aria-hidden="true">
                     →
@@ -253,8 +247,7 @@ export default function HomePage() {
         />
         <div className="relative mx-auto grid w-full max-w-6xl items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-[1.5fr_1fr] lg:gap-16 lg:px-8">
           <div>
-            <Eyebrow variant="light">Get started</Eyebrow>
-            <h2 className="display mt-4 text-4xl sm:text-5xl lg:text-[64px]">
+            <h2 className="display text-4xl sm:text-5xl lg:text-[64px]">
               Your first class
               <br />
               is on us.
