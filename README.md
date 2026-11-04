@@ -253,8 +253,10 @@ components so the first gate stays useful while coverage grows. GitHub Actions r
 `npm run quality` starts with `npm run format:check`, so unformatted files fail the
 gate; run `npm run format` to fix them. Prettier settings live in `.prettierrc` and
 the excluded paths in `.prettierignore`.
-`npm run quality` omits typecheck and build; `npm run quality:strict` adds both and
-runs the end-to-end tests against a production build.
+`npm run quality` also runs `npm run typecheck` and `npm run build`, so a type error
+or a broken production build fails the gate. `npm run quality:strict` runs the same
+steps but serves the end-to-end tests from that production build instead of
+`next dev`.
 
 CodeRabbit reviews each pull request once, on the code as it stands when the pull
 request is published, and does not re-review the commits pushed after that. Ask
