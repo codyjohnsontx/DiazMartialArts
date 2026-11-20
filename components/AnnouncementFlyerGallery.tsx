@@ -173,7 +173,7 @@ function FlyerDetails({ flyer }: { flyer: AnnouncementFlyer }) {
         </p>
       )}
       {schedule && (
-        <div className="grid gap-x-8 gap-y-3 pt-2 sm:grid-cols-3">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(10rem,1fr))] gap-x-8 gap-y-3 pt-2">
           {schedule.map(({ day, classes }) => (
             <div key={day}>
               <p className="text-sm font-extrabold text-ink">{day}</p>
