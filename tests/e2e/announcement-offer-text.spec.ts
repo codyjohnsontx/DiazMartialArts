@@ -75,6 +75,14 @@ const OFFER_LINES = [
   'Includes 16 oz gloves and two private lessons',
   // Both specials print "CALL TO MAKE AN APPOINTMENT" above the gym's number.
   'Call to make an appointment:',
+  // Thanksgiving week flyer: one heading per day it prints, plus the two
+  // classes that appear on a single day only. Retire with the flyer after
+  // 25 November 2026.
+  'Monday, November 23',
+  'Tuesday, November 24',
+  'Wednesday, November 25',
+  '7:00 PM BJJ (Fite Nite)',
+  '1:00 PM I.P.T.T.',
 ];
 
 test.describe('the announcements offer is served as text', () => {

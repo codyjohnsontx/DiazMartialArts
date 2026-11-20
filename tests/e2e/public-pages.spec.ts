@@ -291,8 +291,10 @@ test.describe('Announcements page details', () => {
   }) => {
     await page.goto('/announcements');
 
-    // A class timetable reads as current operating hours, so it belongs on
-    // /schedule alone and the feed must not carry a competing copy.
+    // The regular weekly class timetable reads as current operating hours, so
+    // it belongs on /schedule alone and the feed must not carry a competing
+    // copy. A dated holiday timetable, which names the days it replaces, may
+    // sit on the feed alongside /schedule.
     await expect(page.getByRole('heading', { name: /Class Schedule/i })).toHaveCount(0);
     await expect(page.locator('main img[src*="class-schedule"]')).toHaveCount(0);
 

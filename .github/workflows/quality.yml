@@ -11,7 +11,7 @@ permissions:
 jobs:
   quality:
     name: quality (${{ matrix.member_app }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       # The site behaves differently depending on whether the separate Diaz on
