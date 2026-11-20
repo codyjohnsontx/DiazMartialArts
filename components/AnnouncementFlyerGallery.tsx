@@ -69,6 +69,21 @@ export type AnnouncementFlyer = {
    * would need its own entry, with a comment saying why.
    */
   callForAppointment?: boolean;
+  /**
+   * The classes a schedule flyer lists, one entry per day in the flyer's
+   * order, each class as the flyer prints it. A timetable is the whole
+   * message of such a flyer, so the card renders it as page text rather than
+   * leaving it as pixels a phone visitor has to zoom into and a screen reader
+   * cannot read at all.
+   */
+  schedule?: [FlyerScheduleDay, ...FlyerScheduleDay[]];
+};
+
+export type FlyerScheduleDay = {
+  /** The day as the card prints it, e.g. "Monday, November 23". */
+  day: string;
+  /** Each class with its start time, e.g. "7:00 AM BJJ". */
+  classes: [string, ...string[]];
 };
 
 type AnnouncementFlyerGalleryProps = {
@@ -118,21 +133,27 @@ function flyerOfferDescription(flyer: AnnouncementFlyer): string {
   const { price, details, call } = offerParts(flyer);
   const date = flyer.date === NO_END_DATE ? null : flyer.date;
 
-  return [price, ...details, call && `${call} ${site.phone}`, date]
+  const schedule = (flyer.schedule ?? []).map(
+    ({ day, classes }) => `${day}: ${classes.join(', ')}`,
+  );
+
+  return [price, ...details, call && `${call} ${site.phone}`, ...schedule, date]
     .filter((line): line is string => Boolean(line))
     .join('. ');
 }
 
 /**
- * The flyer's offer as page text: price, what it includes, ages and the phone
- * line, in that order, each present only when the flyer prints it. A flyer
+ * The flyer's offer as page text: price, what it includes, ages, the phone
+ * line and any class timetable, in that order, each present only when the
+ * flyer prints it. A flyer
  * that prints none of them renders no block at all, so nothing sits empty
  * between the title and the date row.
  */
 function FlyerDetails({ flyer }: { flyer: AnnouncementFlyer }) {
   const { price, details, call } = offerParts(flyer);
+  const { schedule } = flyer;
 
-  if (!price && details.length === 0 && !call) return null;
+  if (!price && details.length === 0 && !call && !schedule) return null;
 
   return (
     <div className="mt-2 space-y-1 text-xs leading-relaxed text-black/70">
@@ -150,6 +171,22 @@ function FlyerDetails({ flyer }: { flyer: AnnouncementFlyer }) {
             {site.phone}
           </a>
         </p>
+      )}
+      {schedule && (
+        <div className="grid gap-x-8 gap-y-3 pt-2 sm:grid-cols-3">
+          {schedule.map(({ day, classes }) => (
+            <div key={day}>
+              <p className="text-sm font-extrabold text-ink">{day}</p>
+              <ul className="mt-1 space-y-0.5">
+                {classes.map((line) => (
+                  <li key={line} className="tabular-nums">
+                    {line}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );

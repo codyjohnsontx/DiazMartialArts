@@ -194,6 +194,28 @@ describe('AnnouncementFlyerGallery', () => {
     );
   });
 
+  // A schedule flyer is an image of text, and while the lightbox is open the
+  // card's class list is behind the modal, so the description has to carry it.
+  it('reads a schedule flyer timetable into the enlarged view, day by day', async () => {
+    const user = userEvent.setup();
+    const week = {
+      ...flyers[1],
+      id: 'holiday-week',
+      title: 'Holiday Week',
+      date: 'November 23-24',
+      schedule: [
+        { day: 'Monday, November 23', classes: ['7:00 AM BJJ', '6:00 PM Haganah'] },
+        { day: 'Tuesday, November 24', classes: ['7:00 PM BJJ (Fite Nite)'] },
+      ],
+    } satisfies AnnouncementFlyer;
+    render(<AnnouncementFlyerGallery flyers={[week]} />);
+
+    await user.click(screen.getByRole('button', { name: 'Enlarge Holiday Week' }));
+    expect(screen.getByRole('dialog')).toHaveAccessibleDescription(
+      'Monday, November 23: 7:00 AM BJJ, 6:00 PM Haganah. Tuesday, November 24: 7:00 PM BJJ (Fite Nite). November 23-24',
+    );
+  });
+
   /**
    * A dated flyer's day is the one actionable fact on it, and the date row that
    * carries it on the card is behind the modal like the rest of the card. The
@@ -268,6 +290,42 @@ describe('AnnouncementFlyerGallery', () => {
       const body = heading.parentElement!;
       expect(body.querySelectorAll('p, li, dd')).toHaveLength(0);
       expect(body).toHaveTextContent(/^Holiday ClosureNovember 26View/);
+    });
+
+    it('renders a schedule flyer as one labelled class list per day, in order', () => {
+      render(
+        <AnnouncementFlyerGallery
+          flyers={[
+            {
+              ...flyers[1],
+              id: 'holiday-week',
+              title: 'Holiday Week',
+              schedule: [
+                { day: 'Monday, November 23', classes: ['7:00 AM BJJ', '6:00 PM Haganah'] },
+                { day: 'Tuesday, November 24', classes: ['7:00 PM BJJ (Fite Nite)'] },
+              ],
+            },
+          ]}
+        />,
+      );
+      const week = card('Holiday Week');
+
+      const lists = week.getAllByRole('list');
+      expect(lists).toHaveLength(2);
+      expect(
+        within(lists[0])
+          .getAllByRole('listitem')
+          .map((li) => li.textContent),
+      ).toEqual(['7:00 AM BJJ', '6:00 PM Haganah']);
+      expect(
+        within(lists[1])
+          .getAllByRole('listitem')
+          .map((li) => li.textContent),
+      ).toEqual(['7:00 PM BJJ (Fite Nite)']);
+      const body = week.getByRole('heading', { name: 'Holiday Week' }).parentElement!;
+      expect(body).toHaveTextContent(
+        /^Holiday WeekMonday, November 237:00 AM BJJ6:00 PM HaganahTuesday, November 247:00 PM BJJ \(Fite Nite\)Every FridayView/,
+      );
     });
 
     // The shape the retired Cleber Luciano flyer had: it printed "Cost: $125"

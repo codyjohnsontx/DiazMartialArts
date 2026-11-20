@@ -15,9 +15,13 @@ import { pageMetadata } from '@/lib/seo';
 // the card renders that single source. A flyer printing a different number
 // would need its own explicit entry and a comment saying why.
 // `alt` describes the picture, since the offer no longer has to travel through
-// it. None of the current flyers prints a date; the three specials carry no
-// start date or expiry, so none is claimed for them - `NO_END_DATE` says so
-// rather than guessing a run.
+// it. The three specials carry no start date or expiry, so none is claimed
+// for them - `NO_END_DATE` says so rather than guessing a run.
+//
+// The Thanksgiving week flyer prints Monday-Wednesday 23-25 November and says
+// nothing about Thursday onwards, so neither does its entry. Its class names
+// are the flyer's own short names, except "HagAnaH", which takes the site's
+// spelling (and the flyer's own on Tuesday). It retires after 25 November.
 //
 // A dated flyer retires once its day has passed, and four places move with
 // it: its entry here, its image in public/announcements/, its entry in
@@ -27,6 +31,55 @@ import { pageMetadata } from '@/lib/seo';
 // flyer's own copy on purpose, so retiring a flyer without it fails the smoke
 // run on a correct change.
 const flyers: AnnouncementFlyer[] = [
+  {
+    id: 'thanksgiving-week-2026',
+    src: '/announcements/thanksgiving-week-2026.jpg',
+    alt: 'Three-column class list for Monday November 23rd, Tuesday November 24th and Wednesday November 25th, above a Happy Thanksgiving graphic with autumn leaves and two pumpkins.',
+    title: 'Thanksgiving Week Holiday Schedule',
+    tag: 'Holiday',
+    date: 'Monday-Wednesday, November 23-25, 2026',
+    category: 'Events',
+    width: 1650,
+    height: 1275,
+    schedule: [
+      {
+        day: 'Monday, November 23',
+        classes: [
+          '7:00 AM BJJ',
+          '10:00 AM FMA',
+          '11:00 AM MT / Boxing',
+          '12:00 PM BJJ',
+          '5:00 PM Kids & Adult',
+          '6:00 PM Haganah',
+          '7:00 PM MT / Boxing',
+        ],
+      },
+      {
+        day: 'Tuesday, November 24',
+        classes: [
+          '7:00 AM BJJ',
+          '10:00 AM FMA',
+          '11:00 AM MT / Boxing',
+          '5:00 PM Kids & Adult',
+          '6:00 PM Haganah',
+          '7:00 PM BJJ (Fite Nite)',
+        ],
+      },
+      {
+        day: 'Wednesday, November 25',
+        classes: [
+          '7:00 AM BJJ',
+          '10:00 AM FMA',
+          '11:00 AM MT / Boxing',
+          '12:00 PM BJJ',
+          '1:00 PM I.P.T.T.',
+          '5:00 PM Kids & Adult',
+          '6:00 PM Haganah',
+          '7:00 PM MT / Boxing',
+        ],
+      },
+    ],
+  },
   {
     id: 'back-to-school-special',
     src: '/announcements/back-to-school-special.jpeg',
