@@ -21,7 +21,9 @@ import { pageMetadata } from '@/lib/seo';
 // The Thanksgiving week flyer prints Monday-Wednesday 23-25 November and says
 // nothing about Thursday onwards, so neither does its entry. Its class names
 // are the flyer's own short names, except "HagAnaH", which takes the site's
-// spelling (and the flyer's own on Tuesday). It retires after 25 November.
+// spelling (and the flyer's own on Tuesday). It retires after 25 November,
+// when its content/upcoming.ts entry turns tests/unit/upcoming-content.test.ts
+// red.
 //
 // A dated flyer retires once its day has passed, and four places move with
 // it: its entry here, its image in public/announcements/, its entry in

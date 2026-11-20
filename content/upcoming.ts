@@ -70,6 +70,19 @@ export type UpcomingItem = {
 // day after, and stays listed until that day is over at the gym, while a timed
 // entry with an `end` finishes at that exact time.
 //
-// Currently empty: the last entry, the Master Cleber Luciano event on
-// 8 October 2026, has ended. Add the next events here as their flyers arrive.
-export const upcomingItems: UpcomingItem[] = [];
+// Current entry: taken from the Thanksgiving week holiday schedule flyer on
+// /announcements (public/announcements/thanksgiving-week-2026.jpg), which
+// prints class times for Monday 23 through Wednesday 25 November 2026 and
+// nothing about Thursday onwards. It is all-day because it stands for the
+// whole holiday timetable rather than one class, and its notes point to the
+// announcement, which carries the times, rather than copying them here.
+export const upcomingItems: UpcomingItem[] = [
+  {
+    id: 'thanksgiving-week-2026',
+    title: 'Thanksgiving Week Holiday Schedule',
+    start: '2026-11-23T00:00:00Z',
+    end: '2026-11-25T00:00:00Z',
+    allDay: true,
+    notes: 'Class times for Monday through Wednesday are posted on the Announcements page.',
+  },
+];
