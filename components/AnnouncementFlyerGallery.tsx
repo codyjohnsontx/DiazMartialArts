@@ -145,9 +145,8 @@ function flyerOfferDescription(flyer: AnnouncementFlyer): string {
 /**
  * The flyer's offer as page text: price, what it includes, ages, the phone
  * line and any class timetable, in that order, each present only when the
- * flyer prints it. A flyer
- * that prints none of them renders no block at all, so nothing sits empty
- * between the title and the date row.
+ * flyer prints it. A flyer that prints none of them renders no block at all,
+ * so nothing sits empty between the title and the date row.
  */
 function FlyerDetails({ flyer }: { flyer: AnnouncementFlyer }) {
   const { price, details, call } = offerParts(flyer);
